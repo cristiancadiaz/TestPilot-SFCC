@@ -37,7 +37,7 @@
 
 | Error code (string) | Excepción Python | HTTP code | StepResult.status | FlowResult.status | RunRecord.status | TrafficLight | Screenshot | Cuándo se produce |
 |---|---|---|---|---|---|---|---|---|
-| (sin error) | — | 200 | `success` | `success` | `success` | computado por baseline | según `screenshot_on_success` | Path feliz completo |
+| (sin error) | — | 200 | `success` | `success` | `success` | computado por baseline | solo paso final | Path feliz completo |
 | `decline_message_not_found` | — | 200 | `failed` | `failed` | `failed` (o peor) | **RED** o computado | SÍ (step failed) | H1.3 AC3 — regex no aparece en 5s |
 | (selector timeout en step de app) | `playwright.TimeoutError` capturado | 200 | `failed` | `failed` | `failed` (o peor) | **RED** o computado | SÍ (step failed) | `wait_for_selector` excede timeout — app está roto |
 | `infrastructure_error` | `InfrastructureError` (custom) | 200 (en respuesta del run) / 503 (si escapa al middleware) | `failed` (el step donde se lanza) | `error` | `error` (precedencia sobre `failed`) | **YELLOW** | SÍ (step failed) | H1.4 AC1 — `playwright.TimeoutError` en `page.goto`, `wait_for_load_state`, `page.reload`; HTTP 401 en `env_access_auth`; browser crash |

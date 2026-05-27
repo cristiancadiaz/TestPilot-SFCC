@@ -32,8 +32,8 @@ Ejemplo de un evento típico:
   "message": "profile_completed",
   "request_id": "9f3c1c4e-2a5d-4f8b-9c3e-7b8a1f0d4c5e",
   "test_run_id": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
-  "profile": "mobile-co",
-  "flow_name": "checkout-full",
+  "profile": "mobile_co",
+  "flow_name": "checkout_full",
   "environment_id": "staging",
   "duration_ms": 4321,
   "status": "success"
@@ -54,8 +54,8 @@ Ejemplo de un evento típico:
 | `request_id` | En cualquier log dentro de un request HTTP |
 | `run_id` | En cualquier log dentro de un `POST /v1/run` o relacionado a un run específico |
 | `environment_id` | En logs que tocan resolución de credenciales, runs, baseline (★ NUEVO 2026-05-24) |
-| `profile` | En logs del executor por perfil (catálogo con guion: `mobile-co`, `desktop-co`, `desktop-ec`) |
-| `flow_name` | En logs del executor de un flow específico (catálogo con guion: `checkout-full`, `checkout-card-declined`) |
+| `profile` | En logs del executor por perfil (`mobile_co`, `desktop_co`, `desktop_ec`) |
+| `flow_name` | En logs del executor de un flow específico (`checkout_full`, `checkout_card_declined`) |
 | `duration_ms` | Para eventos de "X completed" |
 | `status` | Para eventos terminales (`success` / `failed` / `error`) |
 | `error_code` | Para logs de nivel ERROR (ver `error-taxonomy.md`) |

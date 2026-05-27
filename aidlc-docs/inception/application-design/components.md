@@ -14,7 +14,7 @@
   - **Pantalla de runs**: Campo JSON para `SyntheticUserConfig` (sin credenciales), botón de lanzamiento vía `POST /v1/run`
   - **Vista en tiempo real**: Mostrar agentes activos por perfil (mobile-CO, desktop-CO, desktop-EC) con estado en progreso / completado / fallido
   - **Historial**: Lista de ejecuciones anteriores con filtros por fecha, ambiente y semáforo
-  - **Detalle de run**: Semáforo, screenshots por módulo (OK + FAIL), métricas de tiempo vs baseline p95
+  - **Detalle de run**: Semáforo, screenshots de fallos y paso final, métricas de tiempo vs baseline p95
 - **Interfaces**: Consume `GET /v1/runs`, `GET /v1/runs/{run_id}`, `POST /v1/run` del backend
 
 ---
@@ -77,7 +77,7 @@
 - **Responsabilidades**:
   - Ejecutar los 10 pasos del flow en orden: `env_access_auth` → `shopper_login` → `search_product` → `category_page` → `pdp_variant_select` → `add_to_cart` → `mini_cart_validation` → `checkout_shipping` → `checkout_payment` → `payment_failure_validation`
   - Devolver lista de `StepResult` con nombre, status, durationMs, error
-  - Capturar screenshot en TODOS los módulos (ok cuando `screenshot_on_success=True`, fail cuando `screenshot_on_error=True`)
+  - Capturar screenshot solo en fallo y en el paso final del flow (ADR-002)
   - Garantizar que `payment_failure_validation` siempre falle (invariante)
   - Marcar steps posteriores como `skipped` si uno falla
 

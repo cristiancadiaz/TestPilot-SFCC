@@ -59,7 +59,7 @@
 | M6 Payment prueba + `@testpilot.internal` | U1 (flows) + U4 (assertion en orchestrator) | Diseño completo |
 | M7 Reporte JSON + Markdown | U3 | Diseño completo |
 | M8 Semáforo 3 estados | U2+U3+MD0 (vista) | Diseño completo |
-| M9 Screenshots todos los módulos | U1 (flows) + U4 (proxy S3) | Diseño completo |
+| M9 Screenshots solo fallo + paso final | U1 (flows) + U4 (proxy S3) | Diseño completo |
 | M10 DynamoDB stub (InMemory) | U2 (Protocol pattern; migración a DynamoDB en sprint 3+) | Diseño completo |
 | M11 Baseline p95 últimas 10 | U2 (con clave compuesta por ambiente) | Diseño completo |
 | M12 Bootstrap 14 runs | U2 | Diseño completo |

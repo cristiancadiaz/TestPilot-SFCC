@@ -16,8 +16,8 @@ from enum import Enum
 
 # ---------- Enums / Literals (catálogos cerrados) ----------
 EnvironmentId = Literal["sandbox", "development", "staging"]
-FlowName = Literal["checkout-full", "checkout-card-declined"]
-ProfileId = Literal["mobile-co", "desktop-co", "desktop-ec"]
+FlowName = Literal["checkout_full", "checkout_card_declined"]
+ProfileId = Literal["mobile_co", "desktop_co", "desktop_ec"]
 
 class TrafficLight(str, Enum):
     GREEN = "green"
@@ -80,14 +80,13 @@ class SyntheticUserConfig(BaseModel):
     products: list[ProductSpec] = Field(min_length=1, max_length=10)
     flows: list[FlowName] = Field(min_length=1, max_length=2)
     profiles: list[ProfileId] = Field(min_length=1, max_length=3)
-    screenshot_on_success: bool = True
-    screenshot_on_error: bool = True  # invariante — debe ser True
+    capture_intermediate_screenshots: bool = False  # invariante de costo — debe ser False en MVP
 
-    @field_validator("screenshot_on_error")
+    @field_validator("capture_intermediate_screenshots")
     @classmethod
-    def screenshot_on_error_must_be_true(cls, v: bool) -> bool:
-        if not v:
-            raise ValueError("screenshot_on_error must be True (audit invariant)")
+    def intermediate_screenshots_must_be_false(cls, v: bool) -> bool:
+        if v:
+            raise ValueError("capture_intermediate_screenshots must be False in MVP")
         return v
 
 # ---------- Browser y ejecución ----------
@@ -105,7 +104,7 @@ class StepResult(BaseModel):
     duration_ms: int
     error: str | None = None
     screenshot_url: str | None = None  # path S3 relativo
-    screenshot_state: Literal["ok", "fail"] | None = None  # ★ NUEVO
+    screenshot_state: Literal["fail", "final"] | None = None
 
 class FlowResult(BaseModel):
     flow_name: FlowName

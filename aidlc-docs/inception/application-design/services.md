@@ -10,7 +10,7 @@
 **Output**: `ExecutionReport` (200) o error tipado según `application-design/error-taxonomy.md`
 
 ```
-Request: SyntheticUserConfig {environment_id, products[], flows[], profiles[], screenshot_*}
+Request: SyntheticUserConfig {environment_id, products[], flows[], profiles[], capture_intermediate_screenshots=false}
     |
     v
 [1] verify_api_key()                              -> 401 unauthorized si falla (H4.4)
@@ -127,7 +127,7 @@ run_profile(profile, flow_name, config, env: ResolvedEnvironment, run_id)
     v
 [0] Pre-condiciones (assertions):
     assert env.shopper.email.endswith("@testpilot.internal")  # BR-U1-03
-    assert config.screenshot_on_error is True                  # BR-U0-04
+    assert config.capture_intermediate_screenshots is False    # ADR-002
     |
     v
 [1] async with async_playwright() as p:

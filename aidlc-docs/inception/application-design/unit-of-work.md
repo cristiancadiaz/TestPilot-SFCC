@@ -99,7 +99,7 @@ Es **el corazón funcional** del producto: el módulo que **realmente ejecuta** 
 - **Patrón**: closure `_step()` dentro de cada flow para mantener `steps` en scope local
 - **Concurrencia**: paralelización a nivel de perfil — `asyncio.gather` con cap `MAX_CONCURRENT_PROFILES=3` (ver `env-vars-catalog.md`); orquestación final en U4
 - **Anti-flake**: `wait_for_selector` / `wait_for_load_state` — prohibido `time.sleep` (BR-U1-05)
-- **Storage**: screenshots a `SCREENSHOT_DIR` (ver `env-vars-catalog.md`)
+- **Storage**: screenshots a `SCREENSHOT_DIR` o S3, solo en fallo + paso final (ver `env-vars-catalog.md` y ADR-002)
 
 ### Historias de usuario que cubre
 - **H1.1** — Ejecución paralela en 3 perfiles críticos
@@ -133,7 +133,7 @@ Es **el corazón funcional** del producto: el módulo que **realmente ejecuta** 
 - `tests/test_executor_runner.py` — con mocks de Playwright, verifica `InfrastructureError` (ver `error-taxonomy.md`)
 
 ### Criterio de completitud
-Tests pasan con mocks; `orders_created=0` en todos los flows; screenshots en todos los módulos según flags `screenshot_on_success`/`screenshot_on_error`; perfiles: mobile/CO, desktop/CO, desktop/EC (Ecuador); H1.1–H1.5 AC satisfechos.
+Tests pasan con mocks; `orders_created=0` en todos los flows; screenshots solo en fallo + paso final; perfiles: mobile/CO, desktop/CO, desktop/EC (Ecuador); H1.1–H1.5 AC satisfechos.
 
 ---
 
