@@ -18,7 +18,7 @@
 | M6 | Payment method de prueba + email `@testpilot.internal` | H1.2 (AC1, AC2) | Completo |
 | M7 | Reporte dual JSON + Markdown | H3.1, H3.2 | Completo |
 | M8 | Semáforo 3 estados (verde/amarillo/rojo) | H2.1, H2.2 | Completo |
-| M9 | Screenshots: todos los módulos del flujo (según flags) | H1.5 | Completo |
+| M9 | Screenshots: solo fallo + paso final (ADR-002) | H1.5 | Completo |
 | M10 | DynamoDB stub (InMemory en MVP) | H2.5 | Completo (Protocol pattern) |
 | M11 | Baseline p95 sobre últimas 10 ejecuciones (por ambiente) | H2.1, H2.4 | Completo |
 | M12 | Periodo de bootstrapping (14 runs sin amarillos) | H2.2 | Completo |

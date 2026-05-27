@@ -17,7 +17,7 @@ Estas decisiones se tomaron en revisión del 2026-05-22 y aplican transversalmen
 | D2 | Tarjeta de declinación por env var `TEST_DECLINE_CARD`, default `4000000000000002` | H1.2 | A6, B2 |
 | D3 | Mensaje de declinación validado por regex flexible `/tarjeta.*(rechaz\|declin)/i` | H1.3 | A6 |
 | D4 | `InfrastructureError` se lanza en cualquier `TimeoutError` de navegación; los `TimeoutError` esperando selector son app-error | H1.4 | B1 (taxonomía errores) |
-| D5 | `SCREENSHOT_DIR` default `./screenshots` en dev; requerida si `ENV=production` (chequeo en startup) | H1.5 | B2 |
+| D5 | `SCREENSHOT_DIR` default `./screenshots` en dev; requerida si `ENV=production` (chequeo en startup). Política MVP: screenshots solo en fallo + paso final (ADR-002). | H1.5 | B2 |
 | D6 | Endpoint `GET /v1/runs?since=...&aggregate=daily` OUT of MVP | H2.3 | scope MVP |
 | D7 | Clasificador LLM con `confidence` / `requires_human_review` OUT of MVP; descartada historia original H3.3 | U3 | scope MVP |
 | D8 | `POST /v1/run` recibe `SyntheticUserConfig` estructurado (Pydantic). El translator NL queda como funcionalidad opcional en `src/agents/translator.py` para uso futuro o endpoint dedicado, NO como entrada principal del run. Las credenciales se resuelven en backend desde Secrets Manager vía `environment_id` (BR-U0-01). | H4.1 | A1 (translator integration) — actualizada 2026-05-24 |
@@ -140,14 +140,14 @@ Estas decisiones se tomaron en revisión del 2026-05-22 y aplican transversalmen
 
 ### H1.5 — Disciplina de screenshots
 **Como** responsable de costos,
-**quiero** controlar los screenshots mediante flags `screenshot_on_success` / `screenshot_on_error`,
-**para** tener visibilidad completa del flujo sin desperdiciar storage innecesariamente.
+**quiero** capturar screenshots solo cuando hay fallo y en el paso final,
+**para** tener evidencia accionable sin desperdiciar storage ni llenar el reporte de ruido visual.
 
 **AC**:
-- AC1. `take_screenshot` se invoca en TODOS los módulos del flujo: si `step.status == "ok"` y `config.screenshot_on_success == True`; si `step.status == "failed"` y `config.screenshot_on_error == True`.
-- AC2. Los steps `skipped` nunca generan screenshot.
-- AC3. La ruta se controla por env var `SCREENSHOT_DIR`. Default `./screenshots` cuando `ENV != "production"`; cuando `ENV == "production"`, la app falla en startup si la env var no está seteada. Naming: `{run_id}/{perfil}/{flujo}/{paso}-{ok|fail}.png`.
-- AC4. Test: un flow exitoso de 10 steps con `screenshot_on_success=True` produce exactamente 10 screenshots.
+- AC1. `take_screenshot` se invoca cuando `step.status == "failed"` y en el paso final de cada flow ejecutado.
+- AC2. Los steps `skipped` y los steps OK intermedios nunca generan screenshot.
+- AC3. La ruta se controla por env var `SCREENSHOT_DIR`. Default `./screenshots` cuando `ENV != "production"`; cuando `ENV == "production"`, la app falla en startup si la env var no está seteada o si no existe `S3_BUCKET_SCREENSHOTS`. Naming: `{run_id}/{perfil}/{flujo}/{paso}-{fail|final}.png`.
+- AC4. Test: un flow exitoso de 10 steps produce exactamente 1 screenshot final; un flow con un fallo produce screenshot del fallo y, si aplica, screenshot final del estado terminal.
 
 **Origen PRD**: BR-U1-04, "Screenshot discipline" del CLAUDE.md. **Decisión**: D5.
 
@@ -286,7 +286,7 @@ Estas decisiones se tomaron en revisión del 2026-05-22 y aplican transversalmen
 **para** no tener que aprender un DSL.
 
 **AC**:
-- AC1. `POST /v1/run` recibe un `SyntheticUserConfig` estructurado (Pydantic): `{environment_id, products[], flows[], profiles[], screenshot_on_success, screenshot_on_error}`. Sin credenciales en el payload — el backend las resuelve desde Secrets Manager vía `environment_id`.
+- AC1. `POST /v1/run` recibe un `SyntheticUserConfig` estructurado (Pydantic): `{environment_id, products[], flows[], profiles[], capture_intermediate_screenshots=false}`. Sin credenciales en el payload — el backend las resuelve desde Secrets Manager vía `environment_id`.
 - AC2. Si el payload no valida contra `synthetic_user_config.json` (vía Pydantic), el endpoint retorna 422 con `{error_code: "validation_failed", details: "..."}`. (Translator NL queda fuera del path principal — ver D8 actualizada).
 - AC3. El servidor genera `run_id` como UUID4 server-side (idempotencia con `Idempotency-Key` header queda en SHOULD HAVE, no MVP).
 - AC4. La respuesta incluye `testRunId` en el body y `X-Run-Id` en el header.
@@ -438,6 +438,6 @@ Estas decisiones se tomaron en revisión del 2026-05-22 y aplican transversalmen
 - Agregada: H2.5 (Protocol pattern para baseline store, decisión D13)
 - Actualizada: H1.1 — `mobile/MX` → `desktop/EC (Ecuador)`
 - Actualizada: H1.2 — email removido de payload; credenciales en Secrets Manager
-- Actualizada: H1.5 — screenshots en todos los módulos según flags screenshot_on_success/error
+- Actualizada: H1.5 — screenshots solo en fallo + paso final, según ADR-002 y `AGENTS.md`
 - Agregadas: H5.1–H5.4 (Dashboard MD0 — MUST HAVE)
 - 12 marcas `[?]` resueltas e incorporadas a los AC; las decisiones quedan trazadas en la sección "Design Decisions" de este documento.

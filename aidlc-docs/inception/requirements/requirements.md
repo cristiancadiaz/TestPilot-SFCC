@@ -44,7 +44,7 @@
 - **Criterios de aceptación**:
   - AC1. `src/models.py` define `SyntheticUserConfig` como la única fuente de verdad
   - AC2. `src/api/main.py` importa `SyntheticUserConfig` desde `src/models`
-  - AC3. Los campos de `SyntheticUserConfig` son: `environment_id` (enum: `sandbox|development|staging`), `products[]` (array con `search_term` + `validate_variant`), `flows[]` (array enum closed: `checkout-full`, `checkout-card-declined`), `profiles[]` (array enum closed: `mobile-co`, `desktop-co`, `desktop-ec`), `screenshot_on_success` (bool, default True), `screenshot_on_error` (bool, default True — invariante). Los campos `storefrontUrl`, `email`, `password` NO existen en `SyntheticUserConfig`.
+  - AC3. Los campos de `SyntheticUserConfig` son: `environment_id` (enum: `sandbox|development|staging`), `products[]` (array con `search_term` + `validate_variant`), `flows[]` (array enum closed: `checkout-full`, `checkout-card-declined`), `profiles[]` (array enum closed: `mobile-co`, `desktop-co`, `desktop-ec`) y `capture_intermediate_screenshots` (bool, siempre `false` en MVP). Los campos `storefrontUrl`, `email`, `password`, `screenshot_on_success` y `screenshot_on_error` NO existen en `SyntheticUserConfig`.
   - AC4. `src/agents/translator.py` importa `SyntheticUserConfig` desde `src/models` (translator queda como funcionalidad opcional — no es entrada principal de runs).
   - AC5. `src/models.py` también define: `EnvironmentConfig`, `EnvironmentAccessCredentials`, `ShopperCredentials`, `ResolvedEnvironment`, `RunStatus`, `ProfileLiveStatus`, `RunState`.
   - AC6. Todos los tests existentes pasan sin modificación de lógica (actualizando solo los mocks afectados por el cambio de payload).
@@ -85,9 +85,9 @@
   - Cada paso devuelve un `StepResult` (nombre, status, durationMs, error opcional)
   - El paso `payment_failure_validation` SIEMPRE falla — usa el método de pago de prueba configurado
   - El campo `orders_created` en el resultado final SIEMPRE es 0
-  - Screenshots se capturan en TODOS los módulos del flujo (status=ok cuando `screenshot_on_success=True`, status=fail cuando `screenshot_on_error=True`)
+  - Screenshots se capturan solo en fallo y en el paso final del flujo (ADR-002). No se capturan pasos OK intermedios.
   - Si un paso falla, los pasos posteriores se marcan como `skipped`
-  - La función principal es `run(page: Page, config: SyntheticUserConfig, store_url: str, shopper_email: str, shopper_password: str) -> FlowResult`
+  - La función principal es `run(page: Page, config: SyntheticUserConfig, env: ResolvedEnvironment, run_id: str, profile_id: str) -> FlowResult` — `env` reemplaza los parámetros `store_url/shopper_email/shopper_password` (ADR-001: credenciales resueltas server-side, nunca como strings sueltos)
 - **Módulo**: src/executor/flows/checkout_full.py
 
 ### RF-07: Flow checkout_card_declined (src/executor/flows/checkout_card_declined.py)
@@ -96,15 +96,15 @@
   - Mismos pasos que checkout_full en orden: `env_access_auth` → `shopper_login` → `search_product` → `category_page` → `pdp_variant_select` → `add_to_cart` → `mini_cart_validation` → `checkout_shipping` → `checkout_payment` → `payment_failure_validation`
   - El paso final es `verify_decline_message`: verifica que el mensaje de error de la UI coincide con el mensaje esperado
   - `orders_created` siempre es 0
-  - Screenshots se capturan en TODOS los módulos del flujo (status=ok cuando `screenshot_on_success=True`, status=fail cuando `screenshot_on_error=True`)
-  - Expone la misma firma: `run(page: Page, config: SyntheticUserConfig, store_url: str, shopper_email: str, shopper_password: str) -> FlowResult`
+  - Screenshots se capturan solo en fallo y en el paso final del flujo (ADR-002). No se capturan pasos OK intermedios.
+  - Expone la misma firma: `run(page: Page, config: SyntheticUserConfig, env: ResolvedEnvironment, run_id: str, profile_id: str) -> FlowResult` — `env` reemplaza los parámetros de credenciales (ADR-001)
 - **Módulo**: src/executor/flows/checkout_card_declined.py
 
 ### RF-08: Ejecutor de Flows (src/executor/runner.py)
 - **Descripción**: Orquestador local (stub de Step Functions) que ejecuta los flows en cada perfil y recolecta los resultados.
 - **Criterios de aceptación**:
-  - Función `run_profile(profile: BrowserProfile, flow_name: str, config: SyntheticUserConfig, store_url: str, shopper_credentials: dict) -> ProfileResult`
-  - Antes de lanzar el flow, resuelve `env_access_credentials` y `shopper_credentials` desde Secrets Manager usando el `environment_id` del config
+  - Función `run_profile(profile: BrowserProfile, flow_name: FlowName, config: SyntheticUserConfig, env: ResolvedEnvironment, run_id: str) -> ProfileResult` — `env` ya contiene credenciales resueltas; runner NO las resuelve (ADR-001: responsabilidad del orquestador)
+  - El orquestador (`RunOrchestrator`) resuelve `ResolvedEnvironment` desde Secrets Manager antes de llamar a `run_profile`
   - Lanza el browser con la configuración del perfil (viewport, locale, user-agent)
   - Ejecuta el flow correspondiente (`checkout_full` o `checkout_card_declined`)
   - Retorna `ProfileResult` con: perfil, flow, lista de StepResults, durationMs total
@@ -163,10 +163,10 @@
   - Llama a `run_profile()` por cada perfil en paralelo via `asyncio.gather` con cap `MAX_CONCURRENT_PROFILES=3` (D1)
   - Al completar, guarda el `ExecutionReport` en el `BaselineStore`
   - Retorna 200 con el `ExecutionReport` completo (no solo "queued")
-  - Si el executor lanza `InfrastructureError` (timeout de red/DNS en navegación, D4), retorna **503** con `error_code: "infrastructure_error"` (ver `application-design/error-taxonomy.md`)
+  - Si el executor lanza `InfrastructureError` (timeout de red/DNS en navegación, D4), el `runner.py` la CAPTURA y devuelve `ProfileResult` con `status="error"` y semáforo YELLOW — el endpoint retorna **200** con el `ExecutionReport` completo. Solo si `InfrastructureError` escapa al middleware → **503** `infrastructure_error` (ver `application-design/error-taxonomy.md`)
   - Cualquier excepción no esperada retorna **500** con `error_code: "internal_error"`, sin stack traces (H4.5)
   - Si el `environment_id` no está registrado en el Environment Registry → 404 `environment_not_found`
-  - Timeout global del run: 480s (D10); si lo excede → 504 `run_timeout`
+  - Timeout global del run: **1800s** (D10, actualizado 2026-05-24); si lo excede → 504 `run_timeout`. Valor original 480s supersedido por D10.
   - El `orders_created` en la respuesta SIEMPRE es 0
 - **Módulo**: src/api/main.py
 - **Referencia historias**: H4.1, H4.5 en `inception/user-stories/user-stories.md`
@@ -241,7 +241,7 @@
 | C1 | Catálogo cerrado de flows: solo `checkout_full` y `checkout_card_declined` | El executor NO acepta flows arbitrarios |
 | C2 | Credenciales del shopper (`@testpilot.internal`) en Secrets Manager, nunca en el payload ni en logs. El campo `email` no existe en `SyntheticUserConfig`. | Validado en modelos y en el executor |
 | C3 | `orders_created` siempre 0 | Assert en reporter; `payment_failure_validation` step es invariante |
-| C4 | Screenshots en TODOS los módulos del flujo: ok si `screenshot_on_success=True`, fail si `screenshot_on_error=True`. Nombrado: `{run_id}/{perfil}/{flujo}/{paso}-{ok\|fail}.png` | El executor captura screenshots según los flags del config |
+| C4 | Screenshots solo en fallo + paso final. Nombrado: `{run_id}/{perfil}/{flujo}/{paso}-{fail\|final}.png` | El executor no captura pasos OK intermedios y siempre captura fallo + paso final |
 | C5 | No alertas amarillas durante bootstrap (<14 runs) | El reporter omite comparación con baseline en modo bootstrap |
 | C6 | Credenciales nunca en código ni logs | Variables de entorno + filtro de redacción en logs |
 | C7 | Selectores solo en `src/executor/selectors.py` | Ningún selector hardcodeado en flows ni profiles |
