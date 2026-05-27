@@ -1,0 +1,56 @@
+{
+  "_comment": "MCP servers para TestPilot SFCC. Los 6 servers del codelab Hardcore AI Clase 3 están declarados aquí. Los marcados como 'enabled: false' no aplican al stack actual (DynamoDB en vez de Postgres, AWS en vez de Vercel) pero quedan documentados para trazabilidad. Ver AGENTS.md sección 'MCP servers' para el racional completo.",
+
+  "mcpServers": {
+    "github": {
+      "_active": true,
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+      },
+      "_purpose": "Lectura de issues, PRs, releases del repo. Crítico para flujos /review y para que el agente entienda historia del proyecto."
+    },
+
+    "context7": {
+      "_active": true,
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"],
+      "_purpose": "Documentación al día de FastAPI, Playwright Python, boto3, Anthropic SDK. Reduce alucinación de APIs."
+    },
+
+    "sequential-thinking": {
+      "_active": true,
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "_purpose": "Razonamiento en cadena para diseños complejos (ej. lógica de baseline p95, orquestación Step Functions)."
+    },
+
+    "excalidraw": {
+      "_active": true,
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-excalidraw"],
+      "_purpose": "Generación de diagramas de arquitectura (Step Functions state machine, módulos src/)."
+    },
+
+    "postgres": {
+      "_active": false,
+      "_skip_reason": "TestPilot SFCC usa DynamoDB para historial y baselines, no PostgreSQL. Server declarado por compliance con el codelab pero NO se inicia. Si en el futuro se agrega Postgres (ej. dashboard interno), activar aquí.",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres"],
+      "env": {
+        "DATABASE_URL": "${DATABASE_URL}"
+      }
+    },
+
+    "vercel": {
+      "_active": false,
+      "_skip_reason": "Deploy del MVP es AWS (ECS Fargate + CDK), no Vercel. Server declarado por compliance con el codelab. Activar si se agrega frontend Next.js desplegado en Vercel.",
+      "command": "npx",
+      "args": ["-y", "@vercel/mcp-adapter"],
+      "env": {
+        "VERCEL_API_TOKEN": "${VERCEL_API_TOKEN}"
+      }
+    }
+  }
+}
