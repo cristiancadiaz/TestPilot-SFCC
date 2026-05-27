@@ -1,0 +1,218 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://testpilot.pash.internal/specs/v1/execution_report.schema.json",
+  "title": "ExecutionReport",
+  "description": "Contrato de salida del endpoint POST /v1/run y GET /v1/runs/{run_id}. Consumido por agentes CI/CD y el dashboard. `orders_created` no se publica en el JSON — la invariante se valida internamente vía assert (BR-U3-01) y se documenta solo en el reporte Markdown. Cualquier cambio de campo es BREAKING.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "run_id",
+    "environment_id",
+    "started_at",
+    "finished_at",
+    "duration_ms",
+    "traffic_light",
+    "bootstrap_mode",
+    "profile_results"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUID v4 del run. Generado por el orquestador al inicio."
+    },
+    "environment_id": {
+      "type": "string",
+      "enum": ["sandbox", "development", "staging"],
+      "description": "Ambiente SFCC donde se ejecutó el run."
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp ISO 8601 de inicio del run."
+    },
+    "finished_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp ISO 8601 de finalización del run."
+    },
+    "duration_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Duración total del run en milisegundos."
+    },
+    "traffic_light": {
+      "type": "string",
+      "enum": ["green", "yellow", "red"],
+      "description": "Semáforo global del run. Verde=OK, Amarillo=degradación o error de infra, Rojo=fallo funcional. Es el peor semáforo entre todos los perfiles ejecutados."
+    },
+    "bootstrap_mode": {
+      "type": "boolean",
+      "description": "True si hay menos de 14 runs exitosos en el baseline (BOOTSTRAP_MIN_RUNS). En modo bootstrap el semáforo nunca es YELLOW por comparación p95 — solo verde o rojo."
+    },
+    "profile_results": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/ProfileResult" },
+      "description": "Resultados por combinación perfil × flow ejecutada."
+    },
+    "baseline_comparison": {
+      "oneOf": [
+        { "$ref": "#/$defs/BaselineComparison" },
+        { "type": "null" }
+      ],
+      "description": "Comparación con baseline p95. Null si bootstrap_mode=true o no hay historial para esta combinación."
+    }
+  },
+  "$defs": {
+    "ProfileResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profile", "flow_result", "traffic_light"],
+      "properties": {
+        "profile": { "$ref": "#/$defs/BrowserProfile" },
+        "flow_result": { "$ref": "#/$defs/FlowResult" },
+        "traffic_light": {
+          "type": "string",
+          "enum": ["green", "yellow", "red"]
+        }
+      }
+    },
+    "BrowserProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "viewport_width", "viewport_height", "locale", "user_agent", "is_mobile"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "enum": ["mobile_co", "desktop_co", "desktop_ec"]
+        },
+        "viewport_width": { "type": "integer", "minimum": 320 },
+        "viewport_height": { "type": "integer", "minimum": 480 },
+        "locale": { "type": "string", "minLength": 2, "maxLength": 10 },
+        "user_agent": { "type": "string", "minLength": 10 },
+        "is_mobile": { "type": "boolean" }
+      }
+    },
+    "FlowResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["flow_name", "status", "steps", "duration_ms"],
+      "properties": {
+        "flow_name": {
+          "type": "string",
+          "enum": ["checkout_full", "checkout_card_declined"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["success", "failed", "error"],
+          "description": "success=todos los pasos OK; failed=fallo funcional de la app; error=error de infraestructura (Playwright, red, DNS)."
+        },
+        "steps": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/StepResult" }
+        },
+        "duration_ms": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "StepResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "status", "duration_ms"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Nombre del paso: env_access_auth, shopper_login, search_product, category_page, pdp_variant_select, add_to_cart, mini_cart_validation, checkout_shipping, checkout_payment, payment_failure_validation, verify_decline_message."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["success", "failed", "skipped"],
+          "description": "skipped si un paso previo falló."
+        },
+        "duration_ms": { "type": "integer", "minimum": 0 },
+        "error": {
+          "oneOf": [{ "type": "string" }, { "type": "null" }],
+          "description": "Mensaje de error redactado (sin credenciales ni stack traces). Null si status=success."
+        },
+        "screenshot_url": {
+          "oneOf": [{ "type": "string" }, { "type": "null" }],
+          "description": "Path S3 relativo al screenshot. Solo presente si screenshot_state tiene valor (fallo o paso final)."
+        },
+        "screenshot_state": {
+          "oneOf": [
+            { "type": "string", "enum": ["fail", "final"] },
+            { "type": "null" }
+          ],
+          "description": "INVARIANTE: solo 'fail' (paso fallido) o 'final' (último paso del flow). Nunca capturamos pasos OK intermedios (ADR-002)."
+        }
+      }
+    },
+    "BaselineComparison": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["p95_ms", "current_ms", "bootstrap_mode", "runs_count"],
+      "properties": {
+        "p95_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Percentil 95 de duration_ms de los últimos BASELINE_WINDOW=10 runs exitosos para esta combinación perfil+flow+environment."
+        },
+        "current_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "duration_ms del run actual."
+        },
+        "bootstrap_mode": {
+          "type": "boolean",
+          "description": "True si runs_count < BOOTSTRAP_MIN_RUNS (14)."
+        },
+        "runs_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Número de runs exitosos disponibles en el baseline para esta combinación."
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "run_id": "550e8400-e29b-41d4-a716-446655440000",
+      "environment_id": "staging",
+      "started_at": "2026-05-27T10:00:00Z",
+      "finished_at": "2026-05-27T10:08:30Z",
+      "duration_ms": 510000,
+      "traffic_light": "green",
+      "bootstrap_mode": false,
+      "profile_results": [
+        {
+          "profile": {
+            "name": "mobile_co",
+            "viewport_width": 390,
+            "viewport_height": 844,
+            "locale": "es-CO",
+            "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15",
+            "is_mobile": true
+          },
+          "flow_result": {
+            "flow_name": "checkout_full",
+            "status": "success",
+            "duration_ms": 165000,
+            "steps": [
+              { "name": "env_access_auth", "status": "success", "duration_ms": 1200, "error": null, "screenshot_url": null, "screenshot_state": null },
+              { "name": "shopper_login", "status": "success", "duration_ms": 4500, "error": null, "screenshot_url": null, "screenshot_state": null },
+              { "name": "payment_failure_validation", "status": "success", "duration_ms": 3200, "error": null, "screenshot_url": "runs/550e8400/mobile_co/checkout_full/final.png", "screenshot_state": "final" }
+            ]
+          },
+          "traffic_light": "green"
+        }
+      ],
+      "baseline_comparison": {
+        "p95_ms": 185000,
+        "current_ms": 165000,
+        "bootstrap_mode": false,
+        "runs_count": 18
+      }
+    }
+  ]
+}
