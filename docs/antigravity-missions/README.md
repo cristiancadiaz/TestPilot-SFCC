@@ -2,6 +2,8 @@
 
 Planes de misión diseñados para ejecutarse **en paralelo** sobre Antigravity Mission Control. Cada misión es un brief autocontenido que un agente externo (Antigravity) ejecuta en una rama independiente, sin colisionar con las otras.
 
+> 📖 **Antes de ejecutar nada, lee** [`objetivo-de-la-tarea.md`](./objetivo-de-la-tarea.md) — explica el porqué del ejercicio (cambio de paradigma del commit al artifact, decision matrix Claude Code vs Antigravity, context engineering como test cruzado).
+
 ## Misiones activas
 
 | Mission | Branch | Módulo objetivo | Estado |
