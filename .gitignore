@@ -9,20 +9,27 @@
 
 
 # --------------------------------------------------------------------------------
-# IA generated files
+# IA — capa operativa por herramienta (local, NO versionada)
 # --------------------------------------------------------------------------------
 .github/agents/
 .codex/
 .opencode/
-.ai
 .claude
 .obsidian
 
-AGENTS.md
 CLAUDE.md
+
+# Capa neutral cross-tool SÍ versionada (ver .ai/roster.md): AGENTS.md y .ai/
+# — antes ignoradas; ahora se trackean para compartir entre herramientas y equipo.
 
 # --------------------------------------------------------------------------------
 # format ai-dlc files
 # --------------------------------------------------------------------------------
 .aidlc-rules
 .hardcore-ai
+
+# --------------------------------------------------------------------------------
+# transient orchestration state (only README.md is versioned)
+# --------------------------------------------------------------------------------
+progress/*
+!progress/README.md
