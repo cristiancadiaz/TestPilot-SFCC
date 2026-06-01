@@ -19,17 +19,18 @@ U0 es prerrequisito de todas las demás unidades (ver `build-sequence.md`).
 `src/models.py`, eliminar la duplicación en `translator.py` y `api/main.py`, y
 verificar el Gate de U0.
 
-- TASK-003 — `src/models.py` (modelos Pydantic unificados)
+- TASK-003 — `src/models.py` (modelos Pydantic unificados, espeja el schema)
 - TASK-004 — `tests/test_models.py`
-- TASK-005 — Refactor `translator.py` + `api/main.py` → import de `src.models`
 - TASK-006 — Verificación de Gate U0 + `code-summary.md`
 
-**Exit criteria:** `mypy src/` exit 0 · `uv run pytest` exit 0 · tests existentes siguen pasando · Gate 1 de `build-sequence.md` verde.
+> TASK-005 (dedupe de `translator.py`/`api/main.py`) quedó **diferida a U4**: ese
+> scaffolding no existe aún, no hay nada que refactorizar en U0 (alcance greenfield).
+
+**Exit criteria:** `mypy src/` exit 0 · `uv run pytest` exit 0 (`test_models.py`) · `docker build` completa · Gate 1 de `build-sequence.md` verde.
 
 ## Dependencias (resumen)
 
 ```
-TASK-001 ─┬─> TASK-002 ─────────────┐
-          └─> TASK-003 ─┬─> TASK-004 ─┼─> TASK-006
-                        └─> TASK-005 ─┘
+TASK-001 ─┬─> TASK-002 ───────────────┐
+          └─> TASK-003 ──> TASK-004 ───┴─> TASK-006
 ```

@@ -9,6 +9,13 @@ blocks: [TASK-006]
 parent: null
 ---
 
+> ⚠️ **DIFERIDA — fuera del alcance greenfield de U0.** Esta tarea asume que
+> `src/agents/translator.py` y `src/api/main.py` ya existen con un `SyntheticUserConfig`
+> duplicado, pero **ese scaffolding no existe** en el repo (ni en el workspace viejo).
+> No hay nada que deduplicar todavía. La deduplicación pertenece a **cuando ese código
+> exista** (unidad U4 / misión de API scaffolding). **NO está en el manifest de U0**
+> (`task-package.yaml`) y no se publica en Linear como parte de esta ola.
+
 ## Summary
 Eliminar las definiciones duplicadas de `SyntheticUserConfig` en `src/agents/translator.py` y `src/api/main.py`, importándola desde `src.models`, y actualizar el modelo Claude a una versión vigente (RF-02, RF-03).
 

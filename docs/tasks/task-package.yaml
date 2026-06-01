@@ -21,9 +21,6 @@ tasks:
   - id: TASK-004
     file: docs/tasks/004-models-tests.md
     milestone: "M2: Shared Models Unification"
-  - id: TASK-005
-    file: docs/tasks/005-import-refactor.md
-    milestone: "M2: Shared Models Unification"
   - id: TASK-006
     file: docs/tasks/006-u0-gate-and-summary.md
     milestone: "M2: Shared Models Unification"
