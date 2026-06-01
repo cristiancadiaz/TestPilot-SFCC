@@ -6,7 +6,7 @@
 |--------|-----------------|-------------------|--------|
 | `src/agents/translator.py` | test_translator.py (5 clases, 9 tests) | ~80% | Buena |
 | `src/api/main.py` | No existen tests directos de la API | ~0% | Ausente |
-| `specs/synthetic_user_config.json` | test_schemas.py (8 tests) | 100% | Completa |
+| `specs/synthetic-user-config.schema.json` | test_schemas.py (8 tests) | 100% | Completa |
 | `specs/execution_report.schema.json` | test_schemas.py (8 tests) | 100% | Completa |
 | `src/executor/` | N/A (no implementado) | N/A | Pendiente |
 | `src/baseline/` | N/A (no implementado) | N/A | Pendiente |

@@ -6,7 +6,7 @@
 |--------|----------|--------|-----------|
 | `src/agents/` | translator.py, __init__.py | Implementado | NL → SyntheticUserConfig vía Claude API |
 | `src/api/` | main.py, __init__.py | Implementado (parcial) | Endpoint REST POST /v1/run |
-| `specs/` | synthetic_user_config.json, execution_report.schema.json | Implementado | Contratos JSON Schema de la API |
+| `specs/` | synthetic-user-config.schema.json, execution_report.schema.json | Implementado | Contratos JSON Schema de la API |
 | `tests/` | test_schemas.py, test_translator.py | Implementado | Tests unitarios de schemas y traductor |
 
 ## Application Packages (Pending)

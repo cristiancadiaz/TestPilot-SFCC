@@ -78,7 +78,7 @@
 - **Purpose**: Punto de entrada REST para ingenieros y agentes downstream
 - **Responsibilities**: Exponer POST /v1/run con validación Pydantic, retornar 202 Accepted con testRunId, retornar 422 con errores descriptivos
 
-### specs/synthetic_user_config.json
+### specs/synthetic-user-config.schema.json
 - **Purpose**: Contrato de entrada — source of truth del schema de configuración
 - **Responsibilities**: Definir catálogo cerrado de flows y profiles, patrón de email, rango de timeout
 

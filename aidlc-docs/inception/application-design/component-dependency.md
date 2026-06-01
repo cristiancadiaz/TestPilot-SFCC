@@ -146,7 +146,7 @@
 | `src/agents/__init__.py` | Patch | Sin cambio de lógica |
 | `src/api/__init__.py` | Patch | Sin cambio de lógica |
 | `tests/test_translator.py` | Minor | Actualizar mocks para el nuevo formato de `SyntheticUserConfig` (sin credenciales) |
-| `tests/test_schemas.py` | **MAJOR** | Schema `synthetic_user_config.json` cambia substancialmente (campos eliminados/agregados) — el test debe actualizarse |
+| `tests/test_schemas.py` | **MAJOR** | Schema `synthetic-user-config.schema.json` cambia substancialmente (campos eliminados/agregados) — el test debe actualizarse |
 | `tests/test_api.py` | **NUEVO** | Tests por endpoint con FastAPI TestClient |
 
 ## Archivos nuevos en código

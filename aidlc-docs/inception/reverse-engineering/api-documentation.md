@@ -90,11 +90,11 @@
 
 #### _load_schema() -> dict
 - **Parameters**: ninguno
-- **Returns**: JSON Schema dict desde `specs/synthetic_user_config.json`
+- **Returns**: JSON Schema dict desde `specs/synthetic-user-config.schema.json`
 
 ## Data Models
 
-### SyntheticUserConfig (specs/synthetic_user_config.json + Pydantic)
+### SyntheticUserConfig (specs/synthetic-user-config.schema.json + Pydantic)
 | Campo | Tipo | Requerido | Validación |
 |-------|------|-----------|------------|
 | testRunId | string (UUID) | Sí | Formato UUID v4 |

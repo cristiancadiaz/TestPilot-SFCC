@@ -39,7 +39,7 @@ Estas decisiones se tomaron en revisión del 2026-05-22 y aplican transversalmen
 **AC**:
 - AC1. `SyntheticUserConfig` está definido únicamente en `src/models.py`.
 - AC2. `src/agents/translator.py` y `src/api/main.py` lo importan desde `src.models` (no lo redefinen).
-- AC3. Test (`test_models.py`) verifica que se puede instanciar con todos los campos del JSON Schema (`specs/synthetic_user_config.json`).
+- AC3. Test (`test_models.py`) verifica que se puede instanciar con todos los campos del JSON Schema (`specs/synthetic-user-config.schema.json`).
 - AC4. `grep -rn "class SyntheticUserConfig" src/` retorna exactamente 1 línea.
 
 **Origen PRD**: TD1, deuda técnica crítica.
@@ -287,7 +287,7 @@ Estas decisiones se tomaron en revisión del 2026-05-22 y aplican transversalmen
 
 **AC**:
 - AC1. `POST /v1/run` recibe un `SyntheticUserConfig` estructurado (Pydantic): `{environment_id, products[], flows[], profiles[], capture_intermediate_screenshots=false}`. Sin credenciales en el payload — el backend las resuelve desde Secrets Manager vía `environment_id`.
-- AC2. Si el payload no valida contra `synthetic_user_config.json` (vía Pydantic), el endpoint retorna 422 con `{error_code: "validation_failed", details: "..."}`. (Translator NL queda fuera del path principal — ver D8 actualizada).
+- AC2. Si el payload no valida contra `synthetic-user-config.schema.json` (vía Pydantic), el endpoint retorna 422 con `{error_code: "validation_failed", details: "..."}`. (Translator NL queda fuera del path principal — ver D8 actualizada).
 - AC3. El servidor genera `run_id` como UUID4 server-side (idempotencia con `Idempotency-Key` header queda en SHOULD HAVE, no MVP).
 - AC4. La respuesta incluye `testRunId` en el body y `X-Run-Id` en el header.
 - AC5. Timeout global del run: 1800s (30 min, env var override `RUN_TIMEOUT_SECONDS`). Si lo excede → 504 con `{error_code: "run_timeout"}`. *(actualizado 2026-05-24 — el flow con dos autenticaciones + 10 pasos × 3 perfiles requiere mayor margen)*

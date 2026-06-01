@@ -158,7 +158,7 @@
 ### RF-13: Integración POST /v1/run con Executor
 - **Descripción**: El endpoint `POST /v1/run` recibe un `SyntheticUserConfig` estructurado, resuelve el ambiente y ejecuta los flows en paralelo.
 - **Criterios de aceptación**:
-  - El endpoint recibe directamente un payload `SyntheticUserConfig` (ver `specs/synthetic_user_config.json`) — el translator NL ya NO es la entrada principal
+  - El endpoint recibe directamente un payload `SyntheticUserConfig` (ver `specs/synthetic-user-config.schema.json`) — el translator NL ya NO es la entrada principal
   - El backend resuelve `env_access_credentials` (testpilot/{env}/env-access) y `shopper_credentials` (testpilot/{env}/shopper) desde Secrets Manager usando el `environment_id` del payload
   - Llama a `run_profile()` por cada perfil en paralelo via `asyncio.gather` con cap `MAX_CONCURRENT_PROFILES=3` (D1)
   - Al completar, guarda el `ExecutionReport` en el `BaselineStore`

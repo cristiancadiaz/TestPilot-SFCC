@@ -10,7 +10,7 @@
 - `src/agents/__init__.py`
 - `src/api/main.py`
 - `src/api/__init__.py`
-- `specs/synthetic_user_config.json`
+- `specs/synthetic-user-config.schema.json`
 - `specs/execution_report.schema.json`
 - `tests/test_schemas.py`
 - `tests/test_translator.py`

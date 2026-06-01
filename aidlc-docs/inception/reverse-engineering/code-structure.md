@@ -18,7 +18,7 @@ src/
     +-- main.py              # FastAPI app, POST /v1/run, modelos Pydantic
 
 specs/
-+-- synthetic_user_config.json   # JSON Schema v Draft-07 (input contract)
++-- synthetic-user-config.schema.json   # JSON Schema v Draft-07 (input contract)
 +-- execution_report.schema.json        # JSON Schema v Draft-07 (output contract)
 
 tests/
@@ -52,7 +52,7 @@ infra/                                (pendiente - AWS CDK)
 - `src/agents/translator.py` — Agente LLM: NL → SyntheticUserConfig. Constantes: FLOWS, PROFILES, MAX_RETRIES. Clases: SyntheticUserConfig (Pydantic), TranslatorError. Funciones: translate(), _validate_config(), _build_prompt(), _load_schema()
 - `src/api/__init__.py` — Re-exporta `app` desde main.py
 - `src/api/main.py` — FastAPI app. Modelos Pydantic: SyntheticUserConfig, RunResponse. Endpoint: POST /v1/run → 202 Accepted con {testRunId, status: "queued"}
-- `specs/synthetic_user_config.json` — JSON Schema draft-07. Campos: testRunId (UUID), environment_id (enum: sandbox|development|staging), products[] (search_term + validate_variant), flows[] (enum closed), profiles[] (enum closed: mobile_co|desktop_co|desktop_ec), screenshot_on_success/error (bool), timeout (30000-180000). Sin credenciales.
+- `specs/synthetic-user-config.schema.json` — JSON Schema draft-07. Campos: testRunId (UUID), environment_id (enum: sandbox|development|staging), products[] (search_term + validate_variant), flows[] (enum closed), profiles[] (enum closed: mobile_co|desktop_co|desktop_ec), screenshot_on_success/error (bool), timeout (30000-180000). Sin credenciales.
 - `specs/execution_report.schema.json` — JSON Schema draft-07. Campos: testRunId, status (success/failed/error), trafficLight (green/yellow/red), startedAt, finishedAt, durationMs, steps[], config{}, baselineComparison{p95BaselineMs, percentDiff, bootstrapMode}
 - `tests/test_schemas.py` — Tests pytest para ambos JSON schemas con jsonschema.Draft7Validator. Clases: TestSyntheticUserConfigSchema, TestExecutionReportSchema
 - `tests/test_translator.py` — Tests pytest con mocks de anthropic.Anthropic. Clases: TestLoadSchema, TestValidateConfig, TestBuildPrompt, TestTranslate
@@ -99,7 +99,7 @@ infra/                                (pendiente - AWS CDK)
 ### jsonschema
 - **Version**: No especificada
 - **Usage**: `src/agents/translator.py:_validate_config()` y `tests/test_schemas.py`
-- **Purpose**: Validación de configs contra specs/synthetic_user_config.json
+- **Purpose**: Validación de configs contra specs/synthetic-user-config.schema.json
 
 ### pytest
 - **Version**: No especificada
