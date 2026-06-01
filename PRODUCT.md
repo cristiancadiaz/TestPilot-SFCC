@@ -24,7 +24,7 @@ Tres consumidores, en orden de poder de decisión:
 | **Ingeniero del equipo** | Usuario diario. Hace deploys y fixes. | Qué se rompió, **dónde** (URL, paso, screenshot, error) e historial comparable de performance. |
 | **Otros agentes / CI/CD** | Consumidor indirecto vía API. | JSON con schema estable y versionado, latencia acotada, semáforo legible por máquina. |
 
-**Explícitamente NO es para:** público externo, marketing, ni demos comerciales. Es una herramienta operativa de ingeniería. Detalle completo en [`docs/icp.md`](./docs/icp.md).
+**Explícitamente NO es para:** público externo, marketing, ni demos comerciales. Es una herramienta operativa de ingeniería. Detalle completo en [`docs/product/icp.md`](./docs/product/icp.md).
 
 ## 3. Propósito y valor
 

@@ -2,7 +2,9 @@
 
 **Propósito**: Fuente única de verdad para todas las variables de entorno del sistema. Cualquier variable nueva debe agregarse aquí antes de usarse en código.
 
-**Cambio mayor 2026-05-24:** se agregan 6 env vars nuevas para los servicios de U4 (DynamoDB, S3, Secrets Manager, dashboard, docs). `RUN_TIMEOUT_S` renombrado a `RUN_TIMEOUT_SECONDS` con valor actualizado de 480 → **1800** (30 min) por el flow con dos autenticaciones + 10 pasos × 3 perfiles. Catálogo de naming actualizado a guion en strings canónicos.
+**Cambio mayor 2026-05-24:** se agregan 6 env vars nuevas para los servicios de U4 (DynamoDB, S3, Secrets Manager, dashboard, docs). `RUN_TIMEOUT_S` renombrado a `RUN_TIMEOUT_SECONDS` con valor actualizado de 480 → **1800** (30 min) por el flow con dos autenticaciones + 10 pasos × 3 perfiles.
+
+**Nota de vigencia 2026-05-31:** el contrato canónico actual vive en `specs/synthetic-user-config.schema.json` y usa underscore en valores externos (`checkout_full`, `mobile_co`). Las menciones antiguas a guion en artefactos derivados deben reconciliarse antes de implementar.
 
 ---
 
@@ -74,8 +76,8 @@ Estas se manejan como constantes en `src/models.py` o módulos correspondientes,
 | `BASELINE_WINDOW` | `10` | `src/baseline/baseline_manager.py` |
 | `YELLOW_THRESHOLD` | `1.2` | `src/baseline/baseline_manager.py` |
 | `RED_THRESHOLD` | `1.5` | `src/baseline/baseline_manager.py` |
-| `FLOWS` | `("checkout-full", "checkout-card-declined")` | `src/models.py` (Literal) |
-| `PROFILES` | `("mobile-co", "desktop-co", "desktop-ec")` | `src/models.py` (Literal) |
+| `FLOWS` | `("checkout_full", "checkout_card_declined")` | `src/models.py` (Literal) |
+| `PROFILES` | `("mobile_co", "desktop_co", "desktop_ec")` | `src/models.py` (Literal) |
 | `ENVIRONMENTS` | `("sandbox", "development", "staging")` | `src/models.py` (Literal) |
 | `DECLINE_MESSAGE_PATTERN` | `r"tarjeta.*(rechaz\|declin)"` (regex, case-insensitive) | `src/executor/selectors.py` |
 | `RUN_LIVE_MAX` | `100` | `src/api/services/live_status_tracker.py` |
@@ -86,9 +88,9 @@ Estas se manejan como constantes en `src/models.py` o módulos correspondientes,
 
 ### Convención de naming (★ actualizada 2026-05-24)
 
-**Strings canónicos (Literal, JSON, URLs, logs, screenshots paths):** usar **guion**.
-- `"checkout-full"`, `"checkout-card-declined"`
-- `"mobile-co"`, `"desktop-co"`, `"desktop-ec"`
+**Strings canónicos (Literal, JSON, URLs, logs, screenshots paths):** usar **underscore**, alineado con `specs/synthetic-user-config.schema.json`.
+- `"checkout_full"`, `"checkout_card_declined"`
+- `"mobile_co"`, `"desktop_co"`, `"desktop_ec"`
 - `"sandbox"`, `"development"`, `"staging"`
 
 **Archivos Python:** usar **underscore** (restricción del lenguaje — no permite guion en módulos).
@@ -105,7 +107,7 @@ Estas se manejan como constantes en `src/models.py` o módulos correspondientes,
 **Env vars:** usar **SCREAMING_SNAKE_CASE** con underscore (estándar Unix).
 - `TESTPILOT_API_KEY`, `DYNAMODB_TABLE_ENVIRONMENTS`, `RUN_TIMEOUT_SECONDS`
 
-**Regla mnemotécnica:** el guion es para el "mundo exterior" (JSON, URLs, valores que el dashboard y agentes CI/CD consumen). El underscore es para el "mundo interior" Python.
+**Regla mnemotécnica:** el contrato externo y el mundo Python comparten underscore para evitar traducciones innecesarias. Los textos de UI pueden mostrar labels humanos, pero no deben cambiar los valores del contrato.
 
 ---
 

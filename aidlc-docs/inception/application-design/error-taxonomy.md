@@ -183,7 +183,7 @@ Single exception handler registrado vía `app.add_exception_handler(TestPilotApi
 ## 6. Decisiones implícitas explicitadas
 
 ### 6.1. Múltiples errores en un mismo run
-Si el perfil `mobile-co` falla con app-error y `desktop-co` falla con infra-error, el run completo es `error` (precedencia). El reporte Markdown debe identificar qué perfil tuvo cada tipo.
+Si el perfil `mobile_co` falla con app-error y `desktop_co` falla con infra-error, el run completo es `error` (precedencia). El reporte Markdown debe identificar qué perfil tuvo cada tipo.
 
 ### 6.2. Step que falla validación de monto/precio
 Si en el futuro se agrega un step que valida montos del carrito (Journey 4 del PRD aplazado), se marca como `failed` con `error="amount_mismatch"`. MVP no implementa esto.

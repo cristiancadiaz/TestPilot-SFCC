@@ -195,7 +195,7 @@ Un `GET /v1/runs/{id}` tiene `request_id` y consulta un `run_id` existente. Un `
 | Profile run start | INFO | `testpilot.executor` | Timeline del run |
 | Step completed (cada uno) | DEBUG | `testpilot.executor` | Troubleshooting profundo |
 | Step failed | WARNING | `testpilot.executor` | Bug en tienda o test |
-| InfrastructureError | ERROR | `testpilot.executor` | R1 del CLAUDE.md |
+| InfrastructureError | ERROR | `testpilot.executor` | Invariante de cero contaminación en `PRODUCT.md` / `AGENTS.md` |
 | Profile run completed | INFO | `testpilot.executor` | Cierre del timeline |
 | Baseline p95 calculated | DEBUG | `testpilot.baseline` | Visibilidad estadística |
 | Bootstrap mode active | INFO | `testpilot.baseline` | Saber si estamos en bootstrap |

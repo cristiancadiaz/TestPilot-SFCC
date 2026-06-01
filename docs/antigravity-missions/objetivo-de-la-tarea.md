@@ -46,7 +46,7 @@ No hay una herramienta "mejor". Hay tareas distintas:
 
 ---
 
-## 4. Demostrar control con `CLAUDE.md` / `AGENTS.md` / `specs/`
+## 4. Demostrar control con `AGENTS.md` / `PRODUCT.md` / `specs/`
 
 Esta es la prueba ácida del **Context Engineering** que se planteó en la sección 2 del codelab.
 
@@ -59,7 +59,7 @@ Dos agentes distintos, en sesiones distintas, **leyendo los mismos archivos de c
 
 Si los 2 diffs salen coherentes entre sí sin que tú hayas re-explicado nada, **es la evidencia de que tu context engineering funciona.** Si salen contradictorios, sabes que `AGENTS.md` tiene huecos.
 
-> **En TestPilot:** ambas misiones referencian `CLAUDE.md` § Hard Invariants. Si Mission 1 expone un endpoint que acepta `environment_id: "production"`, sabes que tu contexto falló. Si Mission 2 emite alertas yellow con 5 runs, también. Las 2 sesiones son tu test cruzado del contexto.
+> **En TestPilot:** ambas misiones referencian `AGENTS.md`, `PRODUCT.md` y `specs/*.json`. Si Mission 1 expone un endpoint que acepta `environment_id: "production"`, sabes que tu contexto falló. Si Mission 2 emite alertas yellow con 5 runs, también. Las 2 sesiones son tu test cruzado del contexto.
 
 ---
 
@@ -67,7 +67,7 @@ Si los 2 diffs salen coherentes entre sí sin que tú hayas re-explicado nada, *
 
 La consecuencia económica del agentic development no es que escribes código más rápido — es que **dejas de escribir código**. Tu trabajo se vuelve:
 
-- Diseñar el contexto (CLAUDE.md, AGENTS.md, schemas).
+- Diseñar el contexto (`AGENTS.md`, `PRODUCT.md`, schemas).
 - Acotar misiones (los archivos en `docs/antigravity-missions/`).
 - Aprobar/rechazar planes propuestos.
 - Revisar diffs.
@@ -84,7 +84,7 @@ Es la transición **escritor → arquitecto/revisor**. Y es el cambio de identid
 Cuando entregues los 2 planes + 2 diffs, estás demostrando 4 cosas a la vez:
 
 1. ✅ Sabes descomponer trabajo en unidades independientes.
-2. ✅ Tu contexto (`CLAUDE.md`, `AGENTS.md`, `specs/`) es suficientemente bueno para que 2 agentes lo respeten sin tu intervención.
+2. ✅ Tu contexto (`AGENTS.md`, `PRODUCT.md`, `specs/`) es suficientemente bueno para que 2 agentes lo respeten sin tu intervención.
 3. ✅ Entiendes cuándo Antigravity es la herramienta correcta (vs. Claude Code).
 4. ✅ Cambiaste de modo "escritor de código" a modo "revisor de artefactos".
 

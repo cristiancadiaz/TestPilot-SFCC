@@ -13,6 +13,7 @@ Planes de misión diseñados para ejecutarse **en paralelo** sobre Antigravity M
 
 ## Cómo se usa
 
+0. Verificar [`../definition-of-ready.md`](../definition-of-ready.md) contra la misión que se va a ejecutar. Si falla algún punto, reconciliar la misión antes de abrir Antigravity.
 1. Abrir Antigravity Mission Control.
 2. Crear una sesión por misión (2 sesiones en paralelo).
 3. En cada sesión, pegar el contenido del archivo `mission-N-*.md` como instrucción inicial.
@@ -32,3 +33,4 @@ Planes de misión diseñados para ejecutarse **en paralelo** sobre Antigravity M
 - **Contexto-first.** Cada misión declara explícitamente qué archivos leer antes de empezar. El agente no debe descubrir el contexto por exploración libre — eso aumenta el costo de tokens y la varianza.
 - **Constraints explícitas.** Cada misión declara qué NO puede tocar. Esto reemplaza el "hubiera estado bien que…" del review humano.
 - **Verificación reproducible.** Cada misión incluye los comandos exactos de verificación al final. El agente debe pegarlos en el PR description.
+- **Fuentes canónicas primero.** Si una misión contradice `PRODUCT.md`, `AGENTS.md` o `specs/*.json`, gana la fuente canónica y la misión debe corregirse antes de ejecutar.

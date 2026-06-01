@@ -149,7 +149,7 @@ Estas decisiones se tomaron en revisión del 2026-05-22 y aplican transversalmen
 - AC3. La ruta se controla por env var `SCREENSHOT_DIR`. Default `./screenshots` cuando `ENV != "production"`; cuando `ENV == "production"`, la app falla en startup si la env var no está seteada o si no existe `S3_BUCKET_SCREENSHOTS`. Naming: `{run_id}/{perfil}/{flujo}/{paso}-{fail|final}.png`.
 - AC4. Test: un flow exitoso de 10 steps produce exactamente 1 screenshot final; un flow con un fallo produce screenshot del fallo y, si aplica, screenshot final del estado terminal.
 
-**Origen PRD**: BR-U1-04, "Screenshot discipline" del CLAUDE.md. **Decisión**: D5.
+**Origen PRD**: BR-U1-04, "Screenshot discipline" de `PRODUCT.md` / `AGENTS.md`. **Decisión**: D5.
 
 ---
 

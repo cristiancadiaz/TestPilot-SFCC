@@ -36,6 +36,26 @@
 
 ---
 
+## Documentation Reorganization
+
+**Timestamp**: 2026-05-31T19:45:00-05:00
+
+**User Input**: "todo lo que me permita una mejor lectura del proyecto es mejor, ejecuta tu propuesta"
+
+**AI Response**: Documentation was reorganized for healthier navigation: `specs/` now contains only API contracts, the PRD snapshot moved to `docs/product/prd-2026-05-22.md`, product/research documents moved under `docs/product/` and `docs/research/`, and index READMEs were added.
+
+**Artifacts**:
+
+- `docs/README.md`
+- `docs/product/README.md`
+- `docs/product/prd-2026-05-22.md`
+- `docs/research/README.md`
+- `aidlc-docs/README.md`
+
+**Context**: Historical audit entries may still quote the original path `specs/prd.md` because they preserve the prompt history. For current navigation, use `docs/README.md`.
+
+---
+
 ## Requirements Analysis
 
 **Timestamp**: 2026-05-20T00:10:00Z

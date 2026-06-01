@@ -11,10 +11,10 @@
 | RF-01 | pyproject.toml con dependencias, ruff, mypy + Dockerfile multi-stage | U0 | Deuda técnica crítica |
 | RF-02 | src/models.py — modelos unificados (incluyendo EnvironmentConfig, credenciales duales, ResolvedEnvironment, RunStatus) | U0 | Deuda técnica crítica |
 | RF-03 | Actualizar modelo Claude a `claude-haiku-4-5-20251001` | U0 | Deuda técnica |
-| RF-04 | BrowserProfiles: `mobile-co`, `desktop-co`, `desktop-ec` | U1 | M3 |
+| RF-04 | BrowserProfiles: `mobile_co`, `desktop_co`, `desktop_ec` | U1 | M3 |
 | RF-05 | SFCCSelectors: catálogo centralizado (incluye `LOGIN_*` para shopper_login) | U1 | M4 (prerequisito) |
-| RF-06 | Flow `checkout-full` (10 pasos: env_access_auth + shopper_login + 8 funcionales; `orders_created=0`) | U1 | M4 |
-| RF-07 | Flow `checkout-card-declined` (10 pasos con `verify_decline_message` al final) | U1 | M4 |
+| RF-06 | Flow `checkout_full` (10 pasos: env_access_auth + shopper_login + 8 funcionales; `orders_created=0`) | U1 | M4 |
+| RF-07 | Flow `checkout_card_declined` (10 pasos con `verify_decline_message` al final) | U1 | M4 |
 | RF-08 | FlowRunner (orquestador local + `InfrastructureError` + `http_credentials` para env_access) | U1 | M4 |
 | RF-09 | BaselineManager (p95, bootstrap, semáforo, store con clave `(environment_id, profile, flow)`) | U2 | M10, M11, M12 |
 | RF-10 | ReportGenerator (JSON+MD+semáforo+invariante orders_created=0; baseline por ambiente) | U3 | M7, M8, M17 |
@@ -53,8 +53,8 @@
 |---------------|-------------|--------|
 | M1 POST /v1/run | U4 (integración) | Diseño completo |
 | M2 GET /v1/runs/ endpoints | U4 (incluyendo /status y listado paginado) | Diseño completo |
-| M3 3 perfiles (`mobile-co`, `desktop-co`, `desktop-ec`) | U1 | Diseño completo |
-| M4 2 flows Playwright (`checkout-full`, `checkout-card-declined`) | U1 | Diseño completo |
+| M3 3 perfiles (`mobile_co`, `desktop_co`, `desktop_ec`) | U1 | Diseño completo |
+| M4 2 flows Playwright (`checkout_full`, `checkout_card_declined`) | U1 | Diseño completo |
 | M5 LLM NL→config + validación | `src/agents/` existente | Implementado; queda como funcionalidad opcional (translator NL ya no es entrada principal — ver D8 actualizada) |
 | M6 Payment prueba + `@testpilot.internal` | U1 (flows) + U4 (assertion en orchestrator) | Diseño completo |
 | M7 Reporte JSON + Markdown | U3 | Diseño completo |

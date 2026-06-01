@@ -63,8 +63,8 @@ Feature: Structured Run Execution
     And Secrets Manager contains env_access credentials for "testpilot/staging/env-access"
     And Secrets Manager contains shopper credentials for "testpilot/staging/shopper"
     And the shopper email ends with "@testpilot.internal"
-    When the engineer sends POST /v1/run with flows "checkout-full" and "checkout-card-declined"
-    And profiles "mobile-co", "desktop-co", and "desktop-ec"
+    When the engineer sends POST /v1/run with flows "checkout_full" and "checkout_card_declined"
+    And profiles "mobile_co", "desktop_co", and "desktop_ec"
     Then the API validates the SyntheticUserConfig before execution
     And the API resolves storefront and credentials server-side
     And the executor starts one run per requested profile and flow
@@ -161,7 +161,7 @@ Feature: Baseline Bootstrap
   So that the team does not lose trust due to early false positives
 
   Scenario: Bootstrap mode prevents yellow performance alerts
-    Given there are 13 successful historical runs for profile "mobile-co" and flow "checkout-full"
+    Given there are 13 successful historical runs for profile "mobile_co" and flow "checkout_full"
     And the current run is slower than the preliminary p95
     When the baseline manager computes the traffic light
     Then bootstrapMode is true

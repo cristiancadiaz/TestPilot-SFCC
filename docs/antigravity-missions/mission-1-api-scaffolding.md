@@ -14,9 +14,9 @@ Levantar el endpoint `POST /v1/run` de FastAPI con validación estricta contra e
 ## Contexto que el agente debe cargar antes de empezar
 
 1. `AGENTS.md` — convenciones del proyecto.
-2. `CLAUDE.md` — invariantes (zero contamination, catálogo cerrado, JSON Schema gate).
+2. `PRODUCT.md` — invariantes de producto (zero contamination, catálogo cerrado, JSON Schema gate).
 3. `specs/synthetic-user-config.schema.json` — contrato canónico.
-4. `.claude/skills/validate-synthetic-config/SKILL.md` — referencia de cómo validamos.
+4. `docs/definition-of-ready.md` — checklist de readiness antes de implementar.
 
 ## Criterios de aceptación
 
@@ -25,11 +25,12 @@ Levantar el endpoint `POST /v1/run` de FastAPI con validación estricta contra e
 - [ ] Validación contra `specs/synthetic-user-config.schema.json` antes de Pydantic (la doble validación es intencional — el schema es el contrato cross-tool, Pydantic es la conveniencia de Python).
 - [ ] Endpoint devuelve `202 Accepted` con `{"run_id": "<uuid4>", "status": "queued"}` cuando el payload es válido.
 - [ ] Endpoint devuelve `400` con `application/problem+json` (RFC 7807) listando todas las violaciones del schema cuando el payload es inválido.
-- [ ] Endpoint devuelve `400` específicamente con código `invariant_violation` si falla un invariante del CLAUDE.md (email no `@testpilot.internal`, flow fuera del catálogo, `environment_id = "production"`).
+- [ ] Endpoint devuelve `400` específicamente con código `invariant_violation` si falla un invariante del producto (`shopper` enviado en payload, valor de `flows[]` fuera del catálogo, valor de `profiles[]` fuera del catálogo, `environment_id = "production"`).
 - [ ] Tests en `tests/test_api_v1_run.py`:
-  - happy path con cada uno de los 2 flows del catálogo.
-  - 400 cuando email no es `@testpilot.internal`.
-  - 400 cuando flow es `"checkout_partial"` (fuera del catálogo).
+  - happy path con cada uno de los 2 flows del catálogo usando `flows: [...]`.
+  - 400 cuando el payload incluye `shopper` (credenciales deben resolverse server-side).
+  - 400 cuando `flows` contiene `"checkout_partial"` (fuera del catálogo).
+  - 400 cuando `profiles` contiene `"tablet_co"` (fuera del catálogo).
   - 400 cuando `environment_id = "production"`.
   - 400 cuando faltan campos required.
 - [ ] `uv run pytest tests/test_api_v1_run.py -v` pasa al 100%.
@@ -68,12 +69,12 @@ uv run mypy --strict src/api/
 uv run uvicorn src.api.main:app --reload &
 curl -X POST http://localhost:8000/v1/run \
   -H "Content-Type: application/json" \
-  -d @.claude/skills/validate-synthetic-config/scripts/example_valid.json
+  -d '{"schema_version":"v1","environment_id":"staging","flows":["checkout_full"],"profiles":["mobile_co"],"products":[{"search_term":"camisa roja","validate_variant":true}]}'
 # esperado: 202 + {"run_id": "...", "status": "queued"}
 
 curl -X POST http://localhost:8000/v1/run \
   -H "Content-Type: application/json" \
-  -d @.claude/skills/validate-synthetic-config/scripts/example_invalid.json
+  -d '{"schema_version":"v1","environment_id":"production","flows":["checkout_partial"],"profiles":["tablet_co"],"products":[{"search_term":"X"}],"shopper":{"email":"user@gmail.com"},"options":{"capture_intermediate_screenshots":true},"debug_mode":true}'
 # esperado: 400 + application/problem+json con todas las violaciones
 ```
 

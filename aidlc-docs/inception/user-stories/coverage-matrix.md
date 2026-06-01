@@ -12,8 +12,8 @@
 |---|---|---|---|
 | M1 | POST /v1/run con instrucción NL | H4.1 (D8 actualizada — payload estructurado, no NL) | Completo |
 | M2 | GET /v1/runs/{run_id} + /v1/runs/latest + /v1/runs/{id}/status + /v1/runs (lista) | H4.2, H4.3, H5.3, H5.4 | Completo (expandido para soportar dashboard) |
-| M3 | 3 perfiles (`mobile-co`, `desktop-co`, `desktop-ec`) | H1.1 | Completo |
-| M4 | 2 flujos (`checkout-full`, `checkout-card-declined`) — 10 pasos cada uno | H1.2, H1.3 | Completo |
+| M3 | 3 perfiles (`mobile_co`, `desktop_co`, `desktop_ec`) | H1.1 | Completo |
+| M4 | 2 flujos (`checkout_full`, `checkout_card_declined`) — 10 pasos cada uno | H1.2, H1.3 | Completo |
 | M5 | LLM traduce NL → config + validación schema | (translator existente, funcionalidad opcional post-D8) | Disponible pero no en path principal |
 | M6 | Payment method de prueba + email `@testpilot.internal` | H1.2 (AC1, AC2) | Completo |
 | M7 | Reporte dual JSON + Markdown | H3.1, H3.2 | Completo |

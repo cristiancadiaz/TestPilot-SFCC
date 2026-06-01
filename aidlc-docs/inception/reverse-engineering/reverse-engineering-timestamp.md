@@ -19,7 +19,7 @@
 - `docs/features/feature-scope.md`
 - `docs/features/feature-agent-translation.md`
 - `docs/features/feature-api-endpoint.md`
-- `specs/prd.md`
+- `docs/product/prd-2026-05-22.md`
 - `prompts/ai-dlc-prompt.md`
 
 ## Artifacts Generated

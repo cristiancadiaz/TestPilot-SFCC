@@ -216,10 +216,10 @@ async def _pdp_variant_select(page: Page, validate_variant: bool) -> StepResult:
 async def _add_to_cart(page: Page) -> StepResult: ...
 async def _mini_cart_validation(page: Page) -> StepResult: ...
 async def _checkout_shipping(page: Page) -> StepResult: ...
-async def _checkout_payment(page: Page) -> StepResult: ...           # solo checkout-full
-async def _payment_failure_validation(page: Page) -> StepResult: ... # solo checkout-full
-async def _checkout_payment_declined(page: Page) -> StepResult: ...  # solo checkout-card-declined
-async def _verify_decline_message(page: Page) -> StepResult: ...     # solo checkout-card-declined
+async def _checkout_payment(page: Page) -> StepResult: ...           # solo checkout_full
+async def _payment_failure_validation(page: Page) -> StepResult: ... # solo checkout_full
+async def _checkout_payment_declined(page: Page) -> StepResult: ...  # solo checkout_card_declined
+async def _verify_decline_message(page: Page) -> StepResult: ...     # solo checkout_card_declined
 ```
 
 ---
@@ -548,4 +548,4 @@ function StepErrorMessage({ error }): JSX.Element
 | Servicios en U4 | 1 (APIRouter) | **6** (APIRouter + 5 services) |
 | Endpoints públicos | 3 | **13** |
 | Componente nuevo | — | **C-D0 DashboardApp** |
-| Catálogo de naming | underscore (`mobile_co`) | **guion en strings** (`mobile-co`), underscore solo en archivos Python (`mobile_co.py`) |
+| Catálogo de naming | guion en strings (`mobile-co`) | **underscore en contrato y Python** (`mobile_co`, `mobile_co.py`) |

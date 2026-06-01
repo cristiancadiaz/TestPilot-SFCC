@@ -9,13 +9,14 @@
 
 ## Objetivo de la misión
 
-Implementar `src/baseline/` — la capa de persistencia que escribe ejecuciones a DynamoDB, calcula p95 sobre las últimas 10 ejecuciones, y **silencia alertas amarillas durante el período de bootstrap** (primeras 14 ejecuciones exitosas). Es la pieza que materializa los invariantes 4 (bootstrap silence) y 5 (p95) del `CLAUDE.md`.
+Implementar `src/baseline/` — la capa de persistencia que escribe ejecuciones a DynamoDB, calcula p95 sobre las últimas 10 ejecuciones, y **silencia alertas amarillas durante el período de bootstrap** (primeras 14 ejecuciones exitosas). Es la pieza que materializa los invariantes de bootstrap silence y p95 de `PRODUCT.md` / `AGENTS.md`.
 
 ## Contexto que el agente debe cargar antes de empezar
 
 1. `AGENTS.md` — convenciones del proyecto.
-2. `CLAUDE.md` — invariantes (especialmente #4 bootstrap silence y #5 p95).
+2. `PRODUCT.md` — invariantes (especialmente bootstrap silence y p95).
 3. `README.md` — secciones "Decisiones de diseño no obvias" y "Cómo funciona".
+4. `docs/definition-of-ready.md` — checklist de readiness antes de implementar.
 
 ## Criterios de aceptación
 
@@ -109,7 +110,7 @@ with mock_aws():
 - Diff completo en la rama `feat/baseline-dynamodb`.
 - Output de los 4 comandos de verificación copiados al PR description.
 - Una sección "Decisiones tomadas" en el PR description, listando al menos:
-  - Por qué `BOOTSTRAP_RUN_COUNT = 14` (cita CLAUDE.md).
+  - Por qué `BOOTSTRAP_RUN_COUNT = 14` (cita `PRODUCT.md` / `AGENTS.md`).
   - Por qué thresholds 1.0× y 1.3× p95 (proponer + justificar).
   - Por qué TTL = 90 días.
 

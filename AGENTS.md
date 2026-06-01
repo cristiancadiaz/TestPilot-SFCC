@@ -37,7 +37,7 @@ src/
 ├── agents/           ← Traducción NL → SyntheticUserConfig via Claude API
 ├── executor/         ← Runner de perfiles + flows Playwright
 │   ├── flows/        ← Un archivo por flow (checkout_full.py, checkout_card_declined.py)
-│   └── profiles/     ← Perfiles sintéticos (mobile_co.py, desktop_co.py, mobile_mx.py)
+│   └── profiles/     ← Perfiles sintéticos (mobile_co.py, desktop_co.py, desktop_ec.py)
 ├── reporter/         ← Generación de reporte JSON + Markdown + semáforo
 ├── baseline/         ← Manager de DynamoDB: escritura, lectura, cálculo p95
 └── classifier/       ← Clasificación de errores via Claude API (bug real vs comportamiento esperado)

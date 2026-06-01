@@ -79,8 +79,8 @@ mobile/CO  desktop/CO  desktop/EC
 ```
 
 **Flujos en MVP:**
-- `checkout-full`: login → búsqueda → categoría → PDP → carrito → checkout con pago que falla en el paso final
-- `checkout-card-declined`: mismo recorrido, tarjeta rechazada, validar mensaje de error
+- `checkout_full`: login → búsqueda → categoría → PDP → carrito → checkout con pago que falla en el paso final
+- `checkout_card_declined`: mismo recorrido, tarjeta rechazada, validar mensaje de error
 
 **Perfiles sintéticos:** mobile/Colombia, desktop/Colombia, desktop/Ecuador.
 
@@ -179,17 +179,16 @@ docs/             ← PRD, ICP, PVB, deep research
 
 ## Documentación
 
-| Archivo | Contenido |
+Para una lectura saludable, empieza por [`docs/README.md`](./docs/README.md). Ese mapa separa fuentes canónicas, artefactos derivados de estaciones, investigación y documentos históricos.
+
+| Necesitas... | Lee primero |
 |---|---|
-| [`hcai-c2-internal-solution-brief.md`](./hcai-c2-internal-solution-brief.md) | Internal Solution Brief: problema, stakeholders, criterios de éxito, alcance, riesgos |
-| [`deep-research-validacion.md`](./deep-research-validacion.md) | Casos de estudio (Netflix / Datadog / Mabl), benchmarks de ROI, validación del stack |
-| [`deep-research-critica.md`](./deep-research-critica.md) | 10 modos de fallo documentados con mitigaciones |
-| [`AGENTS.md`](./AGENTS.md) | Contexto cross-tool para coding agents (arquitectura, convenciones, restricciones) |
-| [`CLAUDE.md`](./CLAUDE.md) | Configuración específica para Claude Code |
-| `docs/overview.md` | Landscape tecnológico, why-now, análisis competitivo |
-| `docs/pvb.md` | Product Vision Board |
-| `docs/icp.md` | Ideal customer profile |
-| `specs/` | JSON Schemas de la API (contrato versionado) |
+| Entender el producto y sus invariantes | [`PRODUCT.md`](./PRODUCT.md) |
+| Implementar o revisar código con agentes | [`AGENTS.md`](./AGENTS.md) |
+| Revisar UI, tono visual o reportes renderizados | [`DESIGN.md`](./DESIGN.md) |
+| Validar contratos API | [`specs/`](./specs/) |
+| Navegar investigación, PRD y artefactos de estaciones | [`docs/README.md`](./docs/README.md) |
+| Revisar trazabilidad AI-DLC | [`aidlc-docs/README.md`](./aidlc-docs/README.md) |
 
 ---
 

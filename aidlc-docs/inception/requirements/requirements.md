@@ -44,7 +44,7 @@
 - **Criterios de aceptación**:
   - AC1. `src/models.py` define `SyntheticUserConfig` como la única fuente de verdad
   - AC2. `src/api/main.py` importa `SyntheticUserConfig` desde `src/models`
-  - AC3. Los campos de `SyntheticUserConfig` son: `environment_id` (enum: `sandbox|development|staging`), `products[]` (array con `search_term` + `validate_variant`), `flows[]` (array enum closed: `checkout-full`, `checkout-card-declined`), `profiles[]` (array enum closed: `mobile-co`, `desktop-co`, `desktop-ec`) y `capture_intermediate_screenshots` (bool, siempre `false` en MVP). Los campos `storefrontUrl`, `email`, `password`, `screenshot_on_success` y `screenshot_on_error` NO existen en `SyntheticUserConfig`.
+  - AC3. Los campos de `SyntheticUserConfig` son: `environment_id` (enum: `sandbox|development|staging`), `products[]` (array con `search_term` + `validate_variant`), `flows[]` (array enum closed: `checkout_full`, `checkout_card_declined`), `profiles[]` (array enum closed: `mobile_co`, `desktop_co`, `desktop_ec`) y `capture_intermediate_screenshots` (bool, siempre `false` en MVP). Los campos `storefrontUrl`, `email`, `password`, `screenshot_on_success` y `screenshot_on_error` NO existen en `SyntheticUserConfig`.
   - AC4. `src/agents/translator.py` importa `SyntheticUserConfig` desde `src/models` (translator queda como funcionalidad opcional — no es entrada principal de runs).
   - AC5. `src/models.py` también define: `EnvironmentConfig`, `EnvironmentAccessCredentials`, `ShopperCredentials`, `ResolvedEnvironment`, `RunStatus`, `ProfileLiveStatus`, `RunState`.
   - AC6. Todos los tests existentes pasan sin modificación de lógica (actualizando solo los mocks afectados por el cambio de payload).
@@ -269,7 +269,7 @@ Basado en el scope acordado (Q1=B), se identifican las siguientes unidades de tr
 
 ## Fuentes de Requisitos
 
-- `specs/prd.md` — PRD v1.0 (Christian Díaz, 2026-05-13): Secciones 6 (Principios), 8 (MoSCoW), 9 (Módulos)
+- `docs/product/prd-2026-05-22.md` — PRD snapshot (Christian Díaz, 2026-05-22): Secciones 6 (Principios), 8 (MoSCoW), 9 (Módulos)
 - `AGENTS.md` — Convenciones de código, restricciones de implementación
 - `aidlc-docs/inception/reverse-engineering/` — Análisis de codebase existente
 - `aidlc-docs/inception/requirements/requirement-verification-questions.md` — Respuestas del equipo (2026-05-20)
