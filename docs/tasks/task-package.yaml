@@ -1,0 +1,29 @@
+# OpenSymphony planning wave — contrato replicado manualmente (sin binario OpenSymphony).
+# Fuente: aidlc-docs (U0). Generado para la Estación 7 (modo paquete + dry-run).
+planningWave: u0-setup-base-implementation
+tasksDir: docs/tasks
+unit: "U0 — Setup Base"
+targetRepo: TestPilot-SFCC
+aidlcSource: aidlc-docs
+milestones:
+  - "M1: Packaging & Container Foundation"
+  - "M2: Shared Models Unification"
+tasks:
+  - id: TASK-001
+    file: docs/tasks/001-pyproject-packaging.md
+    milestone: "M1: Packaging & Container Foundation"
+  - id: TASK-002
+    file: docs/tasks/002-dockerfile-container.md
+    milestone: "M1: Packaging & Container Foundation"
+  - id: TASK-003
+    file: docs/tasks/003-shared-models.md
+    milestone: "M2: Shared Models Unification"
+  - id: TASK-004
+    file: docs/tasks/004-models-tests.md
+    milestone: "M2: Shared Models Unification"
+  - id: TASK-005
+    file: docs/tasks/005-import-refactor.md
+    milestone: "M2: Shared Models Unification"
+  - id: TASK-006
+    file: docs/tasks/006-u0-gate-and-summary.md
+    milestone: "M2: Shared Models Unification"
