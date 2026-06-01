@@ -21,6 +21,9 @@ CLAUDE.md
 
 # Capa neutral cross-tool SÍ versionada (ver .ai/roster.md): AGENTS.md y .ai/
 # — antes ignoradas; ahora se trackean para compartir entre herramientas y equipo.
+# EXCEPCIÓN: .ai/tooling/ es código de terceros (OpenSymphony/Linear) — local, NO
+# versionado. Re-instalable desde la receta en docs/tasks/SETUP.md.
+.ai/tooling/
 
 # --------------------------------------------------------------------------------
 # format ai-dlc files
@@ -33,3 +36,9 @@ CLAUDE.md
 # --------------------------------------------------------------------------------
 progress/*
 !progress/README.md
+
+# --------------------------------------------------------------------------------
+# secretos locales (NUNCA versionar) — credenciales de Linear, etc.
+# --------------------------------------------------------------------------------
+.linear.env
+*.secret.env
