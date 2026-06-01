@@ -172,11 +172,19 @@ Estructura: `.claude/skills/<name>/SKILL.md` + recursos opcionales en `scripts/`
 
 ## 8. Subagentes
 
-| Subagente | Modelo | Propósito |
-|---|---|---|
-| `feature-implementer` | Sonnet | Implementa features pequeñas con scope aprobado en `docs/features/`. |
-| `flow-guardian` | Haiku | **Read-only.** Vigila que cambios a `src/executor/flows/` solo introduzcan flows declarados en el catálogo cerrado de `specs/`. |
+Roster operativo en `.claude/agents/` (proyección Claude Code); descripción conceptual tool-agnóstica en `.ai/roster.md`. Foco actual: **documentación + arquitectura AI-DLC**; generación de código diferida.
+
+| Subagente | Modelo | Rol | Propósito |
+|---|---|---|---|
+| `leader` | Opus | 🟦 Orquestador | Orquesta el flujo AI-DLC: decide etapa, delega y hace cumplir las puertas de aprobación humana. Único con la tool `Agent`; no escribe artefactos. |
+| `implementer` | Sonnet | 🟩 Principal | Autor de artefactos. Modo A (activo): documentación/arquitectura AI-DLC. Modo B (diferido): código de unidades / features ad-hoc. |
+| `reviewer` | Sonnet | 🟩 Principal | Verifica artefactos contra el rule detail de la etapa, trazabilidad y `content-validation`. No edita; aprueba o rechaza. |
+| `flow-guardian` | Haiku | 🟨 Especialista | **Read-only.** Vigila el catálogo cerrado de flows y el contrato `specs/synthetic-user-config.schema.json`. |
+| `sfcc-product-owner` | Sonnet | 🟨 Especialista | **Read-only.** Aporta criterio de producto/SFCC sobre requisitos, historias y NFR. |
+| `design-steward` | Sonnet | 🟨 Especialista | Diseño visual y memoria de producto: `PRODUCT.md`, `DESIGN.md`, slides. |
+
+Perfiles de referencia (no cargables) en `.claude/profiles/`.
 
 ---
 
-*Última actualización: 2026-05-27 · Mantenido por: Christian Díaz (cdiaz@pash.com.co)*
+*Última actualización: 2026-05-31 · Mantenido por: Christian Díaz (cdiaz@pash.com.co)*
