@@ -1,0 +1,175 @@
+{
+  "$schema": "https://opencode.ai/schemas/config.json",
+  "name": "testpilot-sfcc",
+  "description": "Configuración de Opencode para TestPilot SFCC",
+  "permissions": {
+    "allow": [
+      "Read",
+      "Edit(src/**/*)",
+      "Edit(tests/**/*)",
+      "Edit(docs/**/*)",
+      "Edit(aidlc-docs/**/*)",
+      "Edit(progress/**/*)",
+      "Edit(PRODUCT.md)",
+      "Edit(DESIGN.md)",
+      "Write(src/**/*)",
+      "Write(tests/**/*)",
+      "Write(docs/**/*)",
+      "Write(aidlc-docs/**/*)",
+      "Write(progress/**/*)",
+      "Write(PRODUCT.md)",
+      "Write(DESIGN.md)",
+      "Bash(python -m pytest*)",
+      "Bash(python -m pytest tests/*)",
+      "Bash(uv run pytest*)",
+      "Bash(ruff format*)",
+      "Bash(ruff check*)",
+      "Bash(mypy src*)",
+      "Bash(uv run*)",
+      "Bash(python -m mypy*)",
+      "Bash(playwright install*)",
+      "Bash(python -m playwright*)",
+      "Bash(docker build*)",
+      "Bash(docker run*)",
+      "Bash(docker ps*)",
+      "Bash(docker logs*)",
+      "Bash(docker images*)",
+      "Bash(aws sts get-caller-identity*)",
+      "Bash(aws dynamodb scan*)",
+      "Bash(aws dynamodb query*)",
+      "Bash(aws dynamodb get-item*)",
+      "Bash(aws s3 ls*)",
+      "Bash(aws logs*)",
+      "Bash(aws stepfunctions list-executions*)",
+      "Bash(aws stepfunctions describe-execution*)",
+      "Bash(cdk synth*)",
+      "Bash(cdk diff*)",
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git branch*)",
+      "Bash(git add *)",
+      "Bash(git stash*)",
+      "Bash(git checkout -b *)",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(grep *)",
+      "Bash(rg *)",
+      "Bash(find . *)"
+    ],
+    "deny": [
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(secrets/**)",
+      "Edit(.env)",
+      "Edit(.env.*)",
+      "Edit(specs/**)",
+      "Write(specs/**)",
+      "Edit(infra/**)",
+      "Edit(.github/workflows/**)",
+      "Edit(requirements.txt)",
+      "Edit(pyproject.toml)",
+      "Edit(uv.lock)",
+      "Bash(rm -rf*)",
+      "Bash(rm -fr*)",
+      "Bash(sudo *)",
+      "Bash(git push*)",
+      "Bash(git reset --hard*)",
+      "Bash(git commit --no-verify*)",
+      "Bash(git push --force*)",
+      "Bash(uv add *)",
+      "Bash(uv remove *)",
+      "Bash(pip install*)",
+      "Bash(aws dynamodb delete-item*)",
+      "Bash(aws dynamodb delete-table*)",
+      "Bash(aws s3 rb*)",
+      "Bash(aws s3 rm*)",
+      "Bash(aws ecs update-service*)",
+      "Bash(aws stepfunctions delete-state-machine*)",
+      "Bash(cdk deploy*)",
+      "Bash(cdk destroy*)",
+      "Bash(docker rm*)",
+      "Bash(docker rmi*)",
+      "Bash(docker system prune*)"
+    ]
+  },
+  "agents": {
+    "leader": {
+      "model": "opus",
+      "tools": ["Agent"]
+    },
+    "implementer": {
+      "model": "sonnet",
+      "role": "principal"
+    },
+    "reviewer": {
+      "model": "sonnet",
+      "role": "principal"
+    },
+    "flow-guardian": {
+      "model": "haiku",
+      "role": "specialist",
+      "readOnly": true
+    },
+    "sfcc-product-owner": {
+      "model": "sonnet",
+      "role": "specialist",
+      "readOnly": true
+    },
+    "design-steward": {
+      "model": "sonnet",
+      "role": "specialist",
+      "readOnly": true
+    }
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/post-edit-lint.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/pre-tool-block.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "skills": {
+    "code-reviewer": {
+      "autoApply": true
+    },
+    "review-pr": {
+      "autoApply": true
+    },
+    "validate-synthetic-config": {
+      "autoApply": true
+    },
+    "generate-api-docs": {
+      "autoApply": false
+    },
+    "ui-audit": {
+      "autoApply": false
+    }
+  },
+  "settings": {
+    "formatOnSave": true,
+    "lintOnSave": true,
+    "typeCheckOnSave": true,
+    "maxContextLength": 8000,
+    "temperature": 0.1
+  }
+}
