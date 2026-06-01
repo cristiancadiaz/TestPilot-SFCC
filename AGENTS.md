@@ -75,7 +75,7 @@ docs/                 ← PRD y documentación de planificación existente
 
 **Commits:**
 - Formato: Conventional Commits — `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`
-- Idioma: español, primera línea < 70 chars
+- Idioma: inglés, corto y conciso, primera línea < 70 chars
 - Scope sugerido por módulo: `feat(executor):`, `fix(reporter):`, `refactor(baseline):`
 - Tamaño: un commit = una intención lógica. Diff > 10 archivos → dividir.
 
