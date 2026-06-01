@@ -24,7 +24,7 @@ src/executor/  ----reads------>  specs/ (flow catalog)
 src/executor/  ----calls------>  src/baseline/ (writes results)
 src/executor/  ----calls------>  src/classifier/ (classifies errors)
 src/reporter/  ----reads------>  src/baseline/ (reads p95)
-src/reporter/  ----reads------>  specs/execution_report.json (schema)
+src/reporter/  ----reads------>  specs/execution_report.schema.json (schema)
 src/api/       ----calls------>  src/executor/ (triggers run)
 src/api/       ----calls------>  src/baseline/ (reads history)
 ```

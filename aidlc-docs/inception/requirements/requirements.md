@@ -127,7 +127,7 @@
 - **Descripción**: Módulo que toma los resultados de ejecución y genera el reporte dual (JSON + Markdown) con semáforo.
 - **Criterios de aceptación**:
   - Función `generate_report(profile_results: list[ProfileResult], baseline_store: BaselineStore, config: SyntheticUserConfig) -> ExecutionReport`
-  - El `ExecutionReport` cumple con el schema `specs/execution_report.json`
+  - El `ExecutionReport` cumple con el schema `specs/execution_report.schema.json`
   - Función `to_markdown(report: ExecutionReport) -> str` — genera el reporte en Markdown legible para humanos
   - El reporte Markdown incluye: semáforo (emoji verde/amarillo/rojo), resumen por perfil, tabla de pasos, comparación con baseline p95, sección `orders_created: 0`
   - El campo `baselineComparison.bootstrapMode` es True si hay menos de 14 runs

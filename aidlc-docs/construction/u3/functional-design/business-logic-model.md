@@ -8,7 +8,7 @@ U3 convierte resultados crudos (`ProfileResult[]`) + decisión de semáforo (de 
 
 **Outcomes de negocio:**
 1. **Cierra el loop del UC1:** el output que Carolina ve en 30 segundos para aprobar el merge.
-2. **Habilita el UC4 (agente CI/CD):** JSON sigue `specs/execution_report.json` estricto.
+2. **Habilita el UC4 (agente CI/CD):** JSON sigue `specs/execution_report.schema.json` estricto.
 3. **Alimenta al dashboard MD0:** el modelo `ExecutionReport` se sirve directamente en `GET /v1/runs/{id}` para que la P4 lo renderice.
 4. **Auditoría visible:** banner permanente "orders_created: 0" tanto en Markdown como en metadata del JSON.
 
@@ -25,7 +25,7 @@ src/reporter/
     │       → ExecutionReport
     │
     ├── to_json_dict(report) → dict
-    │       (cumple specs/execution_report.json)
+    │       (cumple specs/execution_report.schema.json)
     │
     └── to_markdown(report) → str
             (formato human-friendly)
@@ -145,7 +145,7 @@ def _worst_traffic_light(lights: list[TrafficLight]) -> TrafficLight:
 ```python
 def to_json_dict(report: ExecutionReport) -> dict:
     """
-    Serializa ExecutionReport al formato definido por specs/execution_report.json (camelCase).
+    Serializa ExecutionReport al formato definido por specs/execution_report.schema.json (camelCase).
     Valida contra el JSON Schema antes de retornar.
     """
     raw = report.model_dump(mode="json", by_alias=True, exclude_none=True)
@@ -157,7 +157,7 @@ def to_json_dict(report: ExecutionReport) -> dict:
     return raw
 ```
 
-**Schema:** `specs/execution_report.json` (definido en repo). Cualquier cambio al schema es **breaking change** del API. Versionado vía `/v1/`.
+**Schema:** `specs/execution_report.schema.json` (definido en repo). Cualquier cambio al schema es **breaking change** del API. Versionado vía `/v1/`.
 
 ---
 
@@ -236,7 +236,7 @@ Genera un Markdown legible. Estructura:
 
 - [ ] Tests pasan (ejemplos verde/amarillo/rojo/bootstrap + caso error).
 - [ ] `assert orders_created==0` activado y testeado.
-- [ ] `to_json_dict` produce dict que valida contra `specs/execution_report.json`.
+- [ ] `to_json_dict` produce dict que valida contra `specs/execution_report.schema.json`.
 - [ ] PBT round-trip: para cualquier `ExecutionReport` válido, `to_markdown` no lanza.
 - [ ] Baseline correctamente segregado por `environment_id` (test integrate con U2).
 - [ ] H3.1–H3.3 AC satisfechos.

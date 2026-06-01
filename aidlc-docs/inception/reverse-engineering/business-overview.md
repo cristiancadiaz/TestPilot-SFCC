@@ -82,7 +82,7 @@
 - **Purpose**: Contrato de entrada — source of truth del schema de configuración
 - **Responsibilities**: Definir catálogo cerrado de flows y profiles, patrón de email, rango de timeout
 
-### specs/execution_report.json
+### specs/execution_report.schema.json
 - **Purpose**: Contrato de salida — source of truth del schema de reporte
 - **Responsibilities**: Definir estructura del reporte con semáforo, steps, baselineComparison con bootstrapMode
 

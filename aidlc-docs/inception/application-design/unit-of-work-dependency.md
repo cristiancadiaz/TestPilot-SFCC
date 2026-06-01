@@ -61,7 +61,7 @@ report = generate_report(
     started_at=datetime.now(timezone.utc),
 )
 assert report.orders_created == 0
-assert to_json_dict(report)  # valida contra specs/execution_report.json
+assert to_json_dict(report)  # valida contra specs/execution_report.schema.json
 ```
 Este checkpoint evita sorpresas al integrar todo en U4.
 

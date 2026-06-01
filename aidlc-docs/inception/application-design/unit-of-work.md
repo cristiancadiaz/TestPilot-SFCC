@@ -187,14 +187,14 @@ Convertir resultados crudos (`ProfileResult[]`) y la decisión del semáforo en 
 
 **Por qué importa**:
 - Cierra el loop del UC1: el output que Carolina ve en 30 segundos para aprobar el merge.
-- Habilita el UC4 (agente CI/CD): el JSON sigue `specs/execution_report.json` (additionalProperties: false) — contrato estable que el agente puede parsear sin sorpresas.
+- Habilita el UC4 (agente CI/CD): el JSON sigue `specs/execution_report.schema.json` (additionalProperties: false) — contrato estable que el agente puede parsear sin sorpresas.
 - Materializa **M7** (reporte dual JSON+Markdown) y **M8** (semáforo 3 estados visible).
 
 ### Stack tecnológico
 - **Lenguaje**: Python 3.12+ síncrono
 - **Serialización**: Pydantic → `model_dump(by_alias=True)` para camelCase
 - **Patrón**: `traffic_light` del reporte = **peor** semáforo entre los 3 perfiles
-- **Validación**: el dict producido se valida contra `specs/execution_report.json` en tests (jsonschema lib)
+- **Validación**: el dict producido se valida contra `specs/execution_report.schema.json` en tests (jsonschema lib)
 - **PBT**: round-trip — para cualquier `ExecutionReport` válido, `to_markdown()` no lanza y `to_json_dict()` valida (PBT-08)
 
 ### Historias de usuario que cubre
@@ -214,7 +214,7 @@ Convertir resultados crudos (`ProfileResult[]`) y la decisión del semáforo en 
 
 ### Tests
 - `tests/test_reporter.py` — tests de ejemplo para reportes verde/amarillo/rojo/bootstrap
-- Verificar que `ExecutionReport` pasa validación contra `specs/execution_report.json`
+- Verificar que `ExecutionReport` pasa validación contra `specs/execution_report.schema.json`
 - PBT round-trip: `ExecutionReport → to_markdown()` no lanza excepciones para cualquier input válido
 
 ### Criterio de completitud

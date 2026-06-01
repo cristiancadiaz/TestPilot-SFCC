@@ -26,5 +26,5 @@
 - Middleware `_catch_errors` captura `InfrastructureError` → 503 y `Exception` → 500 sin exponer stack traces (SECURITY-15)
 - `_run_store` y `_baseline_store` son module-level (MVP in-memory): se comparten entre requests en el mismo proceso
 - POST /v1/run retorna 200 (no 202) — la ejecución es sincrónica en MVP
-- `to_json_dict` garantiza que la respuesta cumple `specs/execution_report.json` (camelCase, sin `ordersCreated`)
+- `to_json_dict` garantiza que la respuesta cumple `specs/execution_report.schema.json` (camelCase, sin `ordersCreated`)
 - Fixture del test limpia `_run_store` entre tests para evitar state leakage

@@ -11,7 +11,7 @@
 - `src/api/main.py`
 - `src/api/__init__.py`
 - `specs/synthetic_user_config.json`
-- `specs/execution_report.json`
+- `specs/execution_report.schema.json`
 - `tests/test_schemas.py`
 - `tests/test_translator.py`
 - `AGENTS.md`

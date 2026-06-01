@@ -6,7 +6,7 @@ Patrones concretos para satisfacer los NFR-U3-* y BR-U3-* de la unidad de report
 
 ## Patrón 1: Schema validation inline en `to_json_dict` (NFR-U3-R3, BR-U3-06)
 
-La validación contra `specs/execution_report.json` ocurre en cada invocación de `to_json_dict` — no es opcional ni desactivable por flag de entorno.
+La validación contra `specs/execution_report.schema.json` ocurre en cada invocación de `to_json_dict` — no es opcional ni desactivable por flag de entorno.
 
 ```python
 # src/reporter/report_generator.py
@@ -16,7 +16,7 @@ import jsonschema
 from src.models import ExecutionReport
 
 # Carga lazy al primer uso del módulo — una sola lectura de disco en toda la vida del proceso
-_SCHEMA_PATH = Path(__file__).parent.parent.parent / "specs" / "execution_report.json"
+_SCHEMA_PATH = Path(__file__).parent.parent.parent / "specs" / "execution_report.schema.json"
 _EXECUTION_REPORT_SCHEMA: dict | None = None
 
 def _load_schema() -> dict:
@@ -28,7 +28,7 @@ def _load_schema() -> dict:
 
 def to_json_dict(report: ExecutionReport) -> dict:
     """
-    Serializa ExecutionReport al formato specs/execution_report.json.
+    Serializa ExecutionReport al formato specs/execution_report.schema.json.
     Valida el output antes de retornar — falla rápido si el modelo Pydantic
     produce algo que no cumple el contrato.
     """

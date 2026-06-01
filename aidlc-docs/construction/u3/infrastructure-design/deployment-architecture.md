@@ -28,7 +28,7 @@ graph TB
                 MD_OUT["to_markdown(report)\nH1 + semáforo\nbanner orders=0\ntabla por perfil"]
             end
 
-            SCHEMA["📄 specs/execution_report.json\n(archivo local en imagen Docker)\ncontrato additionalProperties:false"]
+            SCHEMA["📄 specs/execution_report.schema.json\n(archivo local en imagen Docker)\ncontrato additionalProperties:false"]
         end
 
         U4_RESP["⚙️ U4 API Handler\nHTTP 200 ExecutionReport\nJSON + Markdown"]
@@ -75,7 +75,7 @@ sequenceDiagram
     participant U4 as U4 Orchestrator
     participant U3 as U3 Reporter
     participant U2 as BaselineStore
-    participant SCHEMA as execution_report.json
+    participant SCHEMA as execution_report.schema.json
 
     U4->>U3: generate_report(profile_results, baseline_store, config, run_id, env, started_at)
 
@@ -113,7 +113,7 @@ sequenceDiagram
 
 | Consumidor | Garantía | Mecanismo |
 |---|---|---|
-| Agente CI/CD (JSON) | Siempre conforme a `specs/execution_report.json` | `jsonschema.validate` en cada call — falla rápido si no |
+| Agente CI/CD (JSON) | Siempre conforme a `specs/execution_report.schema.json` | `jsonschema.validate` en cada call — falla rápido si no |
 | Carolina (Markdown) | Primera línea siempre `# {emoji} TestPilot Run…` | BR-U3-07 + PBT-U3-01 |
 | MD0 Dashboard (JSON) | `orders_created` siempre visible y siempre `0` | BR-U3-01 + NFR-U3-S2 |
 | Cualquier consumidor | Sin credenciales ni PII en el output | NFR-U3-S1 + test regex |

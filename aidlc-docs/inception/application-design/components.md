@@ -133,7 +133,7 @@
   - `generate_report(profile_results, baseline_store, config)`: construir `ExecutionReport` completo
   - Consultar baseline, calcular semáforo, poblar `baselineComparison`
   - Garantizar `orders_created=0` via assertion
-  - Validar que el resultado cumple con `specs/execution_report.json`
+  - Validar que el resultado cumple con `specs/execution_report.schema.json`
 
 ### C3-B: MarkdownFormatter
 - **Módulo**: `src/reporter/report_generator.py`

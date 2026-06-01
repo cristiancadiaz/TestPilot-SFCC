@@ -69,7 +69,7 @@ interface RunStatus {
 
 ## ExecutionReport (P4 — response de GET /v1/runs/{id})
 
-Modelo completo del reporte terminado. Definido por `specs/execution_report.json` y modelado en `src/models.py` (U0). El dashboard lo consume tal cual y lo renderiza.
+Modelo completo del reporte terminado. Definido por `specs/execution_report.schema.json` y modelado en `src/models.py` (U0). El dashboard lo consume tal cual y lo renderiza.
 
 **Campos clave para visualización:**
 

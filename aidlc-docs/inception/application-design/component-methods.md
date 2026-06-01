@@ -310,7 +310,7 @@ def generate_report(
     Garantiza orders_created=0 vía assert (BR-U3-01).
     Consulta baseline pasando environment_id (BR-U3-02).
     Persiste RunRecord por cada perfil (BR-U3-09).
-    Valida resultado contra specs/execution_report.json.
+    Valida resultado contra specs/execution_report.schema.json.
     """
 
 def to_json_dict(report: ExecutionReport) -> dict:

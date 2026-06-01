@@ -15,7 +15,7 @@ U3 es la unidad con **cero dependencias de infraestructura AWS**. Opera completa
 
 ## 1. Dependencias en tiempo de ejecución
 
-### specs/execution_report.json — schema local
+### specs/execution_report.schema.json — schema local
 
 U3 valida el output de `to_json_dict` contra el JSON Schema del contrato. Este archivo **viaja dentro de la imagen Docker** (copiado en U0 como `COPY specs/ specs/`).
 
@@ -24,7 +24,7 @@ Docker image
 └── /app/
     ├── src/reporter/report_generator.py
     └── specs/
-        └── execution_report.json   ← leído en memoria al primer uso
+        └── execution_report.schema.json   ← leído en memoria al primer uso
 ```
 
 No hay I/O de red — la validación es local. Si el archivo falta en la imagen, `to_json_dict` lanza `FileNotFoundError` al primer call → U4 detecta startup failure.
@@ -49,7 +49,7 @@ def generate_report(
 
 | Componente | Tipo | Dirección | Protocolo |
 |---|---|---|---|
-| `specs/execution_report.json` | Archivo local (imagen Docker) | Local read | Filesystem |
+| `specs/execution_report.schema.json` | Archivo local (imagen Docker) | Local read | Filesystem |
 | `BaselineStore.get_last_n_runs` | Python Protocol call | In-process | Función Python |
 | `BaselineStore.save_run` | Python Protocol call | In-process | Función Python |
 | Logs estructurados | stdout → awslogs → CloudWatch | Saliente | awslogs driver |

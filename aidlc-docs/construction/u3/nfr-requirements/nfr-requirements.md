@@ -6,7 +6,7 @@ U3 es una unidad de **transformación y formateo puro**: recibe `ProfileResult[]
 
 Dado ese perfil, las preocupaciones NFR más críticas son:
 1. **Velocidad** — está en el camino crítico de `POST /v1/run`.
-2. **Fidelidad del output** — el JSON debe honrar el contrato de `specs/execution_report.json` siempre.
+2. **Fidelidad del output** — el JSON debe honrar el contrato de `specs/execution_report.schema.json` siempre.
 3. **No fuga de información sensible** — el reporte lo lee un humano y lo parsea un agente CI/CD.
 4. **Robustez del serializador** — ningún input válido puede hacer lanzar `to_markdown` o `to_json_dict`.
 
@@ -62,7 +62,7 @@ Para cualquier `ExecutionReport` válido:
 for any valid ExecutionReport r: jsonschema.validate(to_json_dict(r), SCHEMA) passes
 ```
 **Propiedades verificadas:**
-- El dict no contiene claves no declaradas en `specs/execution_report.json` (`additionalProperties: false`).
+- El dict no contiene claves no declaradas en `specs/execution_report.schema.json` (`additionalProperties: false`).
 - `traffic_light` en el dict es uno de `["GREEN", "YELLOW", "RED"]`.
 - `orders_created` siempre es `0`.
 
@@ -143,7 +143,7 @@ U3 vive en `src/reporter/report_generator.py`. No se fragmenta en submódulos de
 
 ### NFR-U3-M3: Cambios al schema de reporte son breaking
 
-Cualquier modificación a `specs/execution_report.json` que rompa la validación de `to_json_dict` es un **breaking change** que requiere:
+Cualquier modificación a `specs/execution_report.schema.json` que rompa la validación de `to_json_dict` es un **breaking change** que requiere:
 1. Bump a `/v2/` en la API.
 2. Actualización coordinada de U3 + U4.
 3. Confirmación humana previa (invariante del CLAUDE.md).

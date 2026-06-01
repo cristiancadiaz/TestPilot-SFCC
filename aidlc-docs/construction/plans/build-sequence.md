@@ -77,7 +77,7 @@ Documentar el orden recomendado de construcción de las 6 unidades (MD0 + U0 a U
 ### Sprint 2 — Reporte e integración
 4. **U3 Reporter** (1 día — depende de U1 + U2)
    - `generate_report`, `to_json_dict`, `to_markdown` en `src/reporter/report_generator.py`.
-   - Validación contra `specs/execution_report.json`.
+   - Validación contra `specs/execution_report.schema.json`.
    - Tests para casos verde/amarillo/rojo/bootstrap + error.
    - **Gate:** JSON valida contra schema, PBT round-trip para Markdown.
 
@@ -139,7 +139,7 @@ Si hay 4+ devs disponibles:
 - [ ] shopper_login form encapsulado y testeable
 
 ### Gate 4 — Tras U3
-- [ ] JSON output valida contra `specs/execution_report.json`
+- [ ] JSON output valida contra `specs/execution_report.schema.json`
 - [ ] Markdown legible en CLI
 - [ ] Invariante orders_created=0 enforced
 - [ ] Baseline consultado con environment_id (no se mezclan ambientes)

@@ -255,7 +255,7 @@ Estas decisiones se tomaron en revisión del 2026-05-22 y aplican transversalmen
 **para** parsearlo sin lógica condicional por campo.
 
 **AC**:
-- AC1. `to_json_dict(report)` produce un dict que valida contra `specs/execution_report.json` (`additionalProperties: false`).
+- AC1. `to_json_dict(report)` produce un dict que valida contra `specs/execution_report.schema.json` (`additionalProperties: false`).
 - AC2. Todas las claves son camelCase (`testRunId`, `trafficLight`, `baselineComparison`).
 - AC3. PBT (round-trip): para cualquier `ExecutionReport` válido, `ExecutionReport(**parse(to_json_dict(r)))` reconstruye un objeto equivalente.
 - AC4. El dict NO incluye `ordersCreated` (la invariante se valida vía `assert`, no se publica en el contrato).

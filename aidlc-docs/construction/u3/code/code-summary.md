@@ -10,7 +10,7 @@
 
 ## Decisiones relevantes
 
-- `to_json_dict` serializa a camelCase para cumplir `specs/execution_report.json` (additionalProperties: false)
+- `to_json_dict` serializa a camelCase para cumplir `specs/execution_report.schema.json` (additionalProperties: false)
 - `orders_created` NO aparece en el dict JSON — el schema no lo define
 - `generate_report` calcula `traffic_light` como el peor (más crítico) entre todos los perfiles del run
 - `percentDiff` se calcula en `to_json_dict` como `(current - p95) / p95 * 100`

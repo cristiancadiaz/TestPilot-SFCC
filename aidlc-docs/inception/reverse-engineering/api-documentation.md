@@ -49,7 +49,7 @@
 - **Path**: /v1/runs/{run_id}
 - **Purpose**: Recuperar resultado de una ejecución específica
 - **Status**: No implementado
-- **Response 200**: ExecutionReport completo (ver specs/execution_report.json)
+- **Response 200**: ExecutionReport completo (ver specs/execution_report.schema.json)
 - **Response 404**: Run no encontrado
 
 ### GET /v1/runs/latest
@@ -108,7 +108,7 @@
 
 > Los campos `storefrontUrl` y `email` no existen en `SyntheticUserConfig`. Las credenciales se resuelven internamente desde Secrets Manager vía `environment_id`.
 
-### ExecutionReport (specs/execution_report.json)
+### ExecutionReport (specs/execution_report.schema.json)
 | Campo | Tipo | Requerido | Descripción |
 |-------|------|-----------|-------------|
 | testRunId | string | Sí | UUID de la ejecución |

@@ -53,7 +53,7 @@ class ExecutionReport(BaseModel):
 ```
 
 ### dict JSON (output de `to_json_dict`)
-Producido con `model_dump(mode="json", by_alias=True, exclude_none=True)`. Valida contra `specs/execution_report.json`.
+Producido con `model_dump(mode="json", by_alias=True, exclude_none=True)`. Valida contra `specs/execution_report.schema.json`.
 
 **Formato:** camelCase (alineado con convención del schema). Pydantic field aliases manejan la conversión.
 
@@ -100,7 +100,7 @@ El handler de U4 captura esta excepción y produce:
 
 ## Schemas externos consumidos
 
-### `specs/execution_report.json`
+### `specs/execution_report.schema.json`
 JSON Schema (Draft 2020-12) que define el contrato del JSON output. `to_json_dict` valida contra este schema en cada llamada.
 
 **Política de cambios:**

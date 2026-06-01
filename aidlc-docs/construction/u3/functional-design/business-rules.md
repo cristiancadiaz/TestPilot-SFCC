@@ -50,8 +50,8 @@ overall_bootstrap = any(pr.baseline_comparison.bootstrap_mode for pr in profile_
 
 ---
 
-## BR-U3-06: JSON conforme a specs/execution_report.json
-`to_json_dict` debe producir un dict que valide contra el JSON Schema `specs/execution_report.json` con `additionalProperties: false`.
+## BR-U3-06: JSON conforme a specs/execution_report.schema.json
+`to_json_dict` debe producir un dict que valide contra el JSON Schema `specs/execution_report.schema.json` con `additionalProperties: false`.
 
 **Verificación:** el test `tests/test_reporter.py` carga el schema y llama `jsonschema.validate(report_dict, schema)` — debe pasar.
 
