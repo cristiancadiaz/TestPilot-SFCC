@@ -2,6 +2,8 @@
 
 Contexto de mercado, validacion, critica y material de soporte del curso. Estos documentos explican por que el proyecto existe y que riesgos se consideraron, pero no son contrato de implementacion.
 
+> **Vigencia (2026-06-02):** estos documentos son **insumos históricos** (Estación 1, mayo 2026). El **objetivo y alcance vigentes** del producto viven en [`PRODUCT.md`](../../PRODUCT.md) §1, realineado el 2026-06-02 (recorrido completo de tienda + documento de auditoría de 6 dimensiones + ventana de lenguaje natural). Racional completo en [`aidlc-docs/inception/scope-realignment-brief.md`](../../aidlc-docs/inception/scope-realignment-brief.md).
+
 ## Archivos
 
 | Archivo | Uso |
