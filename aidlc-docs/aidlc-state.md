@@ -48,7 +48,7 @@
 - [x] Requirements Analysis v2 - `requirements.md` realigned: RF-21..RF-29, RNF-14..RNF-15, C10..C12, restructuring analysis with brief/PRD traceability. RF-14..RF-20 and RNF-11..RNF-13 (application design 2026-05-24) backported after numbering-collision detection. APPROVED.
 - [x] User Stories iteración 3 - 40 stories / 157 ACs; decisions D14-D18; new persona Valentina (non-technical, UC6); J4 de-deferred (H7.3); coverage-matrix updated (M20-M23). APPROVED.
 - [x] Units Generation v2 - U5 (journey flows), U6 (audit collectors + synthesis agent), U7 (network capture), U8 (NL window + modes); dependency matrix + Fases 5-6 + checkpoints 4-6; story-map extended. APPROVED.
-- [ ] **specs/ contracts HITL gate (cascade #6)** - breaking-change package proposal in `inception/specs-change-proposal.md`. specs/*.json NOT touched yet — requires explicit field-by-field human approval.
+- [x] **specs/ contracts HITL gate (cascade #6)** - APPROVED with recommendations (full_journey as enum value, audit doc as S3 ref, network_summary per profile) and APPLIED 2026-06-03: `synthetic-user-config.schema.json` → v2, `execution_report.schema.json` → v2, `translate-request-response.schema.json` created. Schemas + examples validated (Draft 2020-12). v1 remains valid 30 days (P2).
 
 ### Construction Phase
 

@@ -1,6 +1,10 @@
 # Propuesta de Cambios de Contrato — Puerta HITL (cascade #6)
 
-> **Estado: PROPUESTA — `specs/*.json` NO ha sido tocado.**
+> **Estado: ✅ APROBADO Y APLICADO (2026-06-03).** El usuario aprobó los paquetes A, B y C con las
+> recomendaciones: A1-alt `full_journey` como valor del enum · B5-alt documento de auditoría como
+> referencia S3 · B6-alt `network_summary` por ProfileResult. Schemas editados (deny de `specs/`
+> levantado temporalmente con consentimiento y restaurado de inmediato), validados contra
+> Draft 2020-12 y con todos los ejemplos pasando. Se conserva este documento como registro del paquete.
 > Branch `rework/storefront-audit-scope` · 2026-06-03 · Origen: realineación de alcance (RF-21..RF-29 aprobados).
 > Todo cambio aquí es **BREAKING** (P2): requiere bump de versión y aprobación humana explícita campo por campo.
 > Política P2: `v2` se publica manteniendo `v1` operativo 30 días.

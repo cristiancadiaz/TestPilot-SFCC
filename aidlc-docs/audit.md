@@ -402,3 +402,20 @@ None. Optional index files may still be added for naming compatibility with the 
 3. Resume point and session memory updated.
 
 **Context**: Inception phase COMPLETE. Cascade remaining: #6 specs HITL (proposal ready, awaiting user), #7 construction plans U5-U8, #9 harness CLAUDE.md/AGENTS.md + tech matrix.
+
+---
+
+## Cascade #6 — specs/ HITL Gate: APPROVED AND APPLIED
+
+**Timestamp**: 2026-06-03T04:15:00-05:00
+
+**User Input**: "Tu que tienes mejor conocimiento del proyecto y las decisiones, utiliza las recomendaciones. Tengo una duda, sobre las carpetas de arquitectura, plans y reverse-engineering. Esas se piensan analziar despues de realizar el commit que estas diciendo"
+
+**AI Response**:
+1. Answered folders question: architecture/ (ADR-002 refinement needed → ADR-003/amendment, C4 + nfr-tactics missing audit agent/network) and plans/execution-plan.md get a pass during cascade #7; reverse-engineering/ is a historical snapshot — refresh only when code exists (per aidlc-state policy).
+2. Committed E4 closure in 4 commits (7676878 requirements, efd050e stories, 6be8dee design units, 1604a6e state+proposal). docs/conceptos/* and docs/tasks/linear-publish.yaml left uncommitted (unrelated).
+3. specs/ HITL gate: user approved packages A/B/C with recommendations (A1-alt full_journey as enum value, B5-alt audit document as S3 ref, B6-alt network_summary per ProfileResult). Permission note: .claude/settings.json denies Edit(specs/**) — with explicit user consent (AskUserQuestion: "Permitir en esta sesión"), the two deny lines were temporarily removed, schemas edited, and the deny RESTORED immediately after.
+4. Applied changes: `synthetic-user-config.schema.json` → v2 ($id v2, schema_version const v2, flows enum 7 values incl. full_journey alias, maxItems 6, mode field, capture_intermediate_screenshots description updated, 4 examples); `execution_report.schema.json` → v2 ($id v2, mode required, audit object with AuditReport/AuditFinding/AuditHypothesis defs, network_summary per ProfileResult with NetworkSummary/ControllerTiming/WebVitals defs, flow_name enum +4 (never full_journey — always expanded), screenshot_state +finding/critical, finding_dimension, StepResult.phase setup|flow, example updated with audit); `translate-request-response.schema.json` CREATED (additive, status ok|ambiguous, proposed_config ref to v2 config, TranslateRequest def, 2 examples).
+5. Validation: all 3 schemas valid against JSON Schema Draft 2020-12; all 5 embedded examples validate against their schemas.
+
+**Context**: Cascade #6 complete. Remaining: #7 construction plans U5-U8 (+ architecture/plans pass), #9 harness CLAUDE.md/AGENTS.md + tech matrix.
