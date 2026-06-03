@@ -269,7 +269,7 @@ Basado en el scope acordado (Q1=B), se identifican las siguientes unidades de tr
 
 ## Fuentes de Requisitos
 
-- `docs/product/prd-2026-05-22.md` — PRD snapshot (Christian Díaz, 2026-05-22): Secciones 6 (Principios), 8 (MoSCoW), 9 (Módulos)
+- `docs/product/prd.md` — PRD snapshot (Christian Díaz, 2026-05-22): Secciones 6 (Principios), 8 (MoSCoW), 9 (Módulos)
 - `AGENTS.md` — Convenciones de código, restricciones de implementación
 - `aidlc-docs/inception/reverse-engineering/` — Análisis de codebase existente
 - `aidlc-docs/inception/requirements/requirement-verification-questions.md` — Respuestas del equipo (2026-05-20)

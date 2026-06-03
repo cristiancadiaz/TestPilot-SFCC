@@ -1,6 +1,6 @@
 # Requirements Clarification — TestPilot SFCC
 
-El PRD snapshot en `docs/product/prd-2026-05-22.md` cubre exhaustivamente el problema, personas y scope. Las siguientes preguntas buscan aclarar el **alcance de implementación para esta sesión** y las preferencias técnicas que el PRD deja como TBD.
+El PRD snapshot en `docs/product/prd.md` cubre exhaustivamente el problema, personas y scope. Las siguientes preguntas buscan aclarar el **alcance de implementación para esta sesión** y las preferencias técnicas que el PRD deja como TBD.
 
 Por favor responde llenando la letra después de cada `[Answer]:`.
 
