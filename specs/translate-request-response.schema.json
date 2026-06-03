@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://testpilot.pash.internal/specs/v1/translate-request-response.schema.json",
+  "title": "TranslateResponse",
+  "description": "Contrato del endpoint POST /v1/translate (RF-27, M23). Traduce una instrucción en lenguaje natural a un SyntheticUserConfig propuesto + explicación legible — NO EJECUTA NADA. El usuario confirma el preview en el dashboard y recién entonces se llama a POST /v1/run con el payload estructurado. La instrucción NL NUNCA llega al executor (C12). El config propuesto ya viene validado contra synthetic-user-config.schema.json (v2) + catálogo cerrado (P3). El request se define en $defs/TranslateRequest. Archivo nuevo (aditivo) — no rompe consumidores existentes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["status"],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["ok", "ambiguous"],
+      "description": "'ok': traducción exitosa con config validado. 'ambiguous': la instrucción no se puede traducir sin adivinar — se devuelve una pregunta de clarificación en lugar de un config (P3: prohibido reintentar en silencio). Instrucción fuera de catálogo o con prompt injection → HTTP 422 {error_code: 'instruction_rejected'} (se loggea, RT1/Q8)."
+    },
+    "proposed_config": {
+      "oneOf": [
+        { "$ref": "https://testpilot.pash.internal/specs/v2/synthetic-user-config.schema.json" },
+        { "type": "null" }
+      ],
+      "description": "SyntheticUserConfig (v2) propuesto, YA validado contra schema + catálogo cerrado. Solo presente cuando status='ok'."
+    },
+    "explanation": {
+      "oneOf": [{ "type": "string" }, { "type": "null" }],
+      "description": "Explicación en español neutro, legible para no-técnicos, de lo que se va a ejecutar: flows, perfiles, productos, modo. Es el contenido del preview que el usuario confirma (H9.1 AC2). Solo presente cuando status='ok'."
+    },
+    "clarification_question": {
+      "oneOf": [{ "type": "string" }, { "type": "null" }],
+      "description": "Pregunta de clarificación cuando la instrucción es ambigua. Solo presente cuando status='ambiguous'."
+    }
+  },
+  "$defs": {
+    "TranslateRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["instruction"],
+      "properties": {
+        "instruction": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 2000,
+          "description": "Instrucción en lenguaje natural (RNF-05: máximo 2000 caracteres). Ejemplos: 'revisa la PDP de un producto en oferta y confirma que el descuento se aplique' → browse_discounted_products/pdp_validation; 'revisa toda la tienda' → full_journey; 'revisa solo el carrito' → cart_review."
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "status": "ok",
+      "proposed_config": {
+        "schema_version": "v2",
+        "environment_id": "staging",
+        "flows": ["browse_discounted_products", "pdp_validation"],
+        "mode": "exploratory",
+        "profiles": ["mobile_co"],
+        "products": [{ "search_term": "producto en oferta", "validate_variant": true }]
+      },
+      "explanation": "Voy a recorrer la página de ofertas y validar la página de detalle de un producto con descuento, en el ambiente staging con el perfil móvil Colombia, en modo exploratorio (no afecta el baseline). No se ejecutará ningún pago.",
+      "clarification_question": null
+    },
+    {
+      "status": "ambiguous",
+      "proposed_config": null,
+      "explanation": null,
+      "clarification_question": "¿Quieres validar el recorrido completo de la tienda (búsqueda → PDP → carrito → checkout) o solo un módulo específico? Si es un módulo, ¿cuál: búsqueda, ofertas, PDP o carrito?"
+    }
+  ]
+}

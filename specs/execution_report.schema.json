@@ -1,13 +1,14 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://testpilot.pash.internal/specs/v1/execution_report.schema.json",
+  "$id": "https://testpilot.pash.internal/specs/v2/execution_report.schema.json",
   "title": "ExecutionReport",
-  "description": "Contrato de salida del endpoint POST /v1/run y GET /v1/runs/{run_id}. Consumido por agentes CI/CD y el dashboard. `orders_created` no se publica en el JSON — la invariante se valida internamente vía assert (BR-U3-01) y se documenta solo en el reporte Markdown. Cualquier cambio de campo es BREAKING.",
+  "description": "Contrato de salida del endpoint POST /v1/run y GET /v1/runs/{run_id}. Consumido por agentes CI/CD y el dashboard. `orders_created` no se publica en el JSON — la invariante se valida internamente vía assert (BR-U3-01) y se documenta solo en el reporte Markdown. Cualquier cambio de campo es BREAKING. BREAKING CHANGE v2 (2026-06-03, realineación de alcance, HITL aprobado): flow_name enum +4, screenshot_state +finding/critical, StepResult.phase, mode requerido, objeto audit, network_summary por perfil. v1 se mantiene operativo 30 días (P2). INVARIANTE P7/C10: el traffic_light lo calcula EXCLUSIVAMENTE la regla determinista (baseline p95) — el agente de auditoría (campo audit) sintetiza y NUNCA decide el semáforo.",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "run_id",
     "environment_id",
+    "mode",
     "started_at",
     "finished_at",
     "duration_ms",
@@ -25,6 +26,11 @@
       "type": "string",
       "enum": ["sandbox", "development", "staging"],
       "description": "Ambiente SFCC donde se ejecutó el run."
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["gate", "exploratory"],
+      "description": "Modo del run. 'exploratory' NUNCA entra al baseline ni cuenta como estado deploy-safe (C11) — su semáforo es informativo. GET /v1/runs/latest para decisión de deploy considera solo runs 'gate'."
     },
     "started_at": {
       "type": "string",
@@ -62,6 +68,13 @@
         { "type": "null" }
       ],
       "description": "Comparación con baseline p95. Null si bootstrap_mode=true o no hay historial para esta combinación."
+    },
+    "audit": {
+      "oneOf": [
+        { "$ref": "#/$defs/AuditReport" },
+        { "type": "null" }
+      ],
+      "description": "Resultado de auditoría de 6 dimensiones (RF-24/RF-25). Hallazgos generados por colectores DETERMINISTAS; la síntesis la redacta el agente LLM, que NUNCA decide el traffic_light (P7/C10). Null si los colectores no corrieron en este run."
     }
   },
   "$defs": {
@@ -75,6 +88,13 @@
         "traffic_light": {
           "type": "string",
           "enum": ["green", "yellow", "red"]
+        },
+        "network_summary": {
+          "oneOf": [
+            { "$ref": "#/$defs/NetworkSummary" },
+            { "type": "null" }
+          ],
+          "description": "Resumen de captura de red para este par perfil×flow (RF-23). Por perfil porque mobile y desktop difieren. Null si la captura no corrió. El HAR completo (filtrado, sin bodies, con redacción) vive en S3."
         }
       }
     },
@@ -101,7 +121,15 @@
       "properties": {
         "flow_name": {
           "type": "string",
-          "enum": ["checkout_full", "checkout_card_declined"]
+          "enum": [
+            "checkout_full",
+            "checkout_card_declined",
+            "search_and_filter",
+            "browse_discounted_products",
+            "pdp_validation",
+            "cart_review"
+          ],
+          "description": "Flow ejecutado. NUNCA 'full_journey': el reporte siempre muestra la composición EXPANDIDA — un FlowResult por flow modular (H6.3 AC4)."
         },
         "status": {
           "type": "string",
@@ -123,12 +151,18 @@
       "properties": {
         "name": {
           "type": "string",
-          "description": "Nombre del paso: env_access_auth, shopper_login, search_product, category_page, pdp_variant_select, add_to_cart, mini_cart_validation, checkout_shipping, checkout_payment, payment_failure_validation, verify_decline_message."
+          "description": "Nombre del paso: env_access_auth, shopper_login, search_product, category_page, pdp_variant_select, add_to_cart, mini_cart_validation, checkout_shipping, checkout_payment, payment_failure_validation, verify_decline_message — más los pasos de los flows de recorrido."
         },
         "status": {
           "type": "string",
           "enum": ["success", "failed", "skipped"],
           "description": "skipped si un paso previo falló."
+        },
+        "phase": {
+          "type": "string",
+          "enum": ["setup", "flow"],
+          "default": "flow",
+          "description": "'setup' para pasos de auto-preparación de un flow modular en modo módulo-único (H6.2 AC3) — su fallo es error de precondición, no fallo del módulo bajo prueba. 'flow' (default) para pasos del flow propiamente."
         },
         "duration_ms": { "type": "integer", "minimum": 0 },
         "error": {
@@ -137,16 +171,141 @@
         },
         "screenshot_url": {
           "oneOf": [{ "type": "string" }, { "type": "null" }],
-          "description": "Path S3 relativo al screenshot. Solo presente si screenshot_state tiene valor (fallo o paso final)."
+          "description": "Path S3 relativo al screenshot. Solo presente si screenshot_state tiene valor. Naming: {run_id}/{perfil}/{flujo}/{paso}-{fail|final|finding-{dim}|critical}.png"
         },
         "screenshot_state": {
           "oneOf": [
-            { "type": "string", "enum": ["fail", "final"] },
+            { "type": "string", "enum": ["fail", "final", "finding", "critical"] },
             { "type": "null" }
           ],
-          "description": "INVARIANTE: solo 'fail' (paso fallido) o 'final' (último paso del flow). Nunca capturamos pasos OK intermedios (ADR-002)."
+          "description": "INVARIANTE (RF-26, evidencia dirigida por hallazgos): 'fail' (paso fallido) y 'final' (último paso) en todos los modos; 'finding' (hallazgo de una de las 6 dimensiones — ver finding_dimension) y 'critical' (punto crítico declarado en el FlowCatalog) solo en modo auditoría. NUNCA se captura un paso OK sin hallazgo ni punto crítico."
+        },
+        "finding_dimension": {
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": ["commerce_integrity", "performance", "locale_correctness", "accessibility", "client_health", "content_integrity"]
+            },
+            { "type": "null" }
+          ],
+          "description": "Dimensión de auditoría que disparó la captura. Solo presente cuando screenshot_state='finding'."
         }
       }
+    },
+    "AuditReport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["findings", "synthesis_available"],
+      "properties": {
+        "findings": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/AuditFinding" },
+          "description": "Hallazgos generados por los colectores DETERMINISTAS de las 6 dimensiones (RF-24). Sin evidencia no hay hallazgo."
+        },
+        "hypotheses": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/AuditHypothesis" },
+          "description": "Hipótesis propuestas por el agente de síntesis. SIEMPRE se presentan como hipótesis, nunca como hechos confirmados (P7)."
+        },
+        "synthesis_available": {
+          "type": "boolean",
+          "description": "False si el agente LLM falló o excedió timeout — el reporte se emite igual con los hallazgos crudos (degradación con gracia, RF-25 AC6)."
+        },
+        "document_md_url": {
+          "oneOf": [{ "type": "string" }, { "type": "null" }],
+          "description": "Referencia S3 al documento de auditoría completo en Markdown (legible para no-técnicos). El JSON mantiene los hallazgos estructurados; el documento largo vive en S3 (decisión B5)."
+        }
+      },
+      "description": "Auditoría de 6 dimensiones. El traffic_light NO vive aquí ni puede ser alterado por este objeto (C10)."
+    },
+    "AuditFinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dimension", "severity", "page_url", "data"],
+      "properties": {
+        "dimension": {
+          "type": "string",
+          "enum": ["commerce_integrity", "performance", "locale_correctness", "accessibility", "client_health", "content_integrity"]
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["info", "warning", "critical"]
+        },
+        "page_url": { "type": "string", "description": "URL donde se detectó el hallazgo (sin query params con credenciales)." },
+        "step": {
+          "oneOf": [{ "type": "string" }, { "type": "null" }],
+          "description": "Paso del flow durante el cual se detectó. Null si es transversal al flow (p.ej. errores JS acumulados)."
+        },
+        "data": {
+          "type": "object",
+          "description": "Datos estructurados del hallazgo, específicos por dimensión (p.ej. precios comparados PLP/PDP/cart, regla axe violada, request fallido). Generados por código determinista — reproducibles."
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Paths S3 de la evidencia enlazada (screenshot finding-{dim}, entrada HAR). Sin evidencia no hay hallazgo (principio producto #3)."
+        },
+        "requires_human_review": {
+          "type": "boolean",
+          "default": false,
+          "description": "True para anomalías que escalan a humano (J4/H7.3 — p.ej. descuento aplicado a producto inelegible). Dispara semáforo YELLOW por REGLA DETERMINISTA, no por el agente."
+        }
+      }
+    },
+    "AuditHypothesis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text", "confidence", "requires_human_review"],
+      "properties": {
+        "text": { "type": "string", "description": "Hipótesis redactada por el agente sobre la causa probable de uno o más hallazgos." },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "requires_human_review": { "type": "boolean" }
+      }
+    },
+    "NetworkSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total_requests", "failed_requests"],
+      "properties": {
+        "total_requests": { "type": "integer", "minimum": 0 },
+        "failed_requests": { "type": "integer", "minimum": 0, "description": "Requests con status 4xx/5xx dentro de la allowlist de dominios." },
+        "controllers": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ControllerTiming" },
+          "description": "Timings agregados por controller SFRA (patrones *-Show, Cart-*, CheckoutServices-*, etc.) — el 'waterfall de controllers'."
+        },
+        "web_vitals": {
+          "oneOf": [
+            { "$ref": "#/$defs/WebVitals" },
+            { "type": "null" }
+          ],
+          "description": "Core Web Vitals de las páginas clave del flow. Null si no se pudieron capturar (el flow no falla por esto)."
+        },
+        "har_url": {
+          "oneOf": [{ "type": "string" }, { "type": "null" }],
+          "description": "Path S3 del HAR filtrado: {run_id}/{perfil}/{flujo}/network.har.json. Solo metadata + timings, sin bodies, headers de auth y cookies REDACTADOS antes de persistir."
+        }
+      }
+    },
+    "ControllerTiming": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pattern", "count", "p95_ms"],
+      "properties": {
+        "pattern": { "type": "string", "description": "Patrón de controller SFRA, p.ej. 'Product-Show', 'Cart-AddProduct'." },
+        "count": { "type": "integer", "minimum": 1 },
+        "p95_ms": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "WebVitals": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "lcp_ms": { "oneOf": [{ "type": "integer", "minimum": 0 }, { "type": "null" }] },
+        "cls": { "oneOf": [{ "type": "number", "minimum": 0 }, { "type": "null" }] },
+        "ttfb_ms": { "oneOf": [{ "type": "integer", "minimum": 0 }, { "type": "null" }] }
+      },
+      "description": "Métricas por página clave del flow, por perfil. INP/TBT quedan fuera mientras inflen el tiempo del flow (RNF-15)."
     },
     "BaselineComparison": {
       "type": "object",
@@ -179,6 +338,7 @@
     {
       "run_id": "550e8400-e29b-41d4-a716-446655440000",
       "environment_id": "staging",
+      "mode": "gate",
       "started_at": "2026-05-27T10:00:00Z",
       "finished_at": "2026-05-27T10:08:30Z",
       "duration_ms": 510000,
@@ -212,6 +372,28 @@
         "current_ms": 165000,
         "bootstrap_mode": false,
         "runs_count": 18
+      },
+      "audit": {
+        "findings": [
+          {
+            "dimension": "commerce_integrity",
+            "severity": "warning",
+            "page_url": "https://staging.example.shop/es-co/cart",
+            "step": "mini_cart_validation",
+            "data": { "pdp_price": 189900, "cart_price": 185400, "expected_discount_pct": 0, "observed_discount_pct": 2.4 },
+            "evidence_refs": ["runs/550e8400/mobile_co/checkout_full/mini_cart_validation-finding-commerce_integrity.png"],
+            "requires_human_review": true
+          }
+        ],
+        "hypotheses": [
+          {
+            "text": "Posible promoción aplicada a producto inelegible — el descuento de 2.4% no corresponde a ninguna promoción activa declarada.",
+            "confidence": 0.62,
+            "requires_human_review": true
+          }
+        ],
+        "synthesis_available": true,
+        "document_md_url": "runs/550e8400/audit-document.md"
       }
     }
   ]
