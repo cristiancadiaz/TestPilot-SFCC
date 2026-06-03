@@ -6,15 +6,19 @@
 
 ---
 
+> ⚠️ **Realineado 2026-06-03** (branch `rework/storefront-audit-scope`): se agregan la ventana de lenguaje natural, la matriz genérica perfiles×flows, el documento de auditoría de 6 dimensiones, los modos gate/exploratorio y la evidencia por hallazgos (ADR-003). Criterio de producto vigente: `PRODUCT.md` §1 y §6.
+
 ## 1. Principios
 
-TestPilot es una **herramienta operativa de ingeniería**, no un producto de marketing. El diseño sirve a una sola pregunta: *¿el ingeniero entiende el veredicto en menos de 10 minutos?* Cinco principios derivados de [`PRODUCT.md`](./PRODUCT.md):
+TestPilot es una **herramienta operativa de ingeniería**, no un producto de marketing. El diseño sirve a dos preguntas: *¿el ingeniero entiende el veredicto en menos de 10 minutos?* y *¿un miembro no-técnico entiende el documento de auditoría sin ayuda?* Siete principios derivados de [`PRODUCT.md`](./PRODUCT.md):
 
 1. **Veredicto antes que decoración.** El semáforo y el "qué hacer" ocupan el lugar de honor. Tablas y gráficos son drill-down.
-2. **Densidad de señal alta.** El usuario es senior; prefiere datos crudos compactos a tarjetas espaciadas. Sin "hero" vacío.
+2. **Dos lectores, una jerarquía.** El ingeniero quiere densidad de señal (datos crudos compactos); Valentina (QA/PM) quiere el resumen legible. Resolución: **resumen en prosa primero, drill-down técnico después** — nunca dos UIs separadas (un reporte, dos lectores — PRODUCT.md §5.2).
 3. **El color es semántico, nunca ornamental.** Verde/amarillo/rojo significan estado de gate. No se usan para "dar vida".
 4. **Monoespaciado para lo que es dato.** IDs, métricas, HTTP codes, JSON y rutas van en mono — son verificables, no prosa.
-5. **Honestidad de estado.** "Calibrando baseline" se ve distinto a "verde". El vacío y la incertidumbre tienen su propio tratamiento visual, no se disfrazan.
+5. **Honestidad de estado.** "Calibrando baseline" se ve distinto a "verde". Un run **exploratorio** se ve distinto a un run **gate**. El vacío y la incertidumbre tienen su propio tratamiento visual, no se disfrazan.
+6. **Hechos ≠ hipótesis.** Un hallazgo determinista (colector) se presenta como hecho con evidencia; una hipótesis del agente se presenta SIEMPRE como hipótesis con su `confidence` visible — el tratamiento visual los distingue sin leer (P7).
+7. **Predicar con el ejemplo.** TestPilot audita accesibilidad WCAG AA de storefronts — su propia UI cumple AA sin excepciones (§6).
 
 ## 2. Design tokens
 
@@ -75,28 +79,71 @@ El componente central del producto. Estado = forma + color + texto, nunca color 
 | Estado | Color | Glifo | Texto | Cuándo |
 | :--- | :--- | :--- | :--- | :--- |
 | **Verde** | `--color-status-green` | ● | "Apto para deploy" | Sin errores funcionales y performance dentro de p95 |
-| **Amarillo** | `--color-status-amber` | ▲ | "Degradación — revisar" | Performance fuera de p95 (solo post-bootstrap) |
+| **Amarillo** | `--color-status-amber` | ▲ | "Degradación — revisar" + subtipo | Tres subtipos, siempre visibles como sub-label mono: `performance_regression` · `infrastructure_error` ("infraestructura, no producto") · `human_review` ("requiere revisión humana") |
 | **Rojo** | `--color-status-red` | ■ | "Bloqueado — fallo funcional" | Error funcional (HTTP 5xx, elemento faltante, paso fallido) |
-| **Neutral** | `--color-status-neutral` | ◌ | "Calibrando baseline (n/14)" | Bootstrap: <14 runs exitosos, sin p95 confiable |
+| **Neutral** | `--color-status-neutral` | ◌ | "Calibrando baseline (n/14)" | Bootstrap: <14 runs exitosos del par perfil×flow, sin p95 confiable |
 
-> **Racional:** glifos distintos por estado → legible sin color. El estado neutral es de primera clase: el bootstrap silencioso del producto (invariante #4) se ve, no se oculta.
+> **Racional:** glifos distintos por estado → legible sin color. El estado neutral es de primera clase: el bootstrap silencioso del producto (invariante #4) se ve, no se oculta. El subtipo del amarillo decide la acción del usuario (retry vs revisar vs escalar) — por eso nunca se omite.
+
+**Marca de modo (realineación):** todo run muestra su modo junto al semáforo. `gate` = sin adorno (es el default). `exploratory` = badge `◇ exploratorio` en `--color-status-neutral` + el semáforo se rotula "informativo — no es veredicto de deploy" y **no** usa el texto "Apto para deploy". Un run exploratorio jamás puede confundirse con un gate (C11).
 
 ## 4. Componentes
 
-- **Botón primario:** fondo `--color-accent`, texto `#fff`, `--radius-sm`. Uno por pantalla (lanzar run). Secundarios: borde + texto, sin relleno.
+- **Botón primario:** fondo `--color-accent`, texto `#fff`, `--radius-sm`. Uno por pantalla (lanzar run / confirmar y lanzar). Secundarios: borde + texto, sin relleno.
 - **Badge de estado:** glifo + label, `--text-xs` mono, color de estado. Usado en filas de historial.
-- **Tabla de historial:** filas en `--color-surface`, separador `--color-border`, métricas en `--font-mono` alineadas a la derecha. Hover sutil (sin animación de escala).
-- **Fila de hallazgo:** badge de estado + paso + URL (mono, truncada con `title`) + link a screenshot. Es la unidad de evidencia (principio #3 de PRODUCT.md).
+- **Tabla de historial:** filas en `--color-surface`, separador `--color-border`, métricas en `--font-mono` alineadas a la derecha. Hover sutil (sin animación de escala). Columna de modo: badge `◇` en runs exploratorios.
+- **Fila de hallazgo:** badge de estado + **chip de dimensión** (§4.1) + paso + URL (mono, truncada con `title`) + links a evidencia (screenshot, entrada de red). Es la unidad de evidencia (principio #3 de PRODUCT.md): **sin evidencia no se renderiza hallazgo**.
+- **Bloque de hipótesis (P7):** visualmente distinto del hallazgo — borde punteado `--color-border`, prefijo fijo "Hipótesis del agente", `confidence` visible en mono (`0.62`), y badge `▲ human_review` cuando `requires_human_review=true`. **Nunca** usa los colores de estado como fondo: una hipótesis no es un veredicto.
 - **Bloque de métrica:** valor en mono `--text-lg`, label en `--text-xs muted` debajo. Sin ícono decorativo, sin sparkline en MVP.
+- **Resumen de red (drill-down):** tabla mono de controllers SFRA (patrón · count · p95 ms, orden desc por p95) + 3 bloques de métrica para CWV (LCP/CLS/TTFB) por perfil + contador de requests fallidos que enlaza al HAR. Vive colapsado bajo cada par perfil×flow.
 - **Estado vacío:** texto `muted` + acción sugerida. Nunca ilustración decorativa.
 - **Error de validación (JSON Schema gate):** panel rojo con el mensaje descriptivo del schema, en mono. El usuario debe poder copiar el error.
+
+### 4.1 Chips de dimensión de auditoría (realineación)
+
+Las 6 dimensiones tienen identidad **textual con glifo monocromo** — nunca color propio (el color queda reservado al estado §3) ni íconos ilustrativos:
+
+| Dimensión | Chip |
+| :--- | :--- |
+| Integridad de comercio | `$ comercio` |
+| Rendimiento | `~ rendimiento` |
+| Correctitud de locale | `@ locale` |
+| Accesibilidad | `a11y` |
+| Salud del cliente | `! cliente` |
+| Integridad de contenido | `# contenido` |
+
+> **Racional:** chips mono `--text-xs` con borde, color `--color-text-muted`. La severidad del hallazgo (info/warning/critical) usa los colores de estado; la dimensión solo etiqueta. Así un hallazgo "critical de locale" se lee en dos tokens sin ambigüedad.
+
+### 4.2 Ventana de lenguaje natural (realineación — entrada principal)
+
+El momento de mayor riesgo de confianza del producto. Tres estados, un solo flujo:
+
+1. **Entrada:** textarea con placeholder de ejemplo real ("revisa la PDP de un producto en oferta y confirma que el descuento se aplique"), contador `n/2000`, selector de modo (gate default · exploratorio con tooltip de qué significa). El editor JSON queda detrás de un toggle "modo avanzado".
+2. **Preview (obligatorio, no saltable):** panel con (a) la **explicación en prosa** del traductor ("Voy a recorrer…") como elemento principal, y (b) chips estructurados: flows elegidos, perfiles, productos, modo. El config JSON completo va colapsado debajo. CTA único: "Confirmar y lanzar". Acción secundaria: "Editar instrucción". **Nada se ejecuta sin este paso.**
+3. **Ambigüedad / rechazo:** la pregunta de clarificación se muestra como conversación (no como error); el rechazo por catálogo lista los flows disponibles como chips clickeables. Ningún rechazo es un dead-end: siempre ofrece el siguiente paso.
+
+### 4.3 Matriz de ejecución en vivo (realineación — genérica)
+
+- **Filas = perfiles del run · columnas = flows del run** — ambas derivadas del payload, jamás hardcodeadas. Con `full_journey`, las columnas son los flows expandidos de la composición, en su orden.
+- **Celda:** glifo + estado (`◌ pending` · `… running` con paso actual en `--text-xs` · `● passed` · `■ failed` · `▲ error`). Los pasos `phase: setup` se distinguen con label `setup` muted.
+- La celda completada enlaza al detalle del par perfil×flow. Sin animaciones: el cambio de estado es cambio de color/glifo (`aria-live`).
+- La matriz escala: 1 celda (módulo único, 1 perfil) hasta 18 (3 perfiles × 6 flows) sin cambiar de componente.
+
+### 4.4 Documento de auditoría (realineación — el segundo entregable)
+
+- **Orden fijo:** (1) resumen ejecutivo en prosa (lo que lee Valentina) · (2) las 6 dimensiones como secciones, cada una con sus hallazgos (filas de hallazgo §4) · (3) hipótesis del agente (bloques §4) · (4) link al documento Markdown completo (S3).
+- Dimensión sin hallazgos muestra "Sin hallazgos" en muted — **presencia explícita**, no se omite la sección (silencio honesto: que no se haya encontrado nada también es información).
+- Dimensión no recolectada (colector falló) muestra `◌ no recolectada` — distinto de "sin hallazgos".
+- **Degradación del agente:** si `synthesis_available=false`, el resumen ejecutivo se reemplaza por el aviso "Síntesis no disponible — se muestran los hallazgos crudos" en neutral. El documento sigue siendo útil.
+- El semáforo NO aparece dentro del documento de auditoría (C10: el veredicto vive arriba, calculado por regla — el documento describe, no juzga).
 
 ## 5. Layout
 
 - **Grid:** contenido máximo `1200px` centrado; navegación lateral fija de 2 ítems (Ambientes · Lanzar+Historial).
-- **Jerarquía de la pantalla de resultados (orden vertical):** (1) semáforo + veredicto · (2) métricas clave por perfil · (3) hallazgos con evidencia · (4) JSON crudo colapsado.
-- **Footer global:** `run_id` actual + runs restantes del día (`n/10`) + versión de API, en mono `--text-xs muted`. El costo y la versión son siempre visibles (principios de PRODUCT.md §5).
-- **Breakpoints:** `≥1024px` (desktop, layout completo) · `<1024px` (la nav lateral colapsa a top-bar; tablas hacen scroll horizontal, no se reflujan a tarjetas).
+- **Pantalla Lanzar:** la ventana NL (§4.2) es el elemento principal; al lanzar, transiciona a la matriz en vivo (§4.3) en la misma pantalla.
+- **Jerarquía de la pantalla de resultados (orden vertical):** (1) semáforo + veredicto + marca de modo · (2) matriz del run (estado final por celda) · (3) **documento de auditoría** (§4.4) · (4) métricas clave por perfil + resumen de red colapsado · (5) JSON crudo colapsado.
+- **Footer global:** `run_id` actual + modo + runs restantes del día (`n/10`) + versión de API (`v2`), en mono `--text-xs muted`. El costo y la versión son siempre visibles (principios de PRODUCT.md §5).
+- **Breakpoints:** `≥1024px` (desktop, layout completo) · `<1024px` (la nav lateral colapsa a top-bar; tablas y la matriz hacen scroll horizontal, no se reflujan a tarjetas).
 
 ## 6. Accesibilidad (no negociable)
 
@@ -118,6 +165,9 @@ Derivado de "Fixing Visual AI Slop". Si aparece alguno, el `design-steward` lo r
 - ❌ **Íconos decorativos** que no comunican estado o acción.
 - ❌ **Animaciones de entrada / parallax / escala en hover.** Como mucho, transición de color ≤120ms.
 - ❌ **Emojis como UI** en el dashboard (sí permitidos en el reporte Markdown si aportan al semáforo: 🟢🟡🔴).
+- ❌ **Hipótesis del agente vestida de hecho.** Una hipótesis sin su `confidence` visible, o con fondo de color de estado, es slop de confianza — viola P7 (§4, bloque de hipótesis).
+- ❌ **Columnas de flow hardcodeadas.** La matriz que asume "checkout" o exactamente 2 flows es deuda inmediata (RF-29).
+- ❌ **Iconografía ilustrativa para las dimensiones.** Las dimensiones usan chips textuales (§4.1); nada de íconos de carrito/lupa/escudo.
 
 ## 8. Material derivado (slides, reportes)
 
@@ -131,4 +181,4 @@ Slides de estación y reportes Markdown renderizados a PDF deben aplicar esta mi
 
 ---
 
-*TestPilot SFCC — Hardcore AI Cohorte 2. Última actualización: 2026-05-29.*
+*TestPilot SFCC — Hardcore AI Cohorte 2. Última actualización: 2026-06-03 (realineación de alcance: ventana NL, matriz genérica, documento de auditoría, modos, chips de dimensión, principios 2/6/7).*

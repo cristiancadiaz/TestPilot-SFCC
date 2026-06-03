@@ -492,3 +492,15 @@ None. Optional index files may still be added for naming compatibility with the 
 **AI Response**: (1) /doctor warnings explained: postgres and vercel MCP servers are declared with `_active: false` by design (stack = DynamoDB + AWS); not needed for code generation. Git credentials only needed for push (not yet performed). (2) Executed station analysis per .hardcore-ai/prompt-analisis-estaciones.md using 4 parallel read-only agents (E1-E2, E3, E4-E5, E6-E8); synthesized and updated .hardcore-ai/analisis-progreso.md (rev 2026-06-03). Key findings: realignment cascade COMPLETE and incorporated (E1, E2, E4 ✅ realigned; harness E3 aligned incl. flow-guardian composition exception); code = 0/10 units (expected — next step); NEW pendings raised: P5-3 u0-code-generation-plan must be reconciled vs specs v2 (Alta), P7-5 task package U0/Linear re-validation vs specs v2 (Alta), P6-2 DESIGN.md is pre-realignment 2026-05-29 — only canonical root artifact not covered by the cascade (Media-Alta, owner design-steward). Also fixed scope-realignment-brief.md header: BORRADOR → APROBADO Y EJECUTADO (stale status detected by analysis agents).
 
 **Context**: Readiness verdict: documentation/contracts layer READY for construction; gate before code-gen = P5-3 + P7-5; DESIGN.md refresh before MD0/U5.
+
+---
+
+## DESIGN.md Realignment (P6-2 resolved)
+
+**Timestamp**: 2026-06-03T08:15:00-05:00
+
+**User Input**: "Ayudame con la realineacion del design.md, que le falta a ese documento y si me podrias dar sugerencias para definir mejor el diseño par aentregar un buen producto"
+
+**AI Response**: Gap analysis (6 gaps: NL window, generic matrix, audit document, mode visibility, single-audience principle, monolithic yellow) + DESIGN.md realigned: principles extended to 7 (dual-reader hierarchy, gate/exploratory honesty, facts-vs-hypotheses, "practice what you audit" AA); traffic light §3 with 3 yellow subtypes + mode badge (exploratory never reads as deploy verdict); new components — §4.1 dimension chips (textual/mono, no own color), §4.2 NL window (entry → mandatory preview with prose explanation + chips → ambiguity-as-conversation), §4.3 generic live matrix (rows/cols derived from payload, setup-phase label, scales 1..18 cells), §4.4 audit document (fixed order: executive summary → 6 dimensions with explicit empty/uncollected states → hypotheses → S3 link; no traffic light inside — C10); hypothesis block visually distinct (dotted border, confidence visible, never status-color background — P7); network summary drill-down component; layout updated (NL-first launch screen, audit doc in results hierarchy, mode in footer, API v2); 3 new anti-patterns (hypothesis-dressed-as-fact, hardcoded flow columns, illustrative dimension icons). P6-2 of analisis-progreso resolved.
+
+**Context**: DESIGN.md was the last canonical root artifact not covered by the realignment cascade. Now closed.
