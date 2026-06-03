@@ -265,3 +265,140 @@ None. Optional index files may still be added for naming compatibility with the 
 - `aidlc-docs/inception/application-design/logging-strategy.md` — Ejemplos y tabla de campos actualizados de hyphen a underscore.
 
 **Context**: Estos hallazgos críticos habrían causado que un agente de codificación implementara `ProductSpec` incompatible, contrato de API incorrecto (singular vs array), gate de schema de salida faltante, y paso de credenciales pre-ADR-001 en firmas de funciones.
+
+---
+
+## Scope Realignment — Resolution of Open Decisions #2 (journey flows) and #5 (screenshots)
+
+**Timestamp**: 2026-06-03T00:00:00-05:00
+
+**User Input**: "Respecto a las desiciones abiertas. Me gustaria que la persona que va arealizar el recorrido con el agente, decida si solamente quiere probar el flujo de un modulo o si quiere que el agente realice el recorrido por todos los modulos. y la politica de los screenshot creo que ayudaria a un mejor entendimiento del documento de la auditoria. Igual me gustaria saber tu opinion"
+
+**AI Response**: Proposed (a) modular flow catalog with user-selected journey scope (single module / subset / `full_journey` as declared composition of modular flows, not a hand-written flow) preserving the closed-catalog invariant; (b) dual screenshot policy by mode (gate keeps failure+final; audit adds per-module milestone captures with S3 lifecycle).
+
+**Context**: Scope realignment brief §7, open decisions #2 and #5.
+
+---
+
+## Scope Realignment — Screenshot Policy Refined (findings-driven capture)
+
+**Timestamp**: 2026-06-03T00:05:00-05:00
+
+**User Input**: "Me gustaria que definieras que las capturas, sean solamente cuando realmente valga la pena resaltar algo. De pronto procesos criticos que valga la pena resaltar o algun error. para no consumir recursos soalmente porque si"
+
+**AI Response**: Refined decision #5 to findings-driven capture: always failure + final step; in audit mode, additional captures ONLY for findings in one of the 6 audit dimensions or at defined critical process points (e.g. payment summary, order confirmation); never capture "just because". Recorded decisions #2 and #5 as RESOLVED in `scope-realignment-brief.md` §7/§8. Both must cascade into `requirements/requirements.md` in E4.
+
+**Context**: Scope realignment brief §7 — all 5 open decisions now resolved. Next step: E4 Inception (`requirements.md`).
+
+---
+
+## E4 Inception — Requirements Analysis (re-entry, scope realignment)
+
+**Timestamp**: 2026-06-03T00:30:00-05:00
+
+**User Input**: "si, arranca con E4. Recuerda analizar bien la reestructuracion ya que dependemos de que ese analisis para la construccion."
+
+**AI Response**: Re-entered Inception (Requirements Analysis) per scope-realignment-brief §6 task #6. Loaded full context (brief, PRODUCT.md §1, realigned prd.md v1.2, current requirements.md, specs/synthetic-user-config.schema.json, user-stories D6/D7/D8 + J4 status). Rewrote `aidlc-docs/inception/requirements/requirements.md`:
+- New section "Análisis de la Reestructuración": traceability table (brief R1/R2/N1/Y1 + PRD M20-M23/MD13-MD14/P7/UC6 + resolved decisions #2/#5 → RFs), D6/D7/D8 review (D7 superseded → audit agent P7; D8 kept at API contract, extended at UX), 5 design implications for construction (full_journey as declared composition, chainable preconditions/auto-setup, deterministic collectors vs agent separation, breaking specs changes behind HITL gate #6, gate mode untouched/graceful degradation).
+- New RF-14..RF-22: journey flow catalog (search_and_filter, browse_discounted_products, pdp_validation, cart_review), user-selected journey scope + full_journey composition, network capture (HAR/CWV/SFRA controllers), deterministic 6-dimension collectors, audit synthesis agent (P7), findings-driven evidence policy, NL window (translate→preview→confirm), gate/exploratory modes, generic dashboard matrix.
+- Surgical updates to RF-02/05/06/07/08/09/10/12/13 (realignment notes; gate semantics unchanged).
+- New constraints C10 (agent never decides traffic light), C11 (exploratory never enters baseline), C12 (NL never reaches executor); C1/C4/C5 updated.
+- New RNF-11 (audit agent security/cost) and RNF-12 (capture overhead); RNF-02/07/08 extended.
+- Work units extended: U5 (journey flows), U6 (audit collectors+agent), U7 (network capture), U8 (NL window) — all gated behind specs HITL (#6); wave sequencing noted.
+
+**Context**: Scope realignment cascade task #6 (E4 requirements). Awaiting explicit human approval before proceeding to user stories + coverage matrix (#7 → cascade task list #4).
+
+---
+
+## E4 Inception — Requirements Approval
+
+**Timestamp**: 2026-06-03T01:00:00-05:00
+
+**User Input**: "A) Aprueba, continúa con las historias de usuario"
+
+**AI Response**: Requirements document (realigned, RF-01..RF-22) APPROVED by user. Prior question in same exchange: "Respecto a la limitacion del desarrollo de modulos respecto al tiempo definido, eso ya lo revisaste?" — answered: fixed-scope/flexible-time decision is encoded as wave sequencing (Ola 1 checkout gate → HITL specs gate → Ola 2 U5-U8) with no dates at requirements level; schedule belongs to PRD §13 + construction plans (cascade #7); Demo Day 2026-06-09 reality flagged (Ola 1 parcial realistic, covered by R11). Proceeding to user stories + coverage-matrix.md (cascade task #7).
+
+**Context**: E4 Inception — Requirements Analysis stage approved; entering User Stories stage.
+
+---
+
+## E4 Inception — User Stories + Coverage Matrix (scope realignment) + RF renumbering fix
+
+**Timestamp**: 2026-06-03T01:45:00-05:00
+
+**User Input**: (continuation of approved "A) Aprueba, continúa con las historias de usuario")
+
+**AI Response**:
+1. **Numbering conflict detected and fixed**: `unit-of-work-story-map.md` (2026-05-24) had already defined RF-14..RF-20 (Environment Registry CRUD, EnvironmentResolver, status/history/screenshots/health endpoints, Dashboard MD0) referenced by coverage-matrix.md and services.md but never backported to requirements.md. Resolution: kept RF-14..RF-20 for the app-design additions (established traceability), renumbered the realignment RFs from RF-14..RF-22 to **RF-21..RF-29**, and backported RF-14..RF-20 as a summary table into requirements.md so the RF sequence is continuous and requirements.md is the single source.
+2. **user-stories.md** (iteración 3): added design decisions D14–D18; new persona Valentina (non-technical QA, UC6); H5.5 (generic matrix); U5 H6.1–H6.4 (journey flow catalog, single-module with setup(), full_journey composition, discounted products); U6 H7.1–H7.5 (deterministic collectors, audit document for non-technical readers, agent-does-not-judge + requires_human_review restoring J4, findings-driven evidence, graceful degradation); U7 H8.1–H8.2 (HAR/controller timings with redaction, CWV); U8 H9.1–H9.3 (NL window with preview+confirm, strict translation/prompt-injection gate, exploratory mode never enters baseline). Totals: 40 stories / 157 ACs.
+3. **coverage-matrix.md**: added M20–M23 rows (committed, wave 2 behind specs HITL); J4 de-deferred via H7.3 (D14); M5 promoted to primary UX path (D18); M9 refined to findings-driven evidence (D16); UC6 realigned to NL window; P7 coverage row added; unit coverage table extended (U5–U8); gap #2 (J4) resolved-in-design with residual risk note; changelog added. Totals: 40/157/29.
+
+**Context**: E4 cascade task #7 (user stories + coverage). Awaiting explicit human approval before proceeding to unit-of-work.md (cascade task #8 / task list #5).
+
+---
+
+## E4 Inception — Conflict severity assessment (user question)
+
+**Timestamp**: 2026-06-03T02:00:00-05:00
+
+**User Input**: "Respecto a esos conflcitso que has encontrado, algo critico que haya afectado el flujo"
+
+**AI Response**: Nothing critical affected the flow. Assessment: (1) RF-14..RF-20 numbering collision — medium, resolved before any code consumed it; would have caused ambiguous RF references for coding agents in construction. (2) D8 vs NL window tension — apparent only; reconciled as D8-at-API-contract + NL-at-UX (formalized as D18); unreconciled it could have led to NL reaching the executor (P3 violation). (3) C7/M9 screenshots — already superseded by ADR-002 + decision §7-#5; no active conflict. (4) J4/D7 — known documented debt, resolved in design via H7.3 with residual risk noted until U6 is built. No invariants or existing code touched.
+
+**Context**: E4 — user stories stage still awaiting approval (A/B).
+
+---
+
+## E4 Inception — User Stories Approval
+
+**Timestamp**: 2026-06-03T02:10:00-05:00
+
+**User Input**: "A) Aprueba, continúa con unit-of-work.md"
+
+**AI Response**: User stories iteración 3 + coverage matrix APPROVED. Proceeding to application-design/unit-of-work.md (cascade task #8 / task list #5): formalize U5-U8 units, dependencies and wave sequencing.
+
+**Context**: E4 Inception — User Stories stage approved; entering Application Design update.
+
+---
+
+## E4 Inception — Application Design: Units of Work U5-U8 + RNF renumbering fix
+
+**Timestamp**: 2026-06-03T02:45:00-05:00
+
+**User Input**: "A) Aprueba, continúa con unit-of-work.md"
+
+**AI Response**:
+1. **Second numbering collision detected and fixed** (same pattern as RF): unit-of-work-story-map.md already defined RNF-11..RNF-13 (CSP headers, cache TTL, polling perf — app design 2026-05-24) never backported to requirements.md. Resolution: kept RNF-11..13 for app design, renumbered realignment NFRs to RNF-14 (audit agent security/cost) and RNF-15 (capture overhead); backported RNF-11..13 summary into requirements.md; fixed references in user-stories.md.
+2. **unit-of-work.md**: added U5 (journey flows: 4 flow components + FlowCatalog with full_journey composition + generic runner dispatch), U6 (audit: DimensionCollectors + AuditAgent in src/classifier/ + EvidencePolicy; traffic-light independence test), U7 (NetworkCapture + ControllerTimingAggregator + WebVitalsCollector), U8 (TranslateEndpoint + NLWindow + mode filtering) — each with business purpose, stack, stories, components, files, tests, completion criteria. MD0 updated with H5.5; U3 note updated (D7 superseded); cross-references updated.
+3. **unit-of-work-dependency.md**: dependency matrix extended (U5∥U7 after U1+HITL; U6 requires U5+U7+U3; U8 parallel); construction sequence adds HITL specs gate + Fases 5-6; new interface contracts (FlowCatalog, AuditFinding[], NetworkSummary, mode, /v1/translate); checkpoints 4 (HITL specs package), 5 (U5+U7 data for U6), 6 (end-to-end non-technical user). Note: H5.5 generic matrix recommended in wave 1 to avoid dashboard rework.
+4. **unit-of-work-story-map.md**: RF map extended with RF-21..RF-29; RNF map with RNF-14..15; Must-Have coverage adds M20-M23 (diseño completo, ola 2) and M5 promoted; stories map extended (10 units / 157 ACs).
+5. **scope-realignment-brief.md §8**: resume point updated (tasks #3-#4 approved, #5 done pending approval).
+
+**Context**: E4 cascade task #8 (unit-of-work). Awaiting explicit human approval. Next after approval: specs/ contracts HITL gate (cascade #9 / task list #6).
+
+---
+
+## E4 Inception — Unit of Work Approval
+
+**Timestamp**: 2026-06-03T03:00:00-05:00
+
+**User Input**: "aprueba y continua, avisame cuando termines la fase inception"
+
+**AI Response**: Unit-of-work U5-U8 (+ dependency + story-map) APPROVED. E4 cascade tasks #3-#5 complete. Proceeding to close the Inception phase: update aidlc-state.md (Construction→Inception re-entry + E4 completion) and prepare the specs/ HITL breaking-change package as a PROPOSAL document (specs/ files NOT touched — explicit field-by-field human approval still required per hard rule).
+
+**Context**: E4 Inception closing.
+
+---
+
+## E4 Inception — PHASE COMPLETE (scope realignment re-entry)
+
+**Timestamp**: 2026-06-03T03:30:00-05:00
+
+**User Input**: (continuation of "aprueba y continua, avisame cuando termines la fase inception")
+
+**AI Response**: Inception phase closed:
+1. `aidlc-docs/aidlc-state.md` updated: scope realignment section, Inception Re-entry checklist (requirements v2 / stories iteración 3 / units v2 all APPROVED), next step = specs HITL gate. Station-4 review note marked superseded (already completed per audit).
+2. Created `aidlc-docs/inception/specs-change-proposal.md` — the HITL breaking-change package: Paquete A (synthetic-user-config v2: flows enum +5 incl. full_journey alias, maxItems 6, mode field, schema_version v2), Paquete B (execution_report v2: flow_name enum, screenshot_state +finding/critical +finding_dimension, StepResult.phase, mode, audit object, network_summary per profile), Paquete C (POST /v1/translate contract, new additive spec file). Three user choices flagged: A1-alt (full_journey as enum value — recommended), B5-alt (audit doc as S3 ref — recommended), B6-alt (network_summary per ProfileResult — recommended). specs/*.json NOT touched.
+3. Resume point and session memory updated.
+
+**Context**: Inception phase COMPLETE. Cascade remaining: #6 specs HITL (proposal ready, awaiting user), #7 construction plans U5-U8, #9 harness CLAUDE.md/AGENTS.md + tech matrix.

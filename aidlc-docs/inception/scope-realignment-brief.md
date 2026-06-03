@@ -133,16 +133,33 @@ confirmación humana explícita.
 ## 7. Decisiones abiertas que requieren tu confirmación
 
 1. ~~**Frontera del MVP:** ¿Opción A u Opción B?~~ → **RESUELTO (2026-06-02):** alcance fijo, ningún módulo se recorta; el **tiempo** es la variable de ajuste (ver §5).
-2. **Alcance de los flujos de recorrido:** ¿cuáles entran al catálogo? (p.ej. `browse_discounted_products`, `search_and_filter`, `pdp_validation`, `cart_review`)
+2. ~~**Alcance de los flujos de recorrido:** ¿cuáles entran al catálogo?~~ → **RESUELTO (2026-06-03):**
+   el catálogo cerrado se compone de **flows modulares** (`search_and_filter`, `pdp_validation`,
+   `cart_review`, `checkout_full`, `checkout_card_declined`; `browse_discounted_products` por
+   confirmar en requirements) y **el usuario decide el alcance del recorrido** al lanzar el run:
+   un módulo único, un subconjunto, o `full_journey`. `full_journey` NO es un flow escrito a
+   mano sino una **composición declarada** de los flows modulares (evita duplicar selectores —
+   riesgo R2 — y habilita el render genérico del dashboard Y1). Implicación de diseño: los flows
+   modulares necesitan precondiciones encadenables — en `full_journey` el estado fluye entre
+   flows; en modo módulo-único cada flow se auto-prepara con setup mínimo determinista. El
+   agente traductor solo selecciona del catálogo (invariante #2 intacto).
 3. **Agente de auditoría:** ¿síntesis-sobre-datos-deterministas (recomendado) o clasificador que juzga?
 4. **Tiempos de API:** ¿captura de red vía Playwright (in) o fuera de este alcance?
-5. **Screenshots:** ¿se mantiene fallo+final, o el documento de auditoría justifica más evidencia (revisando cost cap)?
+5. ~~**Screenshots:** ¿se mantiene fallo+final, o el documento de auditoría justifica más evidencia?~~
+   → **RESUELTO (2026-06-03):** captura **dirigida por hallazgos, no por calendario**:
+   - **Siempre** (ambos modos): fallo de paso + paso final — sin cambio.
+   - **Auditoría:** captura adicional **solo cuando hay algo que resaltar** — un hallazgo en
+     alguna de las 6 dimensiones (locale, precio, accesibilidad, contenido roto…) o un **punto
+     crítico definido** del proceso (p.ej. resumen de pago, confirmación de pedido).
+   - **Nunca** captura "porque sí": módulo limpio y sin nada notable = cero evidencia visual.
+   - Mantiene el costo cerca del actual (~500 MB/mes, invariante #6) y cada captura del
+     documento de auditoría queda enlazada a un hallazgo o hito crítico — cero ruido.
 
 ---
 
 ## 8. Estado de avance (resume point)
 
-> **Branch:** `rework/storefront-audit-scope` · **Última sesión:** 2026-06-02
+> **Branch:** `rework/storefront-audit-scope` · **Última sesión:** 2026-06-03
 
 **Hecho y commiteado** (5 commits `fe4f344`..`9867c84`, sin push):
 
@@ -150,8 +167,13 @@ confirmación humana explícita.
 - ✅ E1 — Research (notas de vigencia)
 - ✅ E2 — Producto (`pvb.md`, `icp.md`, `prd.md` [renombrado desde `prd-2026-05-22.md`], `PRODUCT.md`)
 
-**Próximo paso → E4 Inception:** `requirements/requirements.md` (tarea #3) → historias + `coverage-matrix.md` (#4) → `unit-of-work.md` (#5). Luego: contratos `specs/` (HITL, #6), construcción (#7), estado AI-DLC + `audit.md` (#8), arnés `CLAUDE.md`/`AGENTS.md` + matriz (#9). Tracking vivo en la task list de la sesión.
+**E4 Inception (2026-06-03):**
+- ✅ #3 `requirements/requirements.md` — APROBADO (RF-21..RF-29, RNF-14..15, C10..C12; análisis de reestructuración; RF-14..20 y RNF-11..13 de application design retro-portados tras detectar colisión de numeración)
+- ✅ #4 historias + `coverage-matrix.md` — APROBADO (iteración 3: 40 historias / 157 ACs; D14–D18; persona Valentina; J4 des-aplazado)
+- 🔄 #5 `unit-of-work.md` + dependency + story-map — HECHO, pendiente aprobación (U5–U8 formalizadas, checkpoints 4–6, fases 5–6)
 
-**Decisiones (§7) ya reflejadas en los docs:** #1 alcance fijo · #3 agente sintetiza-no-juzga (P7) · #4 captura de red IN (M22). **Aún abiertas:** #2 (cuáles flows de recorrido entran al catálogo) y #5 (evidencia/screenshots para el documento de auditoría).
+**Siguiente:** contratos `specs/` (HITL, #6) → construcción (#7) → estado AI-DLC + `audit.md` (#8) → arnés `CLAUDE.md`/`AGENTS.md` + matriz (#9).
+
+**Decisiones (§7) — TODAS RESUELTAS (2026-06-03):** #1 alcance fijo · #2 catálogo modular + alcance del recorrido elegido por el usuario (módulo único / subconjunto / `full_journey` como composición) · #3 agente sintetiza-no-juzga (P7) · #4 captura de red IN (M22) · #5 screenshots dirigidos por hallazgos (fallo+final siempre; en auditoría solo hallazgos y puntos críticos). #2 y #5 deben bajar a `requirements.md` en E4.
 
 **Sin commitear (no relacionado con la realineación):** `docs/conceptos/*`, `docs/tasks/linear-publish.yaml`.

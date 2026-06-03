@@ -6,8 +6,9 @@
 - **Project Type**: Brownfield documentation-first MVP
 - **Start Date**: 2026-05-20
 - **Workspace Root**: `F:\Development_Projects\IA\TestPilot-SFCC`
-- **Current Stage**: INCEPTION PHASE - Station 4 reconciliation
-- **Last Reconciled**: 2026-05-31
+- **Current Stage**: INCEPTION PHASE - scope realignment re-entry COMPLETE (E4 approved); next gate = specs/ contracts HITL
+- **Last Reconciled**: 2026-06-03
+- **Scope Realignment**: 2026-06-02/03, branch `rework/storefront-audit-scope`. The project returned from pre-Construction to Inception (Requirements Analysis) to restore the full PRD scope: store journey flows, 6-dimension audit document, network capture, NL window. Fixed scope — time is the adjustment variable. Rationale: `inception/scope-realignment-brief.md`.
 
 ## Workspace State
 
@@ -41,6 +42,13 @@
 - [x] Workflow Planning - `aidlc-docs/inception/plans/execution-plan.md`.
 - [x] Application Design - `aidlc-docs/inception/application-design/`.
 - [x] Units Generation - `aidlc-docs/inception/application-design/unit-of-work.md`.
+
+### Inception Re-entry — Scope Realignment (2026-06-03, all HITL-approved)
+
+- [x] Requirements Analysis v2 - `requirements.md` realigned: RF-21..RF-29, RNF-14..RNF-15, C10..C12, restructuring analysis with brief/PRD traceability. RF-14..RF-20 and RNF-11..RNF-13 (application design 2026-05-24) backported after numbering-collision detection. APPROVED.
+- [x] User Stories iteración 3 - 40 stories / 157 ACs; decisions D14-D18; new persona Valentina (non-technical, UC6); J4 de-deferred (H7.3); coverage-matrix updated (M20-M23). APPROVED.
+- [x] Units Generation v2 - U5 (journey flows), U6 (audit collectors + synthesis agent), U7 (network capture), U8 (NL window + modes); dependency matrix + Fases 5-6 + checkpoints 4-6; story-map extended. APPROVED.
+- [ ] **specs/ contracts HITL gate (cascade #6)** - breaking-change package proposal in `inception/specs-change-proposal.md`. specs/*.json NOT touched yet — requires explicit field-by-field human approval.
 
 ### Construction Phase
 
@@ -110,4 +118,6 @@ These items are useful for navigation, but they are not blocking for Station 4 I
 
 ## Next Recommended Step
 
-Run an external critical review using `docs/ai-review-prompts/station-4-aidlc-critical-review-prompt.md`, then commit the reconciliation artifacts separately from the initial AI-DLC artifact import.
+**specs/ contracts HITL gate (cascade #6):** review and approve the breaking-change package in `inception/specs-change-proposal.md` (flows enum + `full_journey` + `mode` in `synthetic-user-config.schema.json`; audit + network fields in `execution_report.schema.json`; `POST /v1/translate` contract). Only after explicit approval are `specs/*.json` edited and versions bumped. Then: construction plans for U5-U8 (cascade #7), harness update CLAUDE.md/AGENTS.md + tech matrix (cascade #9).
+
+*(Superseded 2026-06-03: the Station 4 external critical review was completed and its findings resolved — see audit.md "Post-Station-4 Critical Review".)*
