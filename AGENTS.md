@@ -8,13 +8,13 @@
 ## 1. Contexto del negocio
 
 **¿Qué hace este producto?**
-TestPilot SFCC es una plataforma interna de PASH para automatizar el QA de storefronts Salesforce Commerce Cloud (SFRA). Simula usuarios sintéticos que ejecutan flujos críticos de checkout via Playwright, orquestados por agentes de IA (Claude API), y entrega reportes estructurados (JSON + Markdown + semáforo verde/amarillo/rojo) consumibles tanto por humanos como por otros agentes del ecosistema interno.
+TestPilot SFCC es una plataforma interna de PASH para automatizar el QA de storefronts Salesforce Commerce Cloud (SFRA). Cualquier miembro del equipo —técnico o no— **describe en lenguaje natural** lo que quiere validar y obtiene: **(a)** un veredicto de deploy-gate (semáforo verde/amarillo/rojo, regla determinista, <30 min) y **(b)** un **documento de auditoría del recorrido completo de la tienda** (búsqueda/PLP → PDP → carrito → checkout) que sintetiza 6 dimensiones con evidencia enlazada: integridad de comercio, rendimiento, locale, accesibilidad, salud del cliente y contenido. Usuarios sintéticos vía Playwright, agentes Claude API acotados (traductor pre-run + síntesis post-run), reportes JSON + Markdown consumibles por humanos y agentes.
 
 **¿Quién es el usuario?**
-Equipo de ingeniería de PASH (3-7 personas). Tech Leads y desarrolladores que hacen ≥2 deploys/mes de storefronts SFCC en LatAm. Actualmente invierten 4-8 horas en QA manual por release. El reporte en Markdown es consumido por humanos; el JSON es consumido por agentes downstream en el mismo ecosistema.
+Equipo de ingeniería de PASH (3-7 personas) + perfiles no-técnicos (QA/PM/negocio) vía la ventana de lenguaje natural. Tech Leads y desarrolladores que hacen ≥2 deploys/mes de storefronts SFCC en LatAm. Actualmente invierten 4-8 horas en QA manual por release.
 
 **¿Cuál es el estado actual?**
-Fase de diseño/requisitos completada dentro del programa Hardcore AI Cohorte 2. Iniciando implementación del MVP. Objetivo semana 4: ciclo de QA < 30 minutos. Objetivo semana 12: gate automatizado de deploy (auto-approve en verde).
+**Realineación de alcance completada y aprobada (2026-06-03, branch `rework/storefront-audit-scope`):** inception rehecha, `specs/` en **v2**, planes de construcción listos. **Alcance fijo — ningún módulo se recorta; el tiempo es la variable de ajuste.** Ola 1 = gate de checkout (U0–U4 + MD0); ola 2 = recorrido + auditoría + red + ventana NL (U5–U8). Racional: `aidlc-docs/inception/scope-realignment-brief.md`.
 
 ---
 
@@ -33,27 +33,32 @@ Fase de diseño/requisitos completada dentro del programa Hardcore AI Cohorte 2.
 **Estructura de carpetas:**
 ```
 src/
-├── api/              ← FastAPI app, endpoint /v1/run y schemas de entrada/salida
-├── agents/           ← Traducción NL → SyntheticUserConfig via Claude API
-├── executor/         ← Runner de perfiles + flows Playwright
-│   ├── flows/        ← Un archivo por flow (checkout_full.py, checkout_card_declined.py)
+├── api/              ← FastAPI app, endpoints /v1/run y /v1/translate, schemas de entrada/salida
+├── agents/           ← Traductor NL → SyntheticUserConfig validado + preview (Claude API, pre-run)
+├── executor/         ← Runner de perfiles + flows Playwright + captura de red + datos de auditoría
+│   ├── flows/        ← Un archivo por flow: checkout_full, checkout_card_declined,
+│   │                   search_and_filter, browse_discounted_products, pdp_validation, cart_review (ola 2)
+│   ├── flow_catalog.py ← Registro del catálogo cerrado + composición full_journey + puntos críticos (ola 2)
 │   └── profiles/     ← Perfiles sintéticos (mobile_co.py, desktop_co.py, desktop_ec.py)
-├── reporter/         ← Generación de reporte JSON + Markdown + semáforo
-├── baseline/         ← Manager de DynamoDB: escritura, lectura, cálculo p95
-└── classifier/       ← Clasificación de errores via Claude API (bug real vs comportamiento esperado)
+├── reporter/         ← Reporte JSON + Markdown + semáforo determinista + integración de auditoría
+├── baseline/         ← Manager de DynamoDB: escritura, lectura, cálculo p95 (solo runs modo gate)
+└── classifier/       ← Agente de SÍNTESIS de auditoría (Claude API): hallazgos deterministas →
+                        documento de 6 dimensiones. Sintetiza, NUNCA decide el semáforo (P7). (ola 2)
 
-specs/                ← JSON Schemas de SyntheticUserConfig y del reporte de salida (source of truth del contrato API)
+specs/                ← JSON Schemas v2 (config, reporte, translate) — source of truth del contrato API
 infra/                ← AWS CDK stacks (Step Functions, ECS, DynamoDB, S3, API Gateway)
 tests/                ← Unitarios (pytest) e integración
 docs/                 ← PRD y documentación de planificación existente
 ```
 
 **Decisiones de diseño no obvias:**
-- **Catálogo cerrado de flows:** solo `checkout_full` y `checkout_card_declined` en MVP. El LLM traduce NL a un config que solo puede referenciar estos flows. La flexibilidad arbitraria de flows queda fuera de scope — reduce tasa de error del LLM de ~20% a casi cero.
-- **Validación estricta antes de ejecutar:** todo `SyntheticUserConfig` generado por Claude se valida contra JSON Schema antes de levantar un solo browser. Config inválido = rechazo inmediato con error descriptivo, nunca ejecución parcial.
-- **Cero contaminación:** el método de pago siempre falla en el paso final (no se crean órdenes reales). Los usuarios sintéticos siempre usan email `@testpilot.internal`. Esto es un invariante del sistema, no una configuración.
-- **Screenshots solo en fallo + paso final:** capturar en cada paso costaría ~17 GB/mes en S3; con esta restricción son ~500 MB/mes.
-- **Período de bootstrap (14 ejecuciones):** el semáforo no emite alertas amarillas hasta tener 14 runs exitosos en DynamoDB. Sin baseline suficiente no hay p95 confiable.
+- **Catálogo cerrado de flows (specs v2):** `checkout_full`, `checkout_card_declined`, `search_and_filter`, `browse_discounted_products`, `pdp_validation`, `cart_review` + `full_journey` como **alias de composición** (el backend lo expande vía FlowCatalog — nunca es un archivo flow, el executor nunca lo ve). El catálogo crece SOLO curado vía PR; el usuario elige el alcance (módulo único / subconjunto / recorrido completo). Reduce tasa de error del LLM de ~20% a casi cero.
+- **Validación estricta antes de ejecutar:** todo `SyntheticUserConfig` se valida contra JSON Schema v2 antes de levantar un solo browser. La instrucción NL se traduce, se muestra en preview, el usuario confirma — **la NL nunca llega al executor** (C12). Config inválido = rechazo inmediato con error descriptivo, nunca ejecución parcial.
+- **Cero contaminación:** el método de pago siempre falla en el paso final (no se crean órdenes reales). Los usuarios sintéticos siempre usan email `@testpilot.internal`. Los flows de recorrido NO contienen pasos de pago — solo los `checkout_*` tocan pago. Esto es un invariante del sistema, no una configuración.
+- **Evidencia dirigida por hallazgos (ADR-003):** fallo + paso final SIEMPRE (~500 MB/mes). En modo auditoría, capturas adicionales SOLO por hallazgo de un colector determinista (6 dimensiones) o punto crítico declarado en el FlowCatalog. Nunca capturas de pasos OK limpios. HAR: solo metadata+timings, sin bodies, con redacción.
+- **El agente de auditoría sintetiza, no juzga (P7/C10):** el semáforo lo calcula EXCLUSIVAMENTE la regla determinista (p95). El LLM redacta el documento de auditoría e hipótesis con `confidence`/`requires_human_review`; no puede mover el veredicto. Si falla, el reporte sale igual con hallazgos crudos.
+- **Modos gate/exploratorio:** gate = determinista, entra al baseline, veredicto de deploy. Exploratorio = descubrimiento; NUNCA entra al baseline ni cuenta como deploy-safe (C11). Cap 10 runs/día suma ambos.
+- **Período de bootstrap (14 ejecuciones):** sin alertas amarillas hasta 14 runs exitosos — **por par perfil×flow** (cada flow nuevo del catálogo arranca su propio bootstrap).
 - **Thresholds p95, no porcentajes fijos:** el baseline compara contra el percentil 95 de las últimas 10 ejecuciones, no contra un margen arbitrario.
 
 ---
@@ -107,8 +112,10 @@ docs/                 ← PRD y documentación de planificación existente
 - Usar emails que no sean `@testpilot.internal` en datos sintéticos
 - Hacer commits automáticamente — todos los cambios se quedan staged
 - Relajar la validación JSON Schema de `SyntheticUserConfig` para "facilitar pruebas"
-- Agregar flows nuevos al catálogo sin confirmación explícita (el catálogo cerrado es intencional)
-- Capturar screenshots en pasos intermedios (viola la restricción de costos de S3)
+- Agregar flows nuevos al catálogo sin confirmación explícita (el catálogo cerrado es intencional; crece solo curado vía PR)
+- Capturar screenshots fuera de la política ADR-003 (fallo/final siempre; hallazgo/punto crítico solo en auditoría — nunca pasos OK limpios "porque sí")
+- Pasar la instrucción NL al executor o ejecutar un config sin confirmación del usuario (C12)
+- Escribir runs exploratorios al baseline o dejar que el agente de auditoría toque el semáforo (C11, C10)
 
 ---
 
@@ -130,9 +137,11 @@ docs/                 ← PRD y documentación de planificación existente
 **Patrones a evitar:**
 - No hardcodear selectores CSS/XPath de SFCC directamente en el código — usar constantes en `src/executor/selectors.py`
 - No usar `time.sleep()` fijo en Playwright — usar `wait_for_selector()` o `expect()`
-- No enviar requests directos a la API de Claude sin pasar por el módulo `src/agents/` (maneja reintentos, logging y validación)
-- No escribir a DynamoDB directamente desde `src/executor/` — toda escritura de historial pasa por `src/baseline/`
-- No emitir alerta amarilla durante las primeras 14 ejecuciones (período de bootstrap)
+- No enviar requests directos a la API de Claude sin pasar por `src/agents/` (traductor) o `src/classifier/` (agente de auditoría) — manejan reintentos, logging, sanitización y validación
+- No escribir a DynamoDB directamente desde `src/executor/` — toda escritura de historial pasa por `src/baseline/` (y solo runs gate al baseline)
+- No emitir alerta amarilla durante las primeras 14 ejecuciones del par perfil×flow (período de bootstrap)
+- No despachar flows con if/else por nombre — usar el registro del FlowCatalog; `full_journey` se expande antes del executor
+- No alimentar al agente de auditoría con datos crudos del browser — solo hallazgos deterministas sanitizados (sin credenciales/cookies/PII)
 
 **Decisiones ya tomadas que no debemos reabrir:**
 - **Playwright, no Selenium.** API moderna, ejecución paralela de perfiles, mejor debugging con trace viewer.
@@ -179,7 +188,7 @@ Roster operativo en `.claude/agents/` (proyección Claude Code); descripción co
 | `leader` | Opus | 🟦 Orquestador | Orquesta el flujo AI-DLC: decide etapa, delega y hace cumplir las puertas de aprobación humana. Único con la tool `Agent`; no escribe artefactos. |
 | `implementer` | Sonnet | 🟩 Principal | Autor de artefactos. Modo A (activo): documentación/arquitectura AI-DLC. Modo B (diferido): código de unidades / features ad-hoc. |
 | `reviewer` | Sonnet | 🟩 Principal | Verifica artefactos contra el rule detail de la etapa, trazabilidad y `content-validation`. No edita; aprueba o rechaza. |
-| `flow-guardian` | Haiku | 🟨 Especialista | **Read-only.** Vigila el catálogo cerrado de flows y el contrato `specs/synthetic-user-config.schema.json`. |
+| `flow-guardian` | Haiku | 🟨 Especialista | **Read-only.** Vigila el catálogo cerrado de flows (v2: 6 flows + `full_journey`) y el contrato `specs/synthetic-user-config.schema.json`. |
 | `sfcc-product-owner` | Sonnet | 🟨 Especialista | **Read-only.** Aporta criterio de producto/SFCC sobre requisitos, historias y NFR. |
 | `design-steward` | Sonnet | 🟨 Especialista | Diseño visual y memoria de producto: `PRODUCT.md`, `DESIGN.md`, slides. |
 
@@ -187,4 +196,4 @@ Perfiles de referencia (no cargables) en `.claude/profiles/`.
 
 ---
 
-*Última actualización: 2026-05-31 · Mantenido por: Christian Díaz (cdiaz@pash.com.co)*
+*Última actualización: 2026-06-03 (realineación de alcance — catálogo v2, agente de auditoría, evidencia por hallazgos, modos gate/exploratorio) · Mantenido por: Christian Díaz (cdiaz@pash.com.co)*

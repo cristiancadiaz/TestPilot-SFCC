@@ -6,7 +6,7 @@
 
 ---
 
-> ⚠️ **Realineación de alcance en curso** (2026-06-02 · branch `rework/storefront-audit-scope`). La **sección 1 (Objetivo) ya refleja el alcance redefinido**. Las secciones 2–8 todavía describen el alcance anterior (acotado a checkout) y se actualizan en los pasos siguientes del cascade — ver [`aidlc-docs/inception/scope-realignment-brief.md`](./aidlc-docs/inception/scope-realignment-brief.md).
+> ✅ **Realineación de alcance COMPLETADA** (2026-06-03 · branch `rework/storefront-audit-scope`). Objetivo (§1), audiencia (§2), invariantes (§6), pantallas (§7) y fuera-de-alcance (§8) reflejan el alcance redefinido. Contratos `specs/` en v2. Racional y decisiones en [`aidlc-docs/inception/scope-realignment-brief.md`](./aidlc-docs/inception/scope-realignment-brief.md).
 
 ## 1. Qué es
 
@@ -65,13 +65,14 @@ Cuatro consumidores, en orden de poder de decisión:
 
 Estas son **producto**, no configuración. La UI nunca debe ofrecer una opción que las viole:
 
-1. **Cero contaminación.** El pago siempre falla en el paso final — no se crean órdenes reales. Emails sintéticos siempre `@testpilot.internal`.
-2. **Catálogo cerrado de flows.** Solo `checkout_full` y `checkout_card_declined` en MVP. El usuario elige del catálogo; no escribe flows libres.
-3. **JSON Schema gate.** Todo `SyntheticUserConfig` se valida contra [`specs/`](./specs/) antes de lanzar un browser. Config inválido = rechazo inmediato con error descriptivo en la UI.
-4. **Bootstrap silencioso.** Sin alertas amarillas hasta 14 runs exitosos.
-5. **Thresholds p95, no porcentajes fijos.** SFCC tiene alta varianza natural; márgenes fijos generan ruido.
-6. **Screenshots solo en fallo + paso final.** La UI muestra evidencia, no un álbum.
-7. **API versionable.** Cualquier cambio de campo en `/v1/run` es breaking → sube a `/v2`.
+1. **Cero contaminación.** El pago siempre falla en el paso final — no se crean órdenes reales. Emails sintéticos siempre `@testpilot.internal`. Los flows de recorrido no contienen pasos de pago.
+2. **Catálogo cerrado de flows.** Catálogo v2: `checkout_full`, `checkout_card_declined`, `search_and_filter`, `browse_discounted_products`, `pdp_validation`, `cart_review` + `full_journey` (composición). El usuario elige el alcance del catálogo — módulo único, subconjunto o recorrido completo; no escribe flows libres. Crece solo curado vía PR.
+3. **JSON Schema gate.** Todo `SyntheticUserConfig` se valida contra [`specs/`](./specs/) (v2) antes de lanzar un browser. La instrucción NL se traduce, se previsualiza y el usuario confirma — la NL nunca llega al executor. Config inválido = rechazo inmediato con error descriptivo en la UI.
+4. **Bootstrap silencioso.** Sin alertas amarillas hasta 14 runs exitosos — por par perfil×flow.
+5. **Thresholds p95, no porcentajes fijos.** SFCC tiene alta varianza natural; márgenes fijos generan ruido. Solo runs **gate** alimentan el baseline; los exploratorios nunca.
+6. **Evidencia dirigida por hallazgos.** Fallo + paso final siempre; en auditoría, capturas adicionales solo por hallazgo de las 6 dimensiones o punto crítico declarado (ADR-003). La UI muestra evidencia, no un álbum.
+7. **API versionable.** Cualquier cambio de campo en `/v1/run` es breaking → sube de versión (hecho: v2 el 2026-06-03, v1 vigente 30 días).
+8. **El agente de auditoría sintetiza, no juzga.** El semáforo es regla determinista; el LLM redacta el documento y propone hipótesis con confianza — nunca emite el veredicto (P7).
 
 ## 7. Pantallas del MVP
 

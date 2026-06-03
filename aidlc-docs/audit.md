@@ -450,3 +450,33 @@ None. Optional index files may still be added for naming compatibility with the 
 7. aidlc-state.md next step updated → cascade #9 (harness).
 
 **Context**: Cascade #7 COMPLETE. Remaining: #9 harness (CLAUDE.md local + AGENTS.md + tech matrix). reverse-engineering/ refresh deferred until code exists (E5).
+
+---
+
+## Cascade #9 — Harness Update: START
+
+**Timestamp**: 2026-06-03T06:00:00-05:00
+
+**User Input**: "si, procede con el #9" (prior exchange: user asked whether nfr-tactics conflict was fixed — confirmed yes, EV-01 rename + RNF-14/15 added — and what the harness work consists of — explained: sync CLAUDE.md/AGENTS.md/tech matrix/PRODUCT.md §6 with realigned invariants so future agent sessions don't enforce outdated rules)
+
+**AI Response**: Starting cascade #9: update CLAUDE.md (local), AGENTS.md, docs/arquitectura/matriz-tecnologia-fase.md, PRODUCT.md §6 invariants, and review flow-guardian agent definition.
+
+**Context**: Cascade #9 in progress — final step of the realignment cascade.
+
+---
+
+## Cascade #9 — Harness Update: COMPLETE — REALIGNMENT CASCADE CLOSED
+
+**Timestamp**: 2026-06-03T06:45:00-05:00
+
+**User Input**: (continuation of "si, procede con el #9")
+
+**AI Response**:
+1. **CLAUDE.md** (local, gitignored): project context updated (audit document + NL window + fixed scope); System Data Flow rewritten (translate→confirm→run, FlowCatalog expansion, network capture, audit collectors, gate-only baseline, synthesis agent); Module Boundaries (6 flows + flow_catalog.py, classifier = audit synthesis agent, specs v2); Hard Invariants rewritten — #2 catalog v2 with full_journey-as-composition, #3 NL-never-reaches-executor, #4 bootstrap per profile×flow, #5 gate-only baseline, #6 findings-driven evidence (ADR-003), #7 cap sums both modes, NEW #8 agent-synthesizes-never-judges (P7/C10); Patterns extended (FlowCatalog dispatch, deterministic findings only, ADR-003 naming); docs map updated.
+2. **AGENTS.md**: business context, folder structure, non-obvious design decisions (catalog v2, findings-driven evidence, P7, modes, per-pair bootstrap), agent prohibitions (C10/C11/C12 added), anti-patterns, flow-guardian row, footer date.
+3. **docs/arquitectura/matriz-tecnologia-fase.md**: U5-U8 rows in Eje B with their tech (FlowCatalog, Playwright network listeners/CDP, axe-core, synthesis agent); D7-superseded note corrected; runtime pipeline (Eje C) rewritten with translate/network/audit stages; axe-core flagged as HITL dependency.
+4. **PRODUCT.md**: realignment banner → COMPLETED; §6 invariants updated (#2 catalog v2, #3 NL preview+confirm, #4 per-pair, #5 gate-only, #6 findings-driven, #7 v2 done, NEW #8 P7).
+5. **.claude/agents/flow-guardian.md**: composition exception added (full_journey has no flow file BY DESIGN — checks COMPOSITIONS in FlowCatalog; a full_journey.py file is now an inverse BLOCKER per D15); new checks: payment-outside-checkout (C3) and composition-as-file; screenshot check updated to ADR-003 states (fail/final/finding/critical); version bump rule updated to v2→v3 + 30 days (P2). This prevents a false BLOCKER the old rules would have raised against the v2 schema.
+6. aidlc-state.md: cascade marked COMPLETE; next = wave-1 code generation (U0 first).
+
+**Context**: Scope realignment cascade (brief §6) fully closed: steps 0-12 / tasks #1-#9 all done and HITL-approved. Harness now consistent with approved scope — future agent sessions will enforce the realigned invariants.

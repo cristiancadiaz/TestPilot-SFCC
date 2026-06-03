@@ -118,6 +118,6 @@ These items are useful for navigation, but they are not blocking for Station 4 I
 
 ## Next Recommended Step
 
-**Cascade #9 — harness update:** align `CLAUDE.md` (gitignored, local) and `AGENTS.md` + `docs/arquitectura/matriz-tecnologia-fase.md` with the realigned scope: data flow (journey flows, audit agent, network capture, NL window), module boundaries (audit agent in src/classifier/, network capture in executor), invariants #2 (closed catalog now 6 flows + full_journey) and #6 (findings-driven evidence per ADR-003), new tech (axe-core, HAR capture, synthesis agent). After that: wave-1 code generation (U0 first — see `docs/tasks/`), then wave-2 per `construction/plans/u5..u8-code-generation-plan.md`.
+**🏁 Scope realignment cascade COMPLETE (2026-06-03).** All 9 cascade steps done and HITL-approved: research notes, product docs, requirements v2, stories iteración 3, units U5-U8, specs v2, construction plans + architecture pass, state/audit, harness (CLAUDE.md local + AGENTS.md + tech matrix + PRODUCT.md §6 + flow-guardian composition exception).
 
-*(Done 2026-06-03 — cascade #7: construction plans U5-U8, ADR-003 findings-driven evidence (amends ADR-002), C4 diagrams + NFR tactics realigned (RNF-14 collision fixed → EV-01), execution-plan wave 2, build-sequence wave 2 with promotion gates.)*
+**Next: wave-1 code generation** — U0 first (task package in `docs/tasks/`), then U1/U2/MD0 in parallel, U3, U4 per `construction/plans/build-sequence.md`. Wave 2 (U5-U8) follows its plans after wave 1. Refresh `inception/reverse-engineering/` when code lands (E5).
