@@ -7,11 +7,13 @@
 
 ---
 
+> ⚠️ **Realineado 2026-06-02** (branch `rework/storefront-audit-scope`). Este Vision Board refleja el **alcance redefinido**: recorrido completo de tienda + documento de auditoría (6 dimensiones) + ventana de lenguaje natural para usuarios no-técnicos. Objetivo canónico en [`PRODUCT.md`](../../PRODUCT.md) §1; racional en [`aidlc-docs/inception/scope-realignment-brief.md`](../../aidlc-docs/inception/scope-realignment-brief.md).
+
 ## PRODUCTO
 
 **Nombre del producto:** SyntheticQA (working title)
 
-**Descripción en una línea:** Dashboard interno + agente de testing que permite configurar y lanzar flujos automatizados con usuarios sintéticos sobre tiendas SFCC, visualizar resultados en tiempo real por perfil/agente, y obtener un semáforo de deploy-gate consumible por humanos y otros agentes del ecosistema CI/CD.
+**Descripción en una línea:** Plataforma interna donde **cualquier miembro del equipo —técnico o no— describe en lenguaje natural una prueba**, y un agente ejecuta el **recorrido completo de la tienda SFCC** (búsqueda → PDP → carrito → checkout) con usuarios sintéticos en varios perfiles, devolviendo **(a)** un **semáforo de deploy-gate** y **(b)** un **documento de auditoría** de 6 dimensiones (integridad de comercio, rendimiento, locale, accesibilidad, salud del cliente, contenido) — consumible por humanos y por otros agentes del ecosistema CI/CD.
 
 **Tagline interno:** _"QA manual que se hace solo, mientras tomás un café."_
 
@@ -56,6 +58,7 @@ El próximo modelo foundation (Opus 5, Gemini 4) será mejor entendiendo screens
 1. **Implementadores SFCC LatAm operando tiendas propias o de clientes** — agencias certificadas con equipos de 3–8 ingenieros. Beachhead inmediato = PASH.
 2. **Retailers mid-market con SFCC in-house** — equipos digitales con 500–10K órdenes/mes y Tech Lead responsable de QA pre-release.
 3. **Otros agentes/sistemas AI del ecosistema interno** — CI/CD pipelines, agentes de code review, dashboards operativos que consumen el JSON estructurado.
+4. **Miembros no-técnicos del equipo interno (QA, PM, negocio)** — gracias a la **ventana de lenguaje natural**, lanzan pruebas describiendo en español lo que quieren validar, sin escribir JSON ni conocer la API. Amplía el uso más allá de los ingenieros y multiplica quién puede pedir una auditoría antes de un deploy.
 
 **NO es para:** tiendas Shopify/Magento/VTEX/WooCommerce (la especialización SFCC es el wedge), retailers Tier 1 con Mabl/Testim ya contratados, equipos con ≤1 deploy/mes, tiendas sin staging aislado.
 
@@ -120,6 +123,11 @@ El producto **es la ausencia del humano en el ciclo de QA pre-release**. Si el i
 
 **Todo lo demás:** disparador automático post-commit → ejecución de flujos → clasificación de hallazgos → reporte estructurado → semáforo. **Tiempo target end-to-end: <10 minutos** entre commit y reporte legible.
 
+**Entrada por lenguaje natural (nuevo):** el usuario —técnico o no— describe la prueba en español; el sistema la traduce a una `SyntheticUserConfig` **validada antes de ejecutar** (sin esto, no abre browser). Dos modos de operación:
+
+- **Gate** — determinista y reproducible; es el que bloquea deploys y alimenta el baseline p95.
+- **Exploratorio** — el agente improvisa desde la descripción libre para descubrir/QA exploratorio; **no** bloquea deploys ni entra al baseline (evita contaminar la reproducibilidad del gate).
+
 ---
 
 ## 6. AI DECISION TRIANGLE
@@ -128,8 +136,8 @@ El producto **es la ausencia del humano en el ciclo de QA pre-release**. Si el i
 
 ### Trade-offs que acepto
 
-- **Sacrifico capability del clasificador AI:** uso Claude Haiku 4.5 o Sonnet 4.6 para clasificación rápida. Casos ambiguos suben a Opus, pero son <5% del volumen. El clasificador NO toma la decisión final — solo categoriza. La decisión rojo/amarillo/verde la dicta una regla determinista sobre la salida del clasificador + métricas de Playwright.
-- **Sacrifico cobertura amplia:** MVP cubre 2 flujos críticos (checkout + búsqueda), no 10. Ampliar después.
+- **Agente de auditoría como síntesis, no juez:** uso Claude Haiku 4.5 o Sonnet 4.6 para sintetizar el documento de auditoría (rendimiento, hallazgos, evidencia) de forma rápida. Casos ambiguos suben a Opus, pero son <5% del volumen. El agente **redacta y categoriza, NO decide** rojo/amarillo/verde — eso lo dicta una regla determinista sobre datos de Playwright + baseline.
+- **Cobertura curada, no infinita:** la visión cubre el **recorrido completo** (búsqueda → PDP → carrito → checkout) auditado en 6 dimensiones, pero con **catálogo cerrado** de flows (curados, no arbitrarios) y entregado **incrementalmente** — no 10 flujos libres de golpe.
 - **Sacrifico fidelidad de mediciones de performance:** mido p50/p95 sobre 3 ejecuciones para reducir ruido, no busco precisión sub-segundo.
 - **Sacrifico features de UI avanzadas:** el dashboard MVP es funcional (lanzar prueba + ver resultados + historial), no analítico. Grafana, sparklines, comparaciones visuales entre runs y anomaly detection quedan fuera del MVP. El dashboard básico SÍ está en scope.
 
@@ -240,4 +248,4 @@ El costo marginal por tienda es ~$25/mes. Cada tienda adicional aporta ~$74–27
 
 ---
 
-_Hardcore AI by 30X — Cohorte 2 — Estación 2 (mayo 2026)_
+_Hardcore AI by 30X — Cohorte 2 — Estación 2 (mayo 2026). Realineado 2026-06-02 (alcance: recorrido completo + auditoría de 6 dimensiones + ventana NL) — objetivo canónico en `PRODUCT.md` §1._

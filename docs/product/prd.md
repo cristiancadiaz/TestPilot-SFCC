@@ -4,11 +4,13 @@
 > Producto interno de la empresa — no comercializable
 
 > **Nota de vigencia:** este PRD es un snapshot de definición generado durante la estación de producto. Se conserva por trazabilidad y racional histórico. Para decisiones vigentes de implementación, consultar primero [`../../PRODUCT.md`](../../PRODUCT.md), [`../../AGENTS.md`](../../AGENTS.md) y los contratos en [`../../specs/`](../../specs/). Si este PRD contradice `specs/*.json`, gana el JSON Schema.
+>
+> ⚠️ **Realineación de alcance (2026-06-02, branch `rework/storefront-audit-scope`):** el alcance se redefinió hacia **recorrido completo de tienda + documento de auditoría de 6 dimensiones + ventana de lenguaje natural** para usuarios no-técnicos. **El alcance es fijo — ningún módulo se recorta; el tiempo es la variable de ajuste.** Objetivo canónico en `PRODUCT.md` §1; racional en `aidlc-docs/inception/scope-realignment-brief.md`. Las secciones de este PRD se están actualizando por pases.
 
 | Campo         | Valor                                                  |
 | ------------- | ------------------------------------------------------ |
-| Versión       | 1.1                                                    |
-| Fecha         | 2026-05-22 (rev. dashboard + login + screenshots + Ecuador) |
+| Versión       | 1.2 (realineación de alcance — recorrido completo + auditoría + ventana NL) |
+| Fecha         | 2026-05-22 · rev. 2026-06-02 (realineación de alcance) |
 | Autor         | Christian Díaz                                         |
 | Sponsor       | Tech Lead / Gerente de Tecnología                      |
 | Co-creado con | Claude (Anthropic) — Hardcore AI Cohorte 2, Estación 2 |
@@ -39,13 +41,13 @@
 
 ## Resumen Ejecutivo
 
-**¿Qué es?** TestPilot SFCC es un sistema compuesto por un **dashboard web interno** para configurar y visualizar pruebas, y un **agente de testing** que genera usuarios sintéticos parametrizados, ejecuta flujos críticos sobre una tienda SFCC en staging vía Playwright, y devuelve un reporte estructurado (JSON + markdown + semáforo) consumible por humanos y otros agentes del ecosistema interno de la empresa.
+**¿Qué es?** TestPilot SFCC es un sistema donde **cualquier miembro del equipo —técnico o no— describe en lenguaje natural** una prueba, y un **agente** ejecuta el **recorrido completo de la tienda SFCC** (búsqueda → PDP → carrito → checkout) con usuarios sintéticos parametrizados en staging vía Playwright. Devuelve dos entregables: **(a)** un **semáforo de deploy-gate** (JSON + markdown) y **(b)** un **documento de auditoría** que sintetiza 6 dimensiones (integridad de comercio, rendimiento, locale, accesibilidad, salud del cliente, contenido) con evidencia enlazada — todo consumible por humanos y por otros agentes del ecosistema interno. Un **dashboard web interno** orquesta y visualiza.
 
 **¿Qué problema resuelve?** Hoy el equipo gasta 4-8 horas de ingeniería por release validando manualmente la tienda. No existe baseline de performance ni historial. Las regresiones se detectan días o semanas tarde, cuando el negocio nota una caída en conversión.
 
-**¿Cuál es la propuesta?** En 4 semanas, entregar una v1 con dashboard web interno + agente que ejecute 2 flujos (`checkout-full` + `checkout-card-declined`) sobre 3 perfiles (`mobile/CO`, `desktop/CO`, `desktop/EC`), con login como primer paso de cada flujo, y endpoint REST versionado consumible por agentes downstream del equipo (CI/CD bot, code-review agent).
+**¿Cuál es la propuesta?** Entregar (con **alcance fijo y tiempo como variable de ajuste** — ningún módulo se recorta) la plataforma completa: ventana de lenguaje natural + dashboard web interno + agente que ejecuta el recorrido completo (`checkout-full`, `checkout-card-declined` y flujos de navegación curados) sobre 3 perfiles (`mobile/CO`, `desktop/CO`, `desktop/EC`), con login como primer paso, documento de auditoría de 6 dimensiones, y endpoint REST versionado consumible por agentes downstream (CI/CD bot, code-review agent). La entrega es **incremental por valor/riesgo**; el Demo Day (9-jun) muestra lo que esté listo, sin podar el producto.
 
-**¿Cuál es el valor diferencial?** Frente a Datadog ($200-$2,000/mes) y Mabl (>$2,500/mes), TestPilot ofrece: (a) costo de infra <$50/mes; (b) JSON versionado pensado desde día 1 para consumo programático por agentes internos; (c) auto-reparación mínima de selectores vía LLM que reduce mantenimiento crítico en SFCC.
+**¿Cuál es el valor diferencial?** Frente a Datadog ($200-$2,000/mes) y Mabl (>$2,500/mes), TestPilot ofrece: (a) costo de infra <$50/mes; (b) JSON versionado pensado desde día 1 para consumo programático por agentes internos; (c) auto-reparación mínima de selectores vía LLM que reduce mantenimiento crítico en SFCC; (d) **recorrido completo auditado en 6 dimensiones** + **ventana de lenguaje natural** que abre el uso a perfiles no-técnicos (QA/PM/negocio).
 
 **¿Cuál es el North Star?** Reducir el tiempo desde "PR listo para mergear" hasta "decisión deploy-safe documentada" de **4-8 horas a <30 minutos** en semana 4, y a **<10 minutos** en semana 12 (cuando el agente CI/CD aprueba auto-merge con semáforo verde reciente).
 
@@ -67,7 +69,7 @@ Antes de redactar el PRD se realizó un cruce exhaustivo de 3 documentos de inve
 | **C4** | Umbral de alerta de performance: 20% (Brief) vs. varianza natural ±40% (Crítica)            | Usar **p95 de últimas 10 ejecuciones**, no umbral fijo                               |
 | **C5** | Cadencia: pre-deploy (Brief) vs. monitor continuo (Validación)                              | v1 es **gate pre-deploy**; monitor continuo entra en Could Have                      |
 | **C6** | Cómo evitar órdenes contaminantes en staging                                                | **Payment method de prueba que falla en paso final** + cliente `@testpilot.internal` |
-| **C7** | Costo de screenshots a escala                                                               | Screenshots en **todos los módulos, estado OK y FAIL** — `{run_id}/{perfil}/{flujo}/{paso}-{ok\|fail}.png`. Decisión revisada: captura completa para aumentar confianza del equipo en reportes visuales. Costo ~17 GB/mes. Revisar en semana 2. |
+| **C7** | Costo de screenshots a escala                                                               | _(decisión original: todos los módulos OK+FAIL, ~17 GB/mes)_ **⚠️ Superado por ADR-002:** la política **vigente** es **fallo + paso final** (~500 MB/mes), no todos los módulos. Bajo revisión si el documento de auditoría justifica más evidencia (`scope-realignment-brief.md` §4). |
 
 ### Vacíos críticos reconocidos (sin material primario para citar)
 
@@ -85,13 +87,13 @@ Antes de redactar el PRD se realizó un cruce exhaustivo de 3 documentos de inve
 
 ### One-Liner
 
-> **TestPilot SFCC** — Dashboard interno + agente que permite configurar y lanzar flujos automatizados con usuarios sintéticos sobre tiendas SFCC, visualizar resultados en tiempo real, y obtener un semáforo de deploy-gate (JSON + markdown) consumible por humanos y otros agentes para decidir en <30 minutos si un release es seguro para producción.
+> **TestPilot SFCC** — Cualquier miembro del equipo —técnico o no— describe en **lenguaje natural** una prueba; un agente ejecuta el **recorrido completo** de la tienda SFCC con usuarios sintéticos y devuelve un **semáforo de deploy-gate** + un **documento de auditoría** (JSON + markdown) consumible por humanos y otros agentes para decidir en <30 minutos si un release es seguro para producción.
 
 ### Job to be Done
 
-> **Cuando** voy a desplegar un cambio en la tienda SFCC y necesito decidir si pasa a producción, **quiero** validar automáticamente los flujos críticos (login → búsqueda → PDP → carrito → checkout) con perfiles sintéticos parametrizados y comparar contra el baseline histórico de performance, **para** aprobar el release en menos de 30 minutos con criterio objetivo, sin depender de las 4-8 horas de QA manual que hoy son cuello de botella.
+> **Cuando** voy a desplegar un cambio en la tienda SFCC y necesito decidir si pasa a producción, **quiero** describir en lenguaje natural y validar automáticamente el recorrido completo (login → búsqueda → PDP → carrito → checkout) con perfiles sintéticos parametrizados, comparar contra el baseline histórico y recibir un documento de auditoría, **para** aprobar el release en menos de 30 minutos con criterio objetivo, sin depender de las 4-8 horas de QA manual que hoy son cuello de botella.
 
-**Actor del JTBD:** Ingeniero del equipo SFCC con autoridad de merge / aprobación de deploys.
+**Actor del JTBD:** Ingeniero del equipo SFCC con autoridad de merge / aprobación de deploys. La **ventana de lenguaje natural** habilita además a perfiles **no-técnicos** (QA, PM, negocio) a lanzar pruebas sin escribir JSON.
 
 ### Misión del producto
 
@@ -225,7 +227,7 @@ quadrantChart
 | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Actor     | Ingeniero del equipo SFCC (U1)                                                                                                                                                                                          |
 | Trigger   | Va a aprobar merge a `main` / desplegar nuevo cartridge                                                                                                                                                                 |
-| Pasos     | 1. Ingeniero configura JSON en dashboard (tienda + credenciales + productos + flujos) y lanza run; 2. LLM traduce + valida config; 3. Step Functions orquesta 3 perfiles × 2 flujos en ECS; 4. Cada flujo inicia con login del usuario sintético; 5. Captura screenshots de todos los módulos (OK + FAIL); 6. LLM clasifica + reporte markdown/JSON; 7. Dashboard muestra semáforo y resultados |
+| Pasos     | 1. El usuario (técnico o no) **describe la prueba en lenguaje natural** en el dashboard (o JSON avanzado) y lanza run; 2. El agente traduce a `SyntheticUserConfig` + valida contra schema antes de abrir browser; 3. Step Functions orquesta perfiles × flujos (**recorrido completo**) en ECS; 4. Cada flujo inicia con login del usuario sintético; 5. Captura evidencia (screenshots + traza de red); 6. El agente **sintetiza el documento de auditoría** (6 dimensiones) + reporte JSON/markdown — **sin decidir el semáforo**; 7. Dashboard muestra semáforo y resultados |
 | Resultado | Reporte en <10 min + <20 min revisión = <30 min total                                                                                                                                                                   |
 | KPI       | Tiempo de QA: 4-8 h → <30 min                                                                                                                                                                                           |
 
@@ -271,6 +273,16 @@ quadrantChart
 | Resultado | Baseline objetivo con N≥14 ejecuciones                                                                                                                                                |
 | KPI       | Existencia de baseline: No → Sí                                                                                                                                                       |
 
+### UC6 — Miembro no-técnico lanza una prueba sin escribir código (★ realineación 2026-06-02)
+
+| Campo     | Valor |
+| --------- | ----- |
+| Actor     | QA / PM / negocio (sin habilidad ni interés por JSON o API) |
+| Trigger   | Quiere validar una promoción, contenido o flujo antes de un deploy, sin esperar a un ingeniero |
+| Pasos     | 1. **Describe en lenguaje natural** en el dashboard ("revisa la PDP de un producto en oferta y confirma que el descuento se aplique"); 2. El agente traduce a `SyntheticUserConfig` validada y muestra qué va a ejecutar; 3. Corre el recorrido; 4. Recibe el **documento de auditoría** en lenguaje legible para no-técnicos |
+| Resultado | Un perfil no-técnico valida por su cuenta; descarga al ingeniero de ser el único operador |
+| KPI       | Quién puede lanzar pruebas: solo ingenieros → + QA/PM/negocio |
+
 ---
 
 ## 6. Principios de Diseño No Negociables
@@ -289,7 +301,7 @@ quadrantChart
 
 ### P3 — Validación estricta del output del LLM antes de ejecutar
 
-**Operativo:** El LLM tiene tasa de error 15-25% en instrucciones ambiguas (Crítica §3). Ningún output se ejecuta sin validación determinística.
+**Operativo:** El LLM tiene tasa de error 15-25% en instrucciones ambiguas (Crítica §3). Ningún output se ejecuta sin validación determinística. **Con la ventana de lenguaje natural como entrada principal, esto aplica a CADA prueba:** la descripción NL se traduce a `SyntheticUserConfig` y se valida contra schema antes de abrir cualquier browser (en modo gate). El modo exploratorio, agéntico, queda explícitamente fuera del gate y del baseline.
 **Interfaz:** `SyntheticUserConfig` validado contra JSON Schema; respuesta `400 InvalidConfig` si falla; catálogo cerrado de flujos; respuesta `403 FlowNotInCatalog` si se pide flujo no aprobado.
 **Prohibido:** Ejecutar configs no validados; flujos arbitrarios; reintentos silenciosos con prompts modificados.
 
@@ -315,6 +327,12 @@ quadrantChart
 **Operativo:** Toda ejecución es reconstruible: instrucción, config, flujo, resultado, timestamp, versión del agente.
 **Interfaz:** `run_id` UUID v4 único; DynamoDB con campos completos; screenshots en S3 nombrados `{run_id}/{perfil}/{flujo}/{paso}-{ok|fail}.png`; endpoint `GET /v1/runs/{run_id}`; retención 90 días hot + Glacier.
 **Prohibido:** Ejecuciones sin `run_id`; sobrescribir registros; logging incompleto.
+
+### P7 — El agente de auditoría sintetiza, no juzga (★ realineación 2026-06-02)
+
+**Operativo:** El agente (LLM) **redacta** el documento de auditoría y **categoriza** hallazgos, pero **nunca decide** el semáforo verde/amarillo/rojo — el veredicto lo dicta una regla determinista sobre métricas de Playwright + baseline p95. Restaura el clasificador/resumen del PRD original (que D7 había aplazado) bajo esta restricción.
+**Interfaz:** documento de auditoría con hallazgos por dimensión + evidencia enlazada (screenshot, traza de red, log) + hipótesis con `confidence` y `requires_human_review`; el semáforo es un campo aparte, calculado por regla.
+**Prohibido:** que el LLM emita el veredicto final; ejecutar una instrucción NL sin validación de schema previa; presentar hipótesis del agente como hechos confirmados.
 
 ---
 
@@ -358,6 +376,8 @@ quadrantChart
 
 **Sebastián, dev junior, martes 11:00, PR toca lógica de promociones.**
 
+> **Realineado 2026-06-02:** este journey (anomalía detectada → human-review) había sido **aplazado** del MVP (D7). Se **restaura** bajo el principio **P7** — el agente *marca* la anomalía y *propone* hipótesis, pero el humano decide. Es el caso central de la dimensión de auditoría **integridad de comercio** (promociones/descuentos).
+
 1. **11:00** — Lanza el run.
 2. **11:06** — Ejecución completa pero clasificador detecta anomalía: tiempo OK, HTTP 200 OK, PERO monto del carrito difiere en 4,500 COP (descuento de promoción aplicado a producto inelegible).
 3. **11:06** — Semáforo 🟡 AMARILLO con `requires_human_review: true`, hipótesis y confidence=0.62, ticket auto-creado.
@@ -372,6 +392,8 @@ quadrantChart
 
 ## 8. MVP Scope — MoSCoW
 
+> **Realineado 2026-06-02:** con la decisión de **alcance fijo (ningún módulo se recorta; el tiempo es la variable de ajuste)**, este MoSCoW se lee como **orden de entrega en olas**, no como recorte: lo de menor prioridad se entrega en una **ola posterior**, no se elimina. **Excepción:** la sección **WON'T HAVE** sí son exclusiones deliberadas de producto (no "recortes por tiempo") — esas siguen fuera. Ver alcance comprometido nuevo al final de esta sección.
+
 ### 🟥 MUST HAVE (semana 4, demo funcional)
 
 | #   | Feature                                                  | Costo   |
@@ -384,7 +406,7 @@ quadrantChart
 | M6  | Payment method de prueba + usuario `@testpilot.internal` en Secrets Manager | 0.3 sem |
 | M7  | Reporte dual: JSON + markdown                            | 0.4 sem |
 | M8  | Semáforo 3 estados (verde/amarillo/rojo)                 | 0.3 sem |
-| M9  | Screenshots: todos los módulos en estado OK y FAIL — `{run_id}/{perfil}/{flujo}/{paso}-{ok\|fail}.png` | 0.4 sem |
+| M9  | Screenshots: **fallo + paso final** (ADR-002) — `{run_id}/{perfil}/{flujo}/{paso}-{fail\|final}.png` | 0.4 sem |
 | M10 | DynamoDB + S3                                            | 0.4 sem |
 | M11 | Baseline p95 sobre últimas 10 ejecuciones                | 0.3 sem |
 | M12 | Periodo de bootstrapping (14 runs sin amarillos)         | 0.2 sem |
@@ -397,6 +419,8 @@ quadrantChart
 | M19 | Dashboard web interno: (a) pantalla de registro de ambientes (URL + paths Secrets Manager para env_access y shopper); (b) campo JSON para configurar run con environment_id; (c) vista en tiempo real de agentes; (d) historial de resultados | 1.2 sem |
 
 **Total Must: ~8.0 semanas-persona = ~4.0 semanas con 2 personas.**
+
+> **Nota M9 (2026-06-02):** la política de screenshots **canónica** es **fallo + paso final** (ADR-002 / `specs/`), no "todos los módulos OK+FAIL" (eso era el C7 original, ~17 GB/mes). Se revisa si el **documento de auditoría** justifica más evidencia visual, cuidando el cost cap. Ver `aidlc-docs/inception/scope-realignment-brief.md` §4.
 
 ### 🟦 SHOULD HAVE
 
@@ -421,6 +445,17 @@ C1: Dashboard avanzado: analytics, Grafana, sparklines, comparación visual entr
 
 W1: Benchmarking de competidores (riesgo legal). W2: Tests en producción. W3: Flujos fuera del catálogo. W4: Auto-reparación completa estilo Mabl. W5: Multi-tenant. W6: Validación de checkout exitoso (P1 lo prohíbe). W7: Perfiles cognitivos complejos. W8: Soporte SFCC OCAPI/SCAPI. W9: Evasión de anti-bot. W10: Cobertura tests >80%.
 
+### 🆕 Comprometido por realineación 2026-06-02 (alcance fijo — olas posteriores, NO recortable)
+
+| #   | Feature | Nota |
+| --- | --- | --- |
+| M20 | **Flujos de recorrido** curados — navegación/PLP (incl. productos con descuento), PDP, carrito. El catálogo **sigue cerrado** (crece curado, no arbitrario) | Ola posterior a checkout |
+| M21 | **Documento de auditoría** de 6 dimensiones (integridad de comercio, rendimiento, locale, accesibilidad, salud del cliente, contenido) con evidencia enlazada | El agente sintetiza (P7) |
+| M22 | **Captura de red / tiempos de respuesta** (HAR vía Playwright) + Core Web Vitals + accesibilidad (axe-core) | Nuevo |
+| M23 | **Ventana de lenguaje natural** para usuarios no-técnicos (traducción validada antes de ejecutar) | M5 ampliado a path principal |
+
+> Estos **no compiten** con el MVP de 4 semanas: se entregan en **olas posteriores** priorizadas por valor/riesgo, sin recortar el producto. El Demo Day muestra lo que esté listo a esa fecha.
+
 ---
 
 ## 9. Especificación Funcional: Módulos y Features
@@ -431,7 +466,7 @@ W1: Benchmarking de competidores (riesgo legal). W2: Tests en producción. W3: F
 | ---- | ----------------------------------- | ------------------------------------------------------ | ------ |
 | MD0  | Dashboard Web Interno               | (a) Registro de ambientes: URL + env_access_secret_path + shopper_secret_path + anti_bot_whitelisted; (b) Lanzamiento de runs vía environment_id; (c) Vista en tiempo real de agentes; (d) Historial con semáforo | Must   |
 | MD1  | API Gateway / Ingesta               | Endpoints REST versionados                             | Must   |
-| MD2  | Agente de Lenguaje                  | Traduce JSON config → SyntheticUserConfig validado; clasifica errores; genera resumen | Must   |
+| MD2  | Agente de Lenguaje / Auditoría      | Traduce **NL → SyntheticUserConfig** validado; **sintetiza el documento de auditoría** (categoriza hallazgos, redacta resumen) — **no juzga** el semáforo (P7) | Must   |
 | MD3  | Validación y Catálogo               | JSON Schema + flujos aprobados                         | Must   |
 | MD4  | Orquestador (Step Functions)        | Coordina ejecución paralela                            | Must   |
 | MD5  | Motor de Ejecución (Playwright/ECS) | Lanza flujos paso a paso                               | Must   |
@@ -442,6 +477,10 @@ W1: Benchmarking de competidores (riesgo legal). W2: Tests en producción. W3: F
 | MD10 | Auto-reparación de Selectores       | LLM propone reemplazo                                  | Should |
 | MD11 | Human Review Workflow               | Issue auto-creado + groundtruth                        | Should |
 | MD12 | Calendarización (EventBridge)       | Trigger periódico                                      | Should |
+| MD13 | **Auditoría multi-dimensión**       | Integridad de comercio (precios/promos), locale (CO/EC), accesibilidad (axe-core), contenido/SEO | Must (ola posterior) |
+| MD14 | **Captura de red / timings**        | HAR + Core Web Vitals + tiempos de controllers SFRA    | Must (ola posterior) |
+
+> **Realineado 2026-06-02:** con alcance fijo, **MD10–MD12 (antes Should) quedan comprometidos** (entrega en ola posterior, no opcionales). **MD13–MD14 son nuevos** (documento de auditoría + captura de red). MD2 pasa a ser el **agente de auditoría** (sintetiza, no juzga — P7).
 
 ### 9.2 Roles y permisos
 
@@ -491,7 +530,7 @@ flowchart TB
         ORCH[MD4 Orquestador<br/>Step Functions]
         LOGIN[Login usuario sintetico<br/>credentials desde Secrets Manager]
         ENGINE[MD5 Motor Playwright<br/>ECS Fargate<br/>mobile-CO / desktop-CO / desktop-EC]
-        CAPTURE[MD6 Captura Evidencia<br/>screenshots OK+FAIL por modulo]
+        CAPTURE[MD6 Captura Evidencia<br/>screenshots fallo+final + traza de red]
     end
 
     subgraph ANALYSIS["MD7 - Analisis"]
@@ -501,7 +540,7 @@ flowchart TB
 
     subgraph PERSIST["MD8 - Persistencia"]
         DDB[(DynamoDB<br/>runs + metrics<br/>+ baseline)]
-        S3[(S3 Artifacts<br/>screenshots OK+FAIL<br/>run_id/perfil/flujo/paso)]
+        S3[(S3 Artifacts<br/>screenshots fallo+final<br/>run_id/perfil/flujo/paso)]
         SM[Secrets Manager<br/>credentials usuario sintetico]
     end
 
@@ -568,6 +607,7 @@ flowchart TB
 | A2  | % PRs que invocan TestPilot  | 0%       | ≥60%                  | ≥90%        |
 | A3  | Cobertura baseline (N≥10)    | 0        | 3 perfiles × 2 flujos | Mantener    |
 | A4  | Días hasta baseline completo | N/A      | ≤7 días               | N/A         |
+| A5  | Usuarios no-técnicos (QA/PM/negocio) que lanzan pruebas vía NL | 0 | ≥1 | ≥3 |
 
 ### KPIs de Retención
 
@@ -599,7 +639,7 @@ flowchart TB
 | C1  | Costo infra mensual (USD)         | ≤$50          | ≤$150         |
 | C2  | Costo por run (USD)               | ≤$0.30        | ≤$0.20        |
 | C3  | Horas-ingeniero/sem mantenimiento | ≤4 h (sin S1) | ≤2 h (con S1) |
-| C4  | Tamaño S3 artifacts (screenshots OK+FAIL todos los módulos) | ≤17 GB (revisar semana 2) | ≤30 GB        |
+| C4  | Tamaño S3 artifacts (screenshots: **fallo + paso final**, ADR-002) | ≤1 GB | ≤5 GB |
 
 ### Tablero Tech Lead (3 números/semana)
 
@@ -663,12 +703,13 @@ flowchart TB
 | R2  | Anti-bot bloquea Playwright en staging    | Técnico     | Alta  | Alto        | Pre-flight en sprint 0 (M18); excepción de IP; plan B sin checkout                                              |
 | R3  | LLM malinterpreta instrucciones           | IA          | Media | Medio       | Validación schema (P3); D-NL gate Q1≥90%; `400 AmbiguousInstruction`                                            |
 | R4  | Varianza performance → alert fatigue      | Producto    | Alta  | Alto        | Bootstrapping 14 runs; p95 dinámico; gate Q4≤20%; recalibración mensual                                         |
-| R5  | Falso verde permite bug en producción     | Reputación  | Media | **Crítico** | Q5≤5%; comunicación "cubrimos 2 flujos, no toda la tienda"; post-mortem por evento                              |
+| R5  | Falso verde permite bug en producción     | Reputación  | Media | **Crítico** | Q5≤5%; comunicación "cubrimos los flujos del catálogo, no toda la tienda"; post-mortem por evento                              |
 | R6  | DevOps/Seguridad bloquean lanzamiento     | Adopción    | Media | Alto        | Reuniones de validación semana 1-2 (no semana 4); FAQ documentado; demo técnico semana 3                        |
 | R7  | Costo de infra escala inesperadamente     | Operativo   | Baja  | Medio       | C7 screenshots solo en fallos; límite 10 runs/día; alerta C1>$75; lifecycle a Glacier                           |
 | R8  | Cambio breaking en schema rompe agentes   | Producto    | Media | Alto        | P2 versionado; nunca renombrar campos en `v1`; `v2` con 30 días overlap                                         |
 | R9  | Órdenes sintéticas contaminan reportes    | Op. interno | Media | Alto        | Payment `test-decline` por default; email `@testpilot.internal`; assert `orders_created=0`                      |
 | R10 | Equipo no adopta post-curso               | Adopción    | Media | **Crítico** | S1 auto-reparación; integración con flujo de PR existente; KPIs semanales del Tech Lead; bus factor con 2do dev |
+| R11 | Alcance fijo + tiempo flexible → slip de cronograma o poco "vistoso" en Demo Day | Cronograma | Media | Medio | Entrega por **olas priorizada por valor**; Demo Day muestra lo listo (no se poda producto); "alcance fijo" ≠ "todo para el día 30"; checkpoint de avance por ola |
 
 ### 12.2 Decisiones críticas según materialización de riesgos
 
@@ -680,6 +721,8 @@ flowchart TB
 ---
 
 ## 13. Plan de Entrega 30/60/90 Días
+
+> **Realineado 2026-06-02:** con **alcance fijo y tiempo como variable de ajuste**, este plan 30/60/90 describe las **primeras olas** (checkout + dashboard + baseline). El alcance comprometido adicional (M20–M23: recorrido completo, documento de auditoría, captura de red, ventana NL) se entrega en **olas posteriores priorizadas por valor/riesgo — no se recorta**. El **Demo Day (9-jun) es fecha fija**: muestra lo que esté listo, sin podar el producto. **Si el alcance excede el tiempo, se extiende el tiempo, no se elimina alcance.**
 
 ### 13.1 Días 1-30 — Construcción del MVP
 
