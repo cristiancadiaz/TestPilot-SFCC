@@ -118,6 +118,6 @@ These items are useful for navigation, but they are not blocking for Station 4 I
 
 ## Next Recommended Step
 
-**specs/ contracts HITL gate (cascade #6):** review and approve the breaking-change package in `inception/specs-change-proposal.md` (flows enum + `full_journey` + `mode` in `synthetic-user-config.schema.json`; audit + network fields in `execution_report.schema.json`; `POST /v1/translate` contract). Only after explicit approval are `specs/*.json` edited and versions bumped. Then: construction plans for U5-U8 (cascade #7), harness update CLAUDE.md/AGENTS.md + tech matrix (cascade #9).
+**Cascade #9 — harness update:** align `CLAUDE.md` (gitignored, local) and `AGENTS.md` + `docs/arquitectura/matriz-tecnologia-fase.md` with the realigned scope: data flow (journey flows, audit agent, network capture, NL window), module boundaries (audit agent in src/classifier/, network capture in executor), invariants #2 (closed catalog now 6 flows + full_journey) and #6 (findings-driven evidence per ADR-003), new tech (axe-core, HAR capture, synthesis agent). After that: wave-1 code generation (U0 first — see `docs/tasks/`), then wave-2 per `construction/plans/u5..u8-code-generation-plan.md`.
 
-*(Superseded 2026-06-03: the Station 4 external critical review was completed and its findings resolved — see audit.md "Post-Station-4 Critical Review".)*
+*(Done 2026-06-03 — cascade #7: construction plans U5-U8, ADR-003 findings-driven evidence (amends ADR-002), C4 diagrams + NFR tactics realigned (RNF-14 collision fixed → EV-01), execution-plan wave 2, build-sequence wave 2 with promotion gates.)*

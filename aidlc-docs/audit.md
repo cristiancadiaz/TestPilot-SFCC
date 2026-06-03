@@ -419,3 +419,34 @@ None. Optional index files may still be added for naming compatibility with the 
 5. Validation: all 3 schemas valid against JSON Schema Draft 2020-12; all 5 embedded examples validate against their schemas.
 
 **Context**: Cascade #6 complete. Remaining: #7 construction plans U5-U8 (+ architecture/plans pass), #9 harness CLAUDE.md/AGENTS.md + tech matrix.
+
+---
+
+## Cascade #7 — Construction Plans U5-U8 + Architecture Pass: START
+
+**Timestamp**: 2026-06-03T04:45:00-05:00
+
+**User Input**: "si, continua con el #7"
+
+**AI Response**: Starting cascade #7: construction plans for U5-U8 under aidlc-docs/construction/plans/, plus architecture pass (ADR for findings-driven evidence, C4 diagrams + nfr-tactics with audit agent/network capture) and plans/execution-plan.md update (fases 5-6).
+
+**Context**: Cascade #7 in progress.
+
+---
+
+## Cascade #7 — Construction Plans U5-U8 + Architecture Pass: COMPLETE
+
+**Timestamp**: 2026-06-03T05:30:00-05:00
+
+**User Input**: (continuation of "si, continua con el #7")
+
+**AI Response**:
+1. **Third numbering collision detected and fixed**: nfr-tactics-verification.md had a local "RNF-14 Screenshot cost discipline" colliding with requirements.md RNF-14 (audit agent). Renumbered the local row to EV-01 (maps to C4 + RF-26, tactic updated per ADR-003); added RNF-14 (audit agent security/cost) and RNF-15 (capture overhead/HAR hygiene) rows aligned with requirements.md.
+2. **ADR-003** created (findings-driven evidence policy, amends ADR-002 — baseline fail+final intact; audit mode adds finding/critical-point captures only). ADR-002 status updated to "amended by ADR-003".
+3. **c4-diagrams.md** realigned: L1 adds non-technical persona + audit/NL roles of Claude API (bounded, P7/C12) + modes note; L2 adds Network Capture and Audit Synthesis Agent containers, NL Translator promoted, full_journey expansion note; validation table extended (LLM verdicts, exploration pollution, evidence cost).
+4. **execution-plan.md**: realignment banner + "Ola 2" section (package sequence order 6-8, estimates ~4.5-6.5h, additional quality gates: C10 independence test, RT1 100%, D-NL gates, HAR redaction, ADR-003 verification, C11).
+5. **Construction plans created**: u5-code-generation-plan.md (12 steps: FlowCatalog, 4 journey flows, generic dispatch, composition), u6 (12 steps: audit models, raw collection, 6 deterministic collectors, axe-core [pyproject change flagged as HITL], evidence policy, audit agent with sanitizer/budget/timeout, document renderer, reporter integration, C10 independence test), u7 (9 steps: NetworkCapture, controller timings, web vitals, models, runner/reporter integration), u8 (9 steps: mode field, translator promotion, /v1/translate, baseline filter, NL window UI, RT1 suite).
+6. **build-sequence.md**: wave-2 section appended (dependency diagram, promotion gates per unit, checkpoint 6, sprint estimates ~8-12 person-days).
+7. aidlc-state.md next step updated → cascade #9 (harness).
+
+**Context**: Cascade #7 COMPLETE. Remaining: #9 harness (CLAUDE.md local + AGENTS.md + tech matrix). reverse-engineering/ refresh deferred until code exists (E5).

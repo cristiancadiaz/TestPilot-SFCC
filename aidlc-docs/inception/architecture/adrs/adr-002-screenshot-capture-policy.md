@@ -2,7 +2,9 @@
 
 ## Status
 
-Accepted
+Accepted — **amended by [ADR-003](./adr-003-findings-driven-evidence-policy.md)** (2026-06-03):
+the fail+final baseline stays intact for all modes; audit mode adds bounded, findings-driven
+captures (finding in one of the 6 audit dimensions, or critical point declared in the FlowCatalog).
 
 ## Date
 

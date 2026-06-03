@@ -188,3 +188,53 @@ El detalle de instrucciones de build y test se generará en una fase separada (B
 | **Total** | 6 unidades | **~14-20 días-persona** | — |
 
 Con 2-3 devs trabajando en paralelo en sprints 1-2: **~3-4 semanas calendario** hasta sistema completo end-to-end.
+
+---
+
+## Ola 2 — Realineación de alcance (agregado 2026-06-03)
+
+> Origen: `inception/scope-realignment-brief.md`. Prerrequisito CUMPLIDO: `specs/` v2 (HITL aprobado 2026-06-03).
+> Alcance fijo — estas unidades NO son recortables; el tiempo es la variable de ajuste.
+
+### Dependencias ola 2
+
+```
+   (ola 1 completa: U0..U4 + MD0)
+                │
+   ═══ PUERTA HITL specs/ v2 — ✅ APROBADA 2026-06-03 ═══
+                │
+   ┌────────────┼──────────────┐
+   ▼            ▼              ▼
+┌──────┐   ┌──────────┐   ┌──────────┐
+│ U5   │   │ U7       │   │ U8       │   (paralelo)
+│ Flows│   │ Red/Perf │   │ NL+Modos │
+└──┬───┘   └────┬─────┘   └────┬─────┘
+   └─────┬──────┘              │
+         ▼                     │
+   ┌───────────┐               │
+   │ U6        │               │
+   │ Auditoría │               │
+   └─────┬─────┘               │
+         └──── integración ────┘   (documento de auditoría en MD0 — checkpoint 6)
+```
+
+### Gates de promoción ola 2
+
+**Gate U5 → listo:** despacho genérico (cero if/else por flow) · `full_journey` sin archivo propio · ningún flow de recorrido toca pago (test estático) · tests de composición verdes.
+
+**Gate U7 → listo:** HAR sin credenciales ni bodies (test de redacción) · overhead ≤ ~10% · `network_summary` valida contra schema v2.
+
+**Gate U8 → listo:** suite RT1 100% bloqueada (Q8=0) · executor sin import del translator (C12, grep) · exploratorios fuera del baseline y de latest-gate (C11) · gates D-NL (Q1≥90%, Q2=100%).
+
+**Gate U6 → listo:** test de independencia del semáforo (C10 — el agente no puede mover el veredicto) · degradación con gracia (Claude mockeado a excepción → reporte válido) · run limpio = solo fail+final (ADR-003) · documento legible para no-técnico (revisión humana).
+
+**Checkpoint 6 (e2e final):** Valentina describe la prueba en NL → preview → confirma → matriz genérica en vivo → documento de auditoría con evidencia enlazada → run exploratorio ausente del baseline.
+
+### Resumen ola 2
+
+| Sprint | Unidades | Días estimados | Dependencias |
+|---|---|---|---|
+| 4 | U5 + U7 + U8 (paralelo) | 4-6 | ola 1 + specs v2 ✅ |
+| 5 | U6 | 3-4 | U5, U7 |
+| 5 | Integración + checkpoint 6 | 1-2 | U6, U8 |
+| **Total ola 2** | 4 unidades | **~8-12 días-persona** | — |
