@@ -1,6 +1,6 @@
 # Brief de Realineación de Alcance — TestPilot SFCC
 
-> **Estado:** BORRADOR para revisión humana (HITL) · **Branch:** `rework/storefront-audit-scope`
+> **Estado:** ✅ APROBADO Y EJECUTADO — cascade completo 2026-06-03 (las 9 tareas HITL-aprobadas; ver §8) · **Branch:** `rework/storefront-audit-scope`
 > **Fecha:** 2026-06-02 · **Autor:** Christian Díaz (con Claude Code)
 > **Naturaleza del cambio:** reorganización de alcance ANTES de iniciar desarrollo de código.
 

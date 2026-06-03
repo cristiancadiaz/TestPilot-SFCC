@@ -480,3 +480,15 @@ None. Optional index files may still be added for naming compatibility with the 
 6. aidlc-state.md: cascade marked COMPLETE; next = wave-1 code generation (U0 first).
 
 **Context**: Scope realignment cascade (brief §6) fully closed: steps 0-12 / tasks #1-#9 all done and HITL-approved. Harness now consistent with approved scope — future agent sessions will enforce the realigned invariants.
+
+---
+
+## Station Progress Analysis (post-realignment readiness check)
+
+**Timestamp**: 2026-06-03T07:30:00-05:00
+
+**User Input**: "pregunta, parece que hay unos warning al ejecutar /doctor respecto a credenciales con posgress y vertel y git, necesitas estas herramientas para la creacion de codigo. Me gustaria que raelizaras un analisis respecto a la nueva implementacion que realizamos en el documento y si esta todo listo. puedes guiarte en las estaciones en .hardcore-ai ejecutando el prompt prompt-analisis-estaciones.md"
+
+**AI Response**: (1) /doctor warnings explained: postgres and vercel MCP servers are declared with `_active: false` by design (stack = DynamoDB + AWS); not needed for code generation. Git credentials only needed for push (not yet performed). (2) Executed station analysis per .hardcore-ai/prompt-analisis-estaciones.md using 4 parallel read-only agents (E1-E2, E3, E4-E5, E6-E8); synthesized and updated .hardcore-ai/analisis-progreso.md (rev 2026-06-03). Key findings: realignment cascade COMPLETE and incorporated (E1, E2, E4 ✅ realigned; harness E3 aligned incl. flow-guardian composition exception); code = 0/10 units (expected — next step); NEW pendings raised: P5-3 u0-code-generation-plan must be reconciled vs specs v2 (Alta), P7-5 task package U0/Linear re-validation vs specs v2 (Alta), P6-2 DESIGN.md is pre-realignment 2026-05-29 — only canonical root artifact not covered by the cascade (Media-Alta, owner design-steward). Also fixed scope-realignment-brief.md header: BORRADOR → APROBADO Y EJECUTADO (stale status detected by analysis agents).
+
+**Context**: Readiness verdict: documentation/contracts layer READY for construction; gate before code-gen = P5-3 + P7-5; DESIGN.md refresh before MD0/U5.
