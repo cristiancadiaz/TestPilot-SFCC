@@ -137,3 +137,21 @@ confirmación humana explícita.
 3. **Agente de auditoría:** ¿síntesis-sobre-datos-deterministas (recomendado) o clasificador que juzga?
 4. **Tiempos de API:** ¿captura de red vía Playwright (in) o fuera de este alcance?
 5. **Screenshots:** ¿se mantiene fallo+final, o el documento de auditoría justifica más evidencia (revisando cost cap)?
+
+---
+
+## 8. Estado de avance (resume point)
+
+> **Branch:** `rework/storefront-audit-scope` · **Última sesión:** 2026-06-02
+
+**Hecho y commiteado** (5 commits `fe4f344`..`9867c84`, sin push):
+
+- ✅ Paso 1 — Objetivo fijado (`PRODUCT.md` §1)
+- ✅ E1 — Research (notas de vigencia)
+- ✅ E2 — Producto (`pvb.md`, `icp.md`, `prd.md` [renombrado desde `prd-2026-05-22.md`], `PRODUCT.md`)
+
+**Próximo paso → E4 Inception:** `requirements/requirements.md` (tarea #3) → historias + `coverage-matrix.md` (#4) → `unit-of-work.md` (#5). Luego: contratos `specs/` (HITL, #6), construcción (#7), estado AI-DLC + `audit.md` (#8), arnés `CLAUDE.md`/`AGENTS.md` + matriz (#9). Tracking vivo en la task list de la sesión.
+
+**Decisiones (§7) ya reflejadas en los docs:** #1 alcance fijo · #3 agente sintetiza-no-juzga (P7) · #4 captura de red IN (M22). **Aún abiertas:** #2 (cuáles flows de recorrido entran al catálogo) y #5 (evidencia/screenshots para el documento de auditoría).
+
+**Sin commitear (no relacionado con la realineación):** `docs/conceptos/*`, `docs/tasks/linear-publish.yaml`.
