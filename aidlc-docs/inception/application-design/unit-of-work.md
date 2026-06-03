@@ -1,5 +1,10 @@
 # Units of Work — TestPilot SFCC
 
+> ⚠️ **Realineado 2026-06-03** (branch `rework/storefront-audit-scope`): se agregan las unidades **U5–U8**
+> (flows de recorrido, auditoría, captura de red, ventana NL + modos) del alcance realineado — entrega en
+> **ola 2**, detrás de la **puerta HITL de `specs/`** (cascade #6). Ver `../scope-realignment-brief.md` y
+> `../requirements/requirements.md` (RF-21..RF-29). Las unidades U0–U4 y MD0 NO cambian su semántica.
+
 ## Modelo de descomposición
 
 El sistema es un **monolito Python modular** (un único proceso FastAPI). Las "unidades de trabajo" son agrupaciones lógicas de módulos que pueden construirse y testearse de forma incremental. No son microservicios independientes.
@@ -26,6 +31,7 @@ Interfaz web interna que permite al equipo de ingeniería **operar el sistema si
 - **H5.2** — Lanzamiento de run desde dashboard
 - **H5.3** — Vista en tiempo real de agentes activos
 - **H5.4** — Historial de ejecuciones con semáforo
+- **H5.5** — *(★ 2026-06-03)* Matriz de ejecución **genérica** perfiles × flows (RF-29): derivada de los datos del run, sin hardcodear "checkout" ni asumir 2 flows; enlaza el documento de auditoría (U6) y distingue runs gate/exploratory; muestra runs restantes del día
 
 ### Componentes
 - C-D0 DashboardApp (`src/dashboard/`)
@@ -202,7 +208,7 @@ Convertir resultados crudos (`ProfileResult[]`) y la decisión del semáforo en 
 - **H3.2** — JSON estable para agentes CI/CD
 - **H3.3** — Auditabilidad de `orders_created=0` (renumerada desde H3.4)
 
-**Nota**: la historia original H3.3 (clasificador LLM con `confidence`/`requires_human_review`, Journey 4 del PRD) fue **descartada del MVP** por decisión D7 — ver `inception/user-stories/coverage-matrix.md`.
+**Nota**: la historia original H3.3 (clasificador LLM con `confidence`/`requires_human_review`, Journey 4 del PRD) fue **descartada del MVP** por decisión D7 — ver `inception/user-stories/coverage-matrix.md`. **Actualización 2026-06-03 (D14): D7 supersedida** — la capacidad regresa como agente de auditoría (sintetiza, no juzga — P7) en la unidad **U6**; el reporter integra/enlaza el documento de auditoría cuando existe (RF-10 realineado), pero el semáforo sigue siendo determinista.
 
 ### Componentes
 - C3-A ReportGenerator
@@ -279,11 +285,166 @@ Todos los tests de API pasan; ningún endpoint retorna stack traces en errores; 
 
 ---
 
+## U5 — Flows de Recorrido (★ realineación 2026-06-03 — ola 2)
+
+> **Gate previo:** puerta HITL de `specs/` (extensión del enum `flows[]` + representación de `full_journey` — breaking change).
+
+### Propósito de negocio
+Restaura la ambición original del PRD: el recorrido de tienda (búsqueda/PLP, descuentos, PDP, carrito) como **pruebas propias**, no como pasos enterrados dentro del checkout. Habilita que el usuario elija el alcance: **un módulo, un subconjunto, o el recorrido completo** (`full_journey`). Sin U5, las 6 dimensiones de auditoría solo verían el camino del checkout.
+
+**Por qué importa**: materializa **M20** y la decisión brief §7-#2. Alimenta con datos (precios por página, URLs) a los colectores de U6. El catálogo **sigue cerrado** (invariante #2): crece curado vía PR, nunca flows arbitrarios.
+
+### Stack tecnológico
+- **Lenguaje**: Python 3.12+ (async/await), Playwright 1.48.0 — mismo patrón `_step()` de U1
+- **Catálogo**: registro declarativo de flows (`flow_catalog.py` o equivalente) — el despacho del runner pasa de if/else a lookup genérico; `full_journey` se declara aquí como **composición ordenada** (D15), NO como archivo flow
+- **Precondiciones**: cada flow expone `setup()` determinista para modo módulo-único; en composición el estado (sesión, carrito) fluye entre flows y los `setup()` se omiten
+- **Selectores**: grupos nuevos (`PLP`, `PROMOTIONS`) solo en `selectors.py` (C7)
+
+### Historias de usuario que cubre
+- **H6.1** — Catálogo de flows de recorrido (cerrado, modular)
+- **H6.2** — Probar solo el módulo que me interesa (setup auto-preparado)
+- **H6.3** — Recorrido completo como composición (`full_journey`)
+- **H6.4** — Validación de productos con descuento
+
+### Componentes
+- C5-A SearchAndFilterFlow (`src/executor/flows/search_and_filter.py`)
+- C5-B BrowseDiscountedProductsFlow (`src/executor/flows/browse_discounted_products.py`)
+- C5-C PdpValidationFlow (`src/executor/flows/pdp_validation.py`)
+- C5-D CartReviewFlow (`src/executor/flows/cart_review.py`)
+- C5-E FlowCatalog (registro + composición `full_journey` + puntos críticos declarados por flow)
+- [MODIFICAR] C1-E FlowRunner — despacho genérico + ejecución encadenada de composiciones
+- [MODIFICAR] C1-B SFCCSelectors — grupos PLP/PROMOTIONS
+
+### Tests
+- `tests/test_journey_flows.py` — cada flow con mocks de Page: pasos, `setup()`, datos de precios emitidos
+- `tests/test_flow_catalog.py` — composición `full_journey` correcta; flow fuera de catálogo rechazado; estado encadenado; `skipped` aguas abajo al fallar un eslabón
+- Verificar que ningún flow de recorrido contiene pasos de pago (H6.1 AC2 — test estático sobre el catálogo)
+
+### Criterio de completitud
+H6.1–H6.4 AC satisfechos; despacho genérico en runner (cero if/else por flow); `full_journey` sin archivo propio; selectores solo en `selectors.py`; baseline por par perfil×flow arranca bootstrap propio para flows nuevos.
+
+---
+
+## U6 — Auditoría: Colectores + Agente de Síntesis (★ realineación 2026-06-03 — ola 2)
+
+> **Gate previo:** puerta HITL de `specs/` (campos de auditoría en `execution_report.schema.json`). Depende de U7 (datos de red para la dimensión rendimiento).
+
+### Propósito de negocio
+Produce el **segundo entregable** del producto realineado: el documento de auditoría de 6 dimensiones legible para no-técnicos. Arquitectura en dos capas que hace cumplible **P7**: **colectores deterministas** (código, reproducible) generan los hallazgos; el **agente LLM** solo sintetiza y redacta sobre esos hallazgos — **nunca decide el semáforo** (C10).
+
+**Por qué importa**: materializa **M21/MD13** y restaura J4 (D14): anomalías de comercio marcan `requires_human_review` por regla. Sin U6, el producto sigue siendo solo un smoke test de checkout.
+
+### Stack tecnológico
+- **Colectores**: Python determinista + listeners de Playwright (consola JS, requests fallidos) + axe-core inyectado en páginas clave (WCAG AA) — sin LLM
+- **Agente**: Claude API vía el módulo de agente permitido (hoy `src/classifier/` — las llamadas LLM solo viven en `src/agents/` o `src/classifier/` per boundaries); input sanitizado (RNF-14), presupuesto de tokens acotado, timeout explícito
+- **Evidencia**: captura dirigida por hallazgos (D16/RF-26) — naming `{paso}-{finding-{dim}|critical}.png`
+- **Degradación**: si el LLM falla → reporte con hallazgos crudos + nota; el run nunca falla por el agente
+
+### Historias de usuario que cubre
+- **H7.1** — Colectores deterministas de las 6 dimensiones
+- **H7.2** — Documento de auditoría legible para no-técnicos
+- **H7.3** — El agente no juzga; anomalías escalan a humano (restaura J4)
+- **H7.4** — Evidencia dirigida por hallazgos
+- **H7.5** — Degradación con gracia del agente
+
+### Componentes
+- C6-A DimensionCollectors (integridad de comercio, locale, accesibilidad, salud del cliente, contenido; rendimiento deriva de U7) — ubicación: captura en `src/executor/`, ensamblaje en módulo de auditoría
+- C6-B AuditAgent (`src/classifier/` — síntesis + categorización + `confidence`/`requires_human_review`)
+- C6-C EvidencePolicy (captura por hallazgo + puntos críticos declarados en FlowCatalog)
+- [MODIFICAR] C3-A ReportGenerator — integra/enlaza documento de auditoría
+
+### Tests
+- `tests/test_collectors.py` — cada colector con datos sintéticos: hallazgos estructurados correctos; fallo de colector degrada sin tumbar flow
+- `tests/test_audit_agent.py` — con Claude mockeado: documento generado; sanitización del input (sin credenciales/cookies); excepción del LLM → reporte válido igual (H7.5 AC3)
+- `tests/test_traffic_light_independence.py` — hallazgos con anomalía → YELLOW determinista; el output del agente no altera el semáforo (H7.3 AC4)
+- `tests/test_evidence_policy.py` — capturas solo en fallo/final/hallazgo/punto crítico; nunca en paso OK limpio
+
+### Criterio de completitud
+H7.1–H7.5 AC satisfechos; C10 verificado por test (el LLM no puede mover el semáforo); presupuesto de evidencia dentro del KPI C4; documento legible validado con un lector no-técnico (Valentina proxy).
+
+---
+
+## U7 — Captura de Red / Performance (★ realineación 2026-06-03 — ola 2)
+
+> **Gate previo:** puerta HITL de `specs/` (campos de red en `execution_report.schema.json`).
+
+### Propósito de negocio
+Da visibilidad de **dónde** se degrada el recorrido: timings de controllers SFRA, requests fallidos y Core Web Vitals por perfil. Es *user-perceived + network timing* — NO APM de backend. Alimenta la dimensión de rendimiento de U6 y responde la pregunta de Carolina: "¿qué endpoint degradó cuando el semáforo dio amarillo?".
+
+**Por qué importa**: materializa **M22/MD14** (brief N1, decisión §7-#4). Las CWV (Google/SOASTA: -4.42% conversión por segundo extra mobile) son el lenguaje que negocio entiende.
+
+### Stack tecnológico
+- **Captura**: eventos de red de Playwright (request/response) filtrados por allowlist de dominios del storefront; metadata + timings, **sin bodies**
+- **Redacción**: headers de auth y cookies redactados ANTES de persistir (mismo filtro D12)
+- **CWV**: LCP/CLS/TTFB por página clave vía CDP/Performance API (INP/TBT solo si no infla el flow — RNF-15)
+- **Agregación**: requests que matchean patrones de controllers SFRA (`*-Show`, `Cart-*`, `CheckoutServices-*`) → resumen de timings por controller
+- **Storage**: HAR filtrado a S3 `{run_id}/{perfil}/{flujo}/network.har.json` (mismo lifecycle que evidencia); resumen en `ExecutionReport`
+
+### Historias de usuario que cubre
+- **H8.1** — Traza de red con timings de controllers SFRA
+- **H8.2** — Core Web Vitals por página clave
+
+### Componentes
+- C7-A NetworkCapture (`src/executor/` — listeners + filtro allowlist + redacción)
+- C7-B ControllerTimingAggregator (patrones SFRA → resumen p95 por controller)
+- C7-C WebVitalsCollector (CWV por página clave, por perfil)
+- [MODIFICAR] C3-A ReportGenerator — resumen de red en el reporte
+
+### Tests
+- `tests/test_network_capture.py` — con eventos mockeados: allowlist aplica; headers/cookies redactados; bodies ausentes
+- `tests/test_controller_timings.py` — patrones SFRA agregan correctamente; URLs no-controller quedan fuera del resumen
+- `tests/test_web_vitals.py` — métricas presentes por perfil; flujo no falla si una métrica no está disponible
+
+### Criterio de completitud
+H8.1–H8.2 AC satisfechos; overhead de captura ≤ ~10% del tiempo del flow (RNF-15); cero credenciales en HAR persistido (verificado por test); baseline sigue sobre `durationMs` (extensión a CWV declarada ola posterior).
+
+---
+
+## U8 — Ventana NL + Modos de Operación (★ realineación 2026-06-03 — ola 2)
+
+> **Gate previo:** puerta HITL de `specs/` (campo `mode` + contrato del endpoint de traducción).
+
+### Propósito de negocio
+Abre el producto a **usuarios no-técnicos** (Valentina — QA/PM/negocio): describir la prueba en español, ver el preview de lo que se va a ejecutar, confirmar, y leer el documento de auditoría. Además separa formalmente los modos **gate** (determinista, entra a baseline, veredicto de deploy) y **exploratorio** (descubrimiento, nunca contamina el baseline — C11).
+
+**Por qué importa**: materializa **M23/UC6** (D18). El contrato de `POST /v1/run` NO cambia (D8 intacta): la NL se traduce y valida ANTES, y nunca llega al executor (C12). KPI A5: ≥1 usuario no-técnico lanzando pruebas en semana 4 post-ola.
+
+### Stack tecnológico
+- **Traducción**: `src/agents/translator.py` promovido a componente principal de UX — Claude API con validación estricta post-traducción (JSON Schema + catálogo cerrado), `CLAUDE_MODEL` vigente
+- **Endpoint**: traducción dedicada (p.ej. `POST /v1/translate`) que retorna config propuesto + explicación legible — **sin ejecutar**; el run requiere confirmación y `POST /v1/run` con payload estructurado
+- **Seguridad**: NL ≤2000 chars; resistencia prompt-injection (RT1, Q8=0); intentos rechazados loggeados; gate D-NL (Q1≥90%, Q2=100%) pre-lanzamiento
+- **Modos**: `mode: gate|exploratory` en `SyntheticUserConfig` (default `gate`); `save_run` filtra por modo; `/v1/runs/latest` para deploy considera solo gate
+- **UI**: campo NL como vía principal en MD0 P2 (JSON queda como vía avanzada)
+
+### Historias de usuario que cubre
+- **H9.1** — Valentina lanza una prueba describiéndola en español
+- **H9.2** — Traducción estricta: ambigüedad y prompt injection
+- **H9.3** — Modo exploratorio sin contaminar el baseline
+
+### Componentes
+- C8-A TranslateEndpoint (`src/api/` — traducir + preview, sin ejecutar)
+- C8-B NLWindow (MD0 P2 — campo NL + preview + confirmación)
+- [MODIFICAR] `src/agents/translator.py` — catálogo extendido, mapeo de alcance (módulo único / subconjunto / `full_journey`), clarificación de ambigüedad
+- [MODIFICAR] C2-x BaselineStore — filtro por `mode` en `save_run`
+- [MODIFICAR] C4-A APIRouter — campo `mode`; `latest` solo gate
+
+### Tests
+- `tests/test_translate_endpoint.py` — con Claude mockeado: config válido + explicación; ambigüedad → clarificación; fuera de catálogo → rechazo con catálogo disponible; NL >2000 chars → 422
+- `tests/test_prompt_injection.py` — suite RT1 (5 escenarios): 100% bloqueados
+- `tests/test_modes.py` — exploratory nunca en baseline; `latest` ignora exploratory; cap 10/día suma ambos modos
+
+### Criterio de completitud
+H9.1–H9.3 AC satisfechos; la NL jamás llega al executor (C12 verificado: el executor no importa el translator); gates de calidad D-NL cumplidos; reporte exploratorio marcado visiblemente.
+
+---
+
 ## Referencias cruzadas
 
 | Tema | Documento |
 |---|---|
-| Historias de usuario completas (21 historias, 83 ACs) | `inception/user-stories/user-stories.md` |
+| Historias de usuario completas (40 historias, 157 ACs — iteración 3) | `inception/user-stories/user-stories.md` |
+| Requisitos realineados (RF-21..RF-29, RNF-14..RNF-15, C10..C12) | `inception/requirements/requirements.md` |
+| Brief de realineación de alcance (decisiones §7) | `inception/scope-realignment-brief.md` |
 | Cobertura MoSCoW + Journeys + UCs | `inception/user-stories/coverage-matrix.md` |
 | Catálogo de env vars | `inception/application-design/env-vars-catalog.md` |
 | Taxonomía de errores (HTTP codes + status enums + TrafficLight) | `inception/application-design/error-taxonomy.md` |
