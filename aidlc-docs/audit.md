@@ -504,3 +504,19 @@ None. Optional index files may still be added for naming compatibility with the 
 **AI Response**: Gap analysis (6 gaps: NL window, generic matrix, audit document, mode visibility, single-audience principle, monolithic yellow) + DESIGN.md realigned: principles extended to 7 (dual-reader hierarchy, gate/exploratory honesty, facts-vs-hypotheses, "practice what you audit" AA); traffic light §3 with 3 yellow subtypes + mode badge (exploratory never reads as deploy verdict); new components — §4.1 dimension chips (textual/mono, no own color), §4.2 NL window (entry → mandatory preview with prose explanation + chips → ambiguity-as-conversation), §4.3 generic live matrix (rows/cols derived from payload, setup-phase label, scales 1..18 cells), §4.4 audit document (fixed order: executive summary → 6 dimensions with explicit empty/uncollected states → hypotheses → S3 link; no traffic light inside — C10); hypothesis block visually distinct (dotted border, confidence visible, never status-color background — P7); network summary drill-down component; layout updated (NL-first launch screen, audit doc in results hierarchy, mode in footer, API v2); 3 new anti-patterns (hypothesis-dressed-as-fact, hardcoded flow columns, illustrative dimension icons). P6-2 of analisis-progreso resolved.
 
 **Context**: DESIGN.md was the last canonical root artifact not covered by the realignment cascade. Now closed.
+
+---
+
+## V2 Reconciliation of U0 Task Package + Plan (P5-3 + P7-5 resolved)
+
+**Timestamp**: 2026-06-03T09:30:00-05:00
+
+**User Input**: "si, aplica la reconciliación v2. Ya tengo instalado el docker pero debo reiniciar el equipo pero aun no puedo porque ando en una reunion" (prior exchanges: tasks in Linear well defined; asked about gentle-ai vs OpenHands for autonomous code execution — analyzed gentle-ai repo (ecosystem configurator, NOT autonomous executor; would alter the harness, redundant with AI-DLC/skills/roster) and recommended Route B (own harness) with autonomy ladder L2→L3→L4; user accepted)
+
+**AI Response**:
+1. **TASK-003 reconciled to v2**: schema_version v2, flows enum 7 values (journey flows + full_journey as composition alias — expansion is U5 FlowCatalog responsibility, not the model), bounds 1-6, mode field (gate default), ExecutionReport.mode required; audit/network_summary explicitly out of U0 scope (U6/U7 extend models). New ACs: mode validation, schema examples round-trip. Linear delta flagged for CHR-7.
+2. **TASK-004 reconciled to v2**: new tests (schema_version_v2, accepts_journey_flows, mode, flows bounds >6, test_schema_examples_instantiate); Linear delta flagged for CHR-8.
+3. **u0-code-generation-plan.md REWRITTEN**: v2 contract, greenfield scope (old Steps 4-5 translator/api refactor deferred to U4 = TASK-005), workspace root fixed (was old 06_testing_sintetico path), Docker image aligned to v1.48.0 (was v1.44.0 — mismatch with TASK-002), stale [x] checkboxes reset to [ ] (no code exists in this repo), uv-first commands, docker gate marked pending-environment (Docker installed, reboot pending).
+4. Environment pre-flight (earlier this session): uv 0.11.12 + cpython 3.12.13 ready; Node v24; Docker installed pending reboot; hooks degrade gracefully; Claude API key NOT needed for U0.
+
+**Context**: P5-3 and P7-5 RESOLVED. U0 runway clear: TASK-001 (HITL pyproject) → TASK-003 → TASK-004 can start now; TASK-002/006 docker gate after reboot. Linear CHR-7/CHR-8 descriptions should be updated with the v2 deltas (manual or via tooling re-publish).
