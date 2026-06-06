@@ -100,7 +100,8 @@ class RedactingJsonFormatter(jsonlogger.JsonFormatter):
 | Componente | Versión |
 |---|---|
 | Python | 3.12 |
-| FastAPI | 0.115.0 |
+| FastAPI | 0.136.3 _(security bump 2026-06-06, was 0.115.0)_ |
+| Starlette | 1.2.1 _(direct pin, security bump 2026-06-06)_ |
 | Uvicorn | 0.30.6 |
 | Pydantic | 2.9.2 |
 | Playwright Python | 1.48.0 |
@@ -108,8 +109,9 @@ class RedactingJsonFormatter(jsonlogger.JsonFormatter):
 | boto3 | 1.35.49 |
 | jsonschema | 4.23.0 |
 | python-json-logger | 2.0.7 |
-| pytest | 8.3.3 |
-| pytest-asyncio | 0.24.0 |
+| pytest | 9.0.3 _(security bump 2026-06-06, was 8.3.3)_ |
+| pytest-asyncio | 1.4.0 _(was 0.24.0, pytest 9 compat)_ |
+| pytest-playwright | 0.8.0 _(was 0.5.2, pytest 9 compat)_ |
 | hypothesis | 6.115.3 |
 | ruff | 0.7.1 |
 | mypy | 1.13.0 |

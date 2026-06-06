@@ -121,7 +121,7 @@ Si hay 4+ devs disponibles:
 - [x] `ruff check src/` exit 0 — `ruff check .` All checks passed
 - [x] `mypy --strict src/` exit 0 — no issues in 2 source files
 - [x] `pytest tests/` exit 0 — 20 passed
-- [~] `pip-audit` sin HIGH/CRITICAL — 4 vulns transitivas (starlette×3, pytest×1); bump diferido a HITL antes de U4 (no hay API servida en U0). Ver `u0/code/code-summary.md`.
+- [x] `pip-audit` sin HIGH/CRITICAL — No known vulnerabilities found tras el bump de seguridad HITL (starlette→1.2.1, fastapi→0.136.3, pytest→9.0.3); ver `u0/code/code-summary.md`.
 - [x] `docker build .` exit 0 — imagen `testpilot-sfcc:local` (985 MB)
 - [N/A] Imagen ejecuta y responde `/v1/run` con 422 — sin API en U0 (se valida tras U4)
 

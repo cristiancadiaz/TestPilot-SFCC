@@ -58,10 +58,14 @@ U6/U7. U0 modela el reporte mínimo viable de ola 1 + el campo `mode`. Credencia
 | Dependencia | Versión |
 |-------------|---------|
 | Python | >=3.12 |
-| fastapi | 0.115.0 |
+| fastapi | 0.136.3 _(bump de seguridad 2026-06-06)_ |
+| starlette | 1.2.1 _(pin directo — bump de seguridad 2026-06-06)_ |
 | pydantic | 2.9.2 |
-| anthropic | 0.40.0 |
+| anthropic | 0.39.0 |
 | playwright | 1.48.0 |
+| pytest | 9.0.3 _(bump de seguridad 2026-06-06)_ |
+| pytest-asyncio | 1.4.0 |
+| pytest-playwright | 0.8.0 |
 | Imagen Docker base | `mcr.microsoft.com/playwright/python:v1.48.0-jammy` |
 
 ## Decisiones relevantes
@@ -85,25 +89,28 @@ Ejecutado 2026-06-06:
 | Tipos | `mypy src/` (strict) | ✅ exit 0 — no issues in 2 source files |
 | Tests | `uv run pytest` | ✅ 20 passed |
 | Contenedor | `docker build -t testpilot-sfcc:local .` | ✅ exit 0 — imagen 985 MB |
-| Vulns | `uv run pip-audit` | ⚠️ ver hallazgo abajo |
+| Vulns | `uv run pip-audit` | ✅ No known vulnerabilities found (tras el bump — ver abajo) |
 | API 422 | imagen responde `/v1/run` con 422 | N/A en U0 — no hay API todavía (U4) |
 
-### Hallazgo `pip-audit` (requiere HITL — toca `pyproject.toml`/`uv.lock`)
+### Bump de seguridad `pip-audit` (HITL aprobado 2026-06-06)
 
-4 vulnerabilidades en dependencias transitivas:
+El run inicial de TASK-006 reportó 4 vulnerabilidades en dependencias transitivas.
+Con autorización HITL se resolvieron bumpeando a las versiones seguras (re-pin exacto
+para preservar RNF-08 "todo pinneado"); `pip-audit` quedó limpio:
 
-| Paquete | Versión | ID | Fix | Notas |
-|---------|---------|----|----|-------|
-| starlette | 0.38.6 | GHSA-f96h-pmfr-66vw | 0.40.0 | transitive vía fastapi; 0.40.0 es compatible con fastapi 0.115.0 |
-| starlette | 0.38.6 | GHSA-2c2j-9gv5-cj73 | 0.47.2 | requiere fastapi más nuevo |
-| starlette | 0.38.6 | PYSEC-2026-161 | 1.0.1 | requiere fastapi más nuevo |
-| pytest | 8.3.3 | GHSA-6w46-j5rx-g56g | 9.0.3 | sólo dev |
+| Paquete | Antes | Después | CVE resuelta |
+|---------|-------|---------|--------------|
+| starlette | 0.38.6 | **1.2.1** (pin directo) | GHSA-f96h-pmfr-66vw + GHSA-2c2j-9gv5-cj73 + PYSEC-2026-161 |
+| fastapi | 0.115.0 | **0.136.3** | (necesario para admitir starlette ≥1.0) |
+| pytest | 8.3.3 | **9.0.3** | GHSA-6w46-j5rx-g56g (dev) |
+| pytest-asyncio | 0.24.0 | **1.4.0** | (compat con pytest 9) |
+| pytest-playwright | 0.5.2 | **0.8.0** | (compat con pytest 9) |
 
-Decisión: el bump de dependencias es un cambio que requiere confirmación humana
-(CLAUDE.md § Requires Human Confirmation). No se aplicó en TASK-006. Se propone
-abordarlo como tarea de seguridad separada antes de U4 (cuando starlette/fastapi
-entran realmente en el runtime de la API). Hasta entonces, ninguna de estas rutas
-está en uso (no hay app FastAPI servida en U0).
+`starlette` se agregó como **dependencia directa pinneada** (antes era sólo transitiva
+vía fastapi) para controlar la versión de seguridad de forma explícita. Tras el bump,
+los 5 gates vuelven a verde (ruff/mypy/pytest 20/docker build/pip-audit). Efecto
+colateral resuelto: desaparece el warning `asyncio_default_fixture_loop_scope` de
+pytest-asyncio 0.24 (pytest-asyncio 1.x lo maneja).
 
 ## Mapa RF/RNF → archivo/test
 
