@@ -1,0 +1,36 @@
+planningWave: u0-setup-base-implementation
+linearProject: testpilot-sfcc-6be34d6b900c
+publishedAt: '2026-06-01T21:55:45.929806+00:00'
+milestones:
+  'M1: Packaging & Container Foundation':
+    milestoneId: 865ce4e1-e334-471d-b438-a31f95ced006
+    name: 'M1: Packaging & Container Foundation'
+  'M2: Shared Models Unification':
+    milestoneId: 269efa62-bfe4-4150-afd3-213c1c01bb40
+    name: 'M2: Shared Models Unification'
+tasks:
+  TASK-001:
+    issue: CHR-5
+    issueId: db180035-cb30-4e09-924e-3967b712d18b
+    url: https://linear.app/christian-diaz-pash/issue/CHR-5/pyprojecttoml-con-dependencias-pinned-ruffmypy
+    file: docs/tasks/001-pyproject-packaging.md
+  TASK-002:
+    issue: CHR-6
+    issueId: 5657653b-7cbb-4308-b555-e0629489248f
+    url: https://linear.app/christian-diaz-pash/issue/CHR-6/dockerfile-dockerignore-imagen-base-playwright
+    file: docs/tasks/002-dockerfile-container.md
+  TASK-003:
+    issue: CHR-7
+    issueId: 29f318b5-69aa-4611-9860-f162ae9fe657
+    url: https://linear.app/christian-diaz-pash/issue/CHR-7/srcmodelspy-modelos-pydantic-unificados
+    file: docs/tasks/003-shared-models.md
+  TASK-004:
+    issue: CHR-8
+    issueId: eccf26f4-c203-4c1f-8900-1c6eedb299eb
+    url: https://linear.app/christian-diaz-pash/issue/CHR-8/teststest-modelspy
+    file: docs/tasks/004-models-tests.md
+  TASK-006:
+    issue: CHR-9
+    issueId: 7177f3f3-e572-49ce-be7c-16f3035df3e3
+    url: https://linear.app/christian-diaz-pash/issue/CHR-9/verificacion-de-gate-u0-code-summarymd
+    file: docs/tasks/006-u0-gate-and-summary.md

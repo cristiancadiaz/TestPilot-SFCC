@@ -30,6 +30,7 @@ CLAUDE.md
 # --------------------------------------------------------------------------------
 .aidlc-rules
 .hardcore-ai
+docs/pitch
 
 # --------------------------------------------------------------------------------
 # transient orchestration state (only README.md is versioned)
