@@ -520,3 +520,12 @@ None. Optional index files may still be added for naming compatibility with the 
 4. Environment pre-flight (earlier this session): uv 0.11.12 + cpython 3.12.13 ready; Node v24; Docker installed pending reboot; hooks degrade gracefully; Claude API key NOT needed for U0.
 
 **Context**: P5-3 and P7-5 RESOLVED. U0 runway clear: TASK-001 (HITL pyproject) → TASK-003 → TASK-004 can start now; TASK-002/006 docker gate after reboot. Linear CHR-7/CHR-8 descriptions should be updated with the v2 deltas (manual or via tooling re-publish).
+
+## Construction — U0 Gate 1 (TASK-006)
+
+**Timestamp**: 2026-06-06T00:00:00Z
+**User Input**: "Realiza el commit de esos archivos que tenemos pendientes y continua con el task-006"
+**AI Response**: "Committed pending docs/tooling (commit 1997551: conceptos own-harness vs OpenSymphony + U0 Linear publish record). Executed TASK-006 (U0 closure gate). Gate 1 results: ruff check . exit 0; mypy src/ strict exit 0; uv run pytest 20 passed; docker build -t testpilot-sfcc:local . exit 0 (image 985 MB, daemon started manually). pip-audit: 4 transitive vulns (starlette×3 GHSA-f96h/2c2j + PYSEC-2026-161, pytest×1 GHSA-6w46) — dependency bump DEFERRED to HITL before U4 (no API served in U0). /v1/run 422 check N/A in U0 (no API). Rewrote u0/code/code-summary.md to reflect realigned greenfield scope (TASK-005 deferred to U4). Updated aidlc-state.md (U0 COMPLETE) and build-sequence.md Gate 1 checkboxes."
+**Context**: Construction Phase, U0 Setup Base closed. Next: U1+U2+MD0 in parallel (Sprint 1, build-sequence.md). Pending HITL: dependency bump for pip-audit vulns.
+
+---

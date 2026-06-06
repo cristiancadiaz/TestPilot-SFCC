@@ -52,9 +52,11 @@
 
 ### Construction Phase
 
-- [ ] Not started in this repository.
-- [x] Construction planning artifacts exist under `aidlc-docs/construction/`, but implementation has not started.
-- [ ] No application implementation files have been generated from the AI-DLC units yet.
+- [x] Construction planning artifacts exist under `aidlc-docs/construction/`.
+- [x] **U0 Setup Base — COMPLETE (2026-06-06).** Wave-1 first unit. Delivered: `pyproject.toml` + `uv.lock` (TASK-001), `Dockerfile` + `.dockerignore` (TASK-002), `src/models.py` unified Pydantic models mirroring specs v2 (TASK-003), `tests/test_models.py` 20 tests (TASK-004), Gate 1 + `u0/code/code-summary.md` (TASK-006). TASK-005 (translator/api dedup) DEFERRED to U4 — that scaffolding does not exist yet. **Gate 1:** ruff/mypy/pytest/docker build all exit 0; pip-audit found 4 transitive vulns (starlette×3, pytest×1) — dependency bump deferred to HITL before U4; `/v1/run` 422 check N/A (no API in U0).
+- [ ] U1 Executor, U2 Baseline, MD0 Dashboard — next (parallel per `build-sequence.md`).
+- [ ] U3 Reporter, U4 API — after U1+U2.
+- [ ] Wave 2 (U5-U8) — after wave 1, per their plans.
 
 ### Operations Phase
 
@@ -120,4 +122,4 @@ These items are useful for navigation, but they are not blocking for Station 4 I
 
 **🏁 Scope realignment cascade COMPLETE (2026-06-03).** All 9 cascade steps done and HITL-approved: research notes, product docs, requirements v2, stories iteración 3, units U5-U8, specs v2, construction plans + architecture pass, state/audit, harness (CLAUDE.md local + AGENTS.md + tech matrix + PRODUCT.md §6 + flow-guardian composition exception).
 
-**Next: wave-1 code generation** — U0 first (task package in `docs/tasks/`), then U1/U2/MD0 in parallel, U3, U4 per `construction/plans/build-sequence.md`. Wave 2 (U5-U8) follows its plans after wave 1. Refresh `inception/reverse-engineering/` when code lands (E5).
+**U0 Setup Base CLOSED (2026-06-06)** — Gate 1 passed (TASK-006). **Next: U1 Executor + U2 Baseline + MD0 Dashboard in parallel** per `construction/plans/build-sequence.md` (Sprint 1). Then U3 (needs U1+U2), U4 (integrates all; also where TASK-005 translator/api dedup lands). Wave 2 (U5-U8) follows its plans after wave 1. Pending HITL: dependency bump for the 4 pip-audit vulns (starlette/pytest) before U4. Refresh `inception/reverse-engineering/` when more code lands.

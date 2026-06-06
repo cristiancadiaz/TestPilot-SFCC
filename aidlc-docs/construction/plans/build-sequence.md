@@ -116,14 +116,14 @@ Si hay 4+ devs disponibles:
 
 ## Gates de promoción entre unidades
 
-### Gate 1 — Tras U0
-- [ ] `pip install -e ".[dev]"` sin errores
-- [ ] `ruff check src/` exit 0
-- [ ] `mypy --strict src/` exit 0
-- [ ] `pytest tests/` exit 0
-- [ ] `pip-audit` sin HIGH/CRITICAL
-- [ ] `docker build .` exit 0
-- [ ] Imagen ejecuta y responde `/v1/run` con 422 (validation working)
+### Gate 1 — Tras U0 (ejecutado 2026-06-06, TASK-006)
+- [x] `pip install -e ".[dev]"` sin errores — vía `docker build` (capa `pip install -e .`)
+- [x] `ruff check src/` exit 0 — `ruff check .` All checks passed
+- [x] `mypy --strict src/` exit 0 — no issues in 2 source files
+- [x] `pytest tests/` exit 0 — 20 passed
+- [~] `pip-audit` sin HIGH/CRITICAL — 4 vulns transitivas (starlette×3, pytest×1); bump diferido a HITL antes de U4 (no hay API servida en U0). Ver `u0/code/code-summary.md`.
+- [x] `docker build .` exit 0 — imagen `testpilot-sfcc:local` (985 MB)
+- [N/A] Imagen ejecuta y responde `/v1/run` con 422 — sin API en U0 (se valida tras U4)
 
 ### Gate 2 — Tras U2
 - [ ] Tests PBT pasan (PBT-02, 03, 07, 09)
