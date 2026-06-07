@@ -68,19 +68,19 @@ y en tests, no solo en convencion:
 
 ## Steps
 
-### Step 1: Crear `src/executor/__init__.py` [ ]
+### Step 1: Crear `src/executor/__init__.py` [x]
 
 - **Accion**: CREATE
 - **Contenido**: export publico de `run_profile` desde `runner.py`. Modulo raiz del paquete.
 
-### Step 2: Crear `src/executor/profiles/__init__.py` [ ]
+### Step 2: Crear `src/executor/profiles/__init__.py` [x]
 
 - **Accion**: CREATE
 - **Contenido**: instancias `MOBILE_CO`, `DESKTOP_CO`, `DESKTOP_EC` (3 exactamente, catalogo v2)
   + lista `ALL_PROFILES: list[BrowserProfile]` con los 3 elementos en ese orden.
   Importa `BrowserProfile` desde `src.models`.
 
-### Step 3: Crear `src/executor/profiles/mobile_co.py` [ ]
+### Step 3: Crear `src/executor/profiles/mobile_co.py` [x]
 
 - **Accion**: CREATE
 - **Contenido**: instancia `BrowserProfile`:
@@ -88,7 +88,7 @@ y en tests, no solo en convencion:
   - `locale="es-CO"`, `is_mobile=True`
   - `user_agent="Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15"`
 
-### Step 4: Crear `src/executor/profiles/desktop_co.py` [ ]
+### Step 4: Crear `src/executor/profiles/desktop_co.py` [x]
 
 - **Accion**: CREATE
 - **Contenido**: instancia `BrowserProfile`:
@@ -96,7 +96,7 @@ y en tests, no solo en convencion:
   - `locale="es-CO"`, `is_mobile=False`
   - `user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"`
 
-### Step 5: Crear `src/executor/profiles/desktop_ec.py` [ ]
+### Step 5: Crear `src/executor/profiles/desktop_ec.py` [x]
 
 - **Accion**: CREATE
 - **Contenido**: instancia `BrowserProfile` (reemplaza el `mobile_mx` pre-realineacion):
@@ -105,7 +105,7 @@ y en tests, no solo en convencion:
   - `user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"`
 - **Nota**: `mobile_mx` NO existe en specs v2. El archivo se llama `desktop_ec.py`.
 
-### Step 6: Crear `src/executor/selectors.py` [ ]
+### Step 6: Crear `src/executor/selectors.py` [x]
 
 - **Accion**: CREATE
 - **Contenido**: clase `SFCCSelectors` con TODOS los selectores CSS/XPath como constantes de
@@ -176,12 +176,12 @@ y en tests, no solo en convencion:
 
 - **Invariante**: NINGUN selector se define fuera de este archivo en el codebase (C7).
 
-### Step 7: Crear `src/executor/auth/__init__.py` [ ]
+### Step 7: Crear `src/executor/auth/__init__.py` [x]
 
 - **Accion**: CREATE
 - **Contenido**: export de `shopper_login` desde `shopper_login.py`. Paquete del submódulo auth.
 
-### Step 8: Crear `src/executor/auth/shopper_login.py` [ ]
+### Step 8: Crear `src/executor/auth/shopper_login.py` [x]
 
 - **Accion**: CREATE
 - **Contenido**: funcion asincrona `shopper_login(page: Page, username: str, password: str) -> StepResult`
@@ -200,13 +200,13 @@ y en tests, no solo en convencion:
   NO aparecen en logs; que `LOGIN_EMAIL_INPUT` se llena con el username recibido; que
   un `LOGIN_ERROR_MESSAGE` detectable produce `status="failed"`.
 
-### Step 9: Crear `src/executor/flows/__init__.py` [ ]
+### Step 9: Crear `src/executor/flows/__init__.py` [x]
 
 - **Accion**: CREATE
 - **Contenido**: exports de `run` desde `checkout_full` y `checkout_card_declined`.
   El catalogo de flows en runner usa esta referencia.
 
-### Step 10: Crear `src/executor/flows/checkout_full.py` [ ]
+### Step 10: Crear `src/executor/flows/checkout_full.py` [x]
 
 - **Accion**: CREATE
 - **Contenido**: funcion `async run(page: Page, config: SyntheticUserConfig, env: ResolvedEnvironment, run_id: str, profile_id: str) -> FlowResult`
@@ -237,7 +237,7 @@ y en tests, no solo en convencion:
   - Logger: `logging.getLogger(__name__)` — sin credenciales en logs.
   - Importa modelos desde `src.models`; selectores desde `src.executor.selectors`.
 
-### Step 11: Crear `src/executor/flows/checkout_card_declined.py` [ ]
+### Step 11: Crear `src/executor/flows/checkout_card_declined.py` [x]
 
 - **Accion**: CREATE
 - **Contenido**: funcion `async run(page: Page, config: SyntheticUserConfig, env: ResolvedEnvironment, run_id: str, profile_id: str) -> FlowResult`
@@ -262,7 +262,7 @@ y en tests, no solo en convencion:
   - `FlowResult.flow_name = "checkout_card_declined"` (FlowName v2).
   - Usa `DECLINED_CARD_*` en el paso 9 en lugar de `TEST_CARD_*`.
 
-### Step 12: Crear `tests/test_executor_auth.py` [ ]
+### Step 12: Crear `tests/test_executor_auth.py` [x]
 
 - **Accion**: CREATE — TDD para `auth/shopper_login.py`
 - **Contenido**:
@@ -275,7 +275,7 @@ y en tests, no solo en convencion:
   - `test_uses_selectors_from_selectors_py`: verifica que `shopper_login` usa
     `SFCCSelectors.LOGIN_EMAIL_INPUT` y no strings hardcodeados.
 
-### Step 13: Crear `tests/test_executor_profiles.py` [ ]
+### Step 13: Crear `tests/test_executor_profiles.py` [x]
 
 - **Accion**: CREATE — TDD para `profiles/`
 - **Contenido**:
@@ -290,7 +290,7 @@ y en tests, no solo en convencion:
     (importada desde `src.models`).
   - Estos tests NO lanzan browser.
 
-### Step 14: Crear `tests/test_executor_flows.py` [ ]
+### Step 14: Crear `tests/test_executor_flows.py` [x]
 
 - **Accion**: CREATE — TDD para `flows/`
 - **Contenido** (usa `MagicMock` / `AsyncMock` de `unittest.mock` para `Page`):
@@ -310,7 +310,7 @@ y en tests, no solo en convencion:
   - `test_no_sleep_calls`: verifica que `time.sleep` no es importado en los modulos de flows
     (inspeccion de AST o grep del modulo).
 
-### Step 15: Crear `src/executor/runner.py` [ ]
+### Step 15: Crear `src/executor/runner.py` [x]
 
 - **Accion**: CREATE
 - **Contenido**:
@@ -346,7 +346,7 @@ y en tests, no solo en convencion:
   - Funciones internas: `_create_context(browser, profile)`, `_take_screenshot(page, path)`,
     `_execute_step(page, step_name, coro) -> StepResult`.
 
-### Step 16: Crear `tests/test_executor_runner.py` [ ]
+### Step 16: Crear `tests/test_executor_runner.py` [x]
 
 - **Accion**: CREATE — TDD para `runner.py`
 - **Contenido** (mock completo de Playwright con `AsyncMock`):
@@ -362,7 +362,7 @@ y en tests, no solo en convencion:
   - `test_infrastructure_error_distinct_from_app_error`: `InfrastructureError` y un fallo
     funcional del flow producen `ProfileResult` con `status` diferente (error vs failed).
 
-### Step 17: Crear `aidlc-docs/construction/u1/code/code-summary.md` [ ]
+### Step 17: Crear `aidlc-docs/construction/u1/code/code-summary.md` [x]
 
 - **Accion**: CREATE
 - **Contenido**: resumen de los archivos creados en U1, Gate 3 checklist, trazabilidad RF->archivo,
