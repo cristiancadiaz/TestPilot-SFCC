@@ -281,3 +281,37 @@ def test_baseline_comparison_valid() -> None:
     assert comparison.p95_ms == 185000
     with pytest.raises(ValidationError):
         BaselineComparison(p95_ms=-1, current_ms=165000, bootstrap_mode=False, runs_count=18)
+
+
+def test_resolved_environment_valid() -> None:
+    from src.models import Credentials, ResolvedEnvironment
+
+    env = ResolvedEnvironment(
+        environment_id="staging",
+        store_url="https://staging.example.com",
+        env_access=Credentials(username="infra", password="s3cret"),
+        shopper=Credentials(username="shopper@testpilot.internal", password="pw"),
+    )
+    assert env.environment_id == "staging"
+    assert env.shopper.username.endswith("@testpilot.internal")
+
+
+def test_resolved_environment_rejects_http() -> None:
+    from src.models import Credentials, ResolvedEnvironment
+
+    with pytest.raises(ValidationError):
+        ResolvedEnvironment(
+            environment_id="staging",
+            store_url="http://insecure.example.com",  # not https
+            env_access=Credentials(username="infra", password="s3cret"),
+            shopper=Credentials(username="s@testpilot.internal", password="pw"),
+        )
+
+
+def test_credentials_password_not_in_repr() -> None:
+    # RNF-03 zero-secret logging: password must never appear in repr()/logs.
+    from src.models import Credentials
+
+    creds = Credentials(username="infra", password="topsecret")
+    assert "topsecret" not in repr(creds)
+    assert "infra" in repr(creds)

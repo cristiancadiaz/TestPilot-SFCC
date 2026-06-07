@@ -250,3 +250,52 @@ class ExecutionReport(BaseModel):
     baseline_comparison: BaselineComparison | None = None
     # Zero-contamination invariant: always 0. Internal — excluded from model_dump().
     orders_created: int = Field(default=0, exclude=True)
+
+
+# --------------------------------------------------------------------------------
+# Internal runtime models — NOT part of the API contract (no specs/ schema).
+# These live only in-process during a run; they are never serialized to a client.
+# --------------------------------------------------------------------------------
+
+
+class Credentials(BaseModel):
+    """A resolved username/password pair (post Secrets Manager).
+
+    Used by the executor only. ``password`` has ``repr=False`` so it never leaks
+    into logs, tracebacks, or ``repr()`` output (RNF-03, zero-secret logging).
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    username: str = Field(min_length=1)
+    password: str = Field(min_length=1, repr=False)
+
+
+class ResolvedEnvironment(BaseModel):
+    """Server-side resolved target environment for the executor (ADR-001).
+
+    The API contract (``SyntheticUserConfig``) carries ONLY ``environment_id``;
+    the orchestrator (U4) resolves it against the environment registry + Secrets
+    Manager into this object BEFORE the executor runs. Credentials NEVER travel in
+    the request/response contract — this model has no ``specs/`` schema and is
+    never returned to a client. The executor receives this fully-resolved object;
+    it never reads secrets itself.
+
+    - ``env_access``: infra-level credentials (HTTP basic auth / anti-bot bypass).
+    - ``shopper``: the synthetic shopper login (email always ``@testpilot.internal``).
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    environment_id: EnvironmentId
+    store_url: str = Field(min_length=8)
+    env_access: Credentials
+    shopper: Credentials
+
+    @field_validator("store_url")
+    @classmethod
+    def _https_only(cls, value: str) -> str:
+        """The MVP never targets production; staging stores are HTTPS."""
+        if not value.startswith("https://"):
+            raise ValueError("store_url must be an https URL")
+        return value
