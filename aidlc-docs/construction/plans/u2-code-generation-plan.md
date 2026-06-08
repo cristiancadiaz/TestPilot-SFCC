@@ -63,7 +63,7 @@ ningun otro modulo — es logica pura de comparacion de enteros.
 
 ## Steps
 
-### Step 1: Crear `src/baseline/__init__.py` [ ]
+### Step 1: Crear `src/baseline/__init__.py` [x]
 
 **Descripcion**: modulo publico de U2. Exporta la interfaz completa para que U3 y U4
 importen desde `src.baseline` sin depender de rutas internas.
@@ -112,7 +112,7 @@ Se verifica que el import no lanza `ImportError` en el test de humo del Step 3.
 
 ---
 
-### Step 2: Crear `src/baseline/baseline_manager.py` [ ]
+### Step 2: Crear `src/baseline/baseline_manager.py` [x]
 
 **Descripcion**: modulo central de U2. Define el Protocol, la implementacion en memoria,
 las funciones puras y el `BaselineManager` que orquesta el guard gate-only.
@@ -206,7 +206,7 @@ Escribir primero los tests del Step 3 que fallan, luego implementar hasta que pa
 
 ---
 
-### Step 3: Crear `tests/test_baseline_manager.py` [ ]
+### Step 3: Crear `tests/test_baseline_manager.py` [x]
 
 **Descripcion**: tests de ejemplo (deterministas, sin hypothesis). Cubren los comportamientos
 clave incluyendo la separacion por `environment_id` y el guard gate-only.
@@ -300,7 +300,7 @@ BASELINEMANAGER — get_baseline_comparison
 
 ---
 
-### Step 4: Crear `tests/test_baseline_pbt.py` [ ]
+### Step 4: Crear `tests/test_baseline_pbt.py` [x]
 
 **Descripcion**: property-based tests con `hypothesis`. Estos tests son BLOQUEANTES para Gate 2.
 
@@ -370,7 +370,7 @@ settings(max_examples=200, deadline=None)
 
 ---
 
-### Step 5: Crear `aidlc-docs/construction/u2/code/code-summary.md` [ ]
+### Step 5: Crear `aidlc-docs/construction/u2/code/code-summary.md` [x]
 
 **Descripcion**: resumen de la implementacion completada de U2. Se crea DESPUES de que los
 Steps 1-4 esten completos y Gate 2 verificado.
@@ -402,10 +402,10 @@ Steps 1-4 esten completos y Gate 2 verificado.
 
 ## Checklist de Gate 2 (verificar antes de marcar U2 completa)
 
-- [ ] `uv run pytest tests/test_baseline_manager.py` — todos los tests pasan
-- [ ] `uv run pytest tests/test_baseline_pbt.py` — PBT-02, PBT-03, PBT-07, PBT-08, PBT-09 pasan
-- [ ] `ruff check src/baseline/` — sin errores
-- [ ] `mypy src/baseline/` — sin errores (mypy --strict)
-- [ ] `InMemoryBaselineStore` separa runs por ambiente (test_store_separates_by_environment_id)
-- [ ] `compute_traffic_light` con `bootstrap=True` nunca retorna YELLOW (PBT-09)
-- [ ] Run exploratorio ignorado sin excepcion (test_save_run_exploratory_mode_ignored)
+- [x] `uv run pytest tests/test_baseline_manager.py` — todos los tests pasan
+- [x] `uv run pytest tests/test_baseline_pbt.py` — PBT-02, PBT-03, PBT-07, PBT-08, PBT-09 pasan
+- [x] `ruff check src/baseline/` — sin errores
+- [x] `mypy src/baseline/` — sin errores (mypy --strict)
+- [x] `InMemoryBaselineStore` separa runs por ambiente (test_store_separates_by_environment_id)
+- [x] `compute_traffic_light` con `bootstrap=True` nunca retorna YELLOW (PBT-09)
+- [x] Run exploratorio ignorado sin excepcion (test_save_run_exploratory_mode_ignored)
