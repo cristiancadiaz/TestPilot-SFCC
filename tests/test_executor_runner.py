@@ -266,6 +266,44 @@ async def test_flow_dispatch_uses_registry() -> None:
 
 
 @pytest.mark.asyncio
+async def test_env_access_passed_as_http_credentials() -> None:
+    """env_access credentials are injected into the browser context as HTTP basic
+    auth (ADR-001) — flow code never handles raw credentials, and staging behind
+    basic auth is reachable."""
+    from src.models import SyntheticUserConfig, Product
+
+    config = SyntheticUserConfig(
+        environment_id="staging",
+        flows=["checkout_full"],
+        profiles=["desktop_co"],
+        products=[Product(search_term="shoes", validate_variant=False)],
+        mode="gate",
+    )
+    env = _make_env()  # env_access = infra / infra_pass
+    flow_result = _make_success_flow_result("checkout_full")
+
+    playwright_ctx = _build_playwright_mock(flow_result=flow_result)
+
+    async def _mock_flow_run(page, cfg, ev, run_id, profile_id):  # type: ignore[no-untyped-def]
+        return flow_result
+
+    with (
+        patch("src.executor.runner.async_playwright", return_value=playwright_ctx),
+        patch.dict(FLOW_REGISTRY, {"checkout_full": _mock_flow_run}),
+    ):
+        await run_profile(DESKTOP_CO, "checkout_full", config, env, "run-auth")
+
+    new_context = (
+        playwright_ctx.__aenter__.return_value.chromium.launch.return_value.new_context
+    )
+    new_context.assert_awaited_once()
+    assert new_context.await_args.kwargs["http_credentials"] == {
+        "username": "infra",
+        "password": "infra_pass",
+    }
+
+
+@pytest.mark.asyncio
 async def test_infrastructure_error_distinct_from_app_error() -> None:
     """InfrastructureError -> status='error'; functional failure -> status='failed'."""
     from src.models import SyntheticUserConfig, Product
