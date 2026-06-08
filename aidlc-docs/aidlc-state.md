@@ -54,8 +54,9 @@
 
 - [x] Construction planning artifacts exist under `aidlc-docs/construction/`.
 - [x] **U0 Setup Base — COMPLETE (2026-06-06).** Wave-1 first unit. Delivered: `pyproject.toml` + `uv.lock` (TASK-001), `Dockerfile` + `.dockerignore` (TASK-002), `src/models.py` unified Pydantic models mirroring specs v2 (TASK-003), `tests/test_models.py` 20 tests (TASK-004), Gate 1 + `u0/code/code-summary.md` (TASK-006). TASK-005 (translator/api dedup) DEFERRED to U4 — that scaffolding does not exist yet. **Gate 1:** ruff/mypy/pytest/docker build all exit 0; pip-audit initially found 4 transitive vulns (starlette×3, pytest×1) — RESOLVED via HITL-approved security bump 2026-06-06 (starlette→1.2.1 direct pin, fastapi→0.136.3, pytest→9.0.3, pytest-asyncio→1.4.0, pytest-playwright→0.8.0); pip-audit now clean; `/v1/run` 422 check N/A (no API in U0).
-- [ ] U1 Executor, U2 Baseline, MD0 Dashboard — next (parallel per `build-sequence.md`).
-- [ ] U3 Reporter, U4 API — after U1+U2.
+- [x] **Wave-1 code-gen plans reconciled to v2 (2026-06-06, HITL-approved).** U1 (desktop_ec + auth/login + 10-step checkouts), U2 (composite key + gate-only guard), MD0 (new plan: React/Vite/TS). `ResolvedEnvironment`+`Credentials` added to `src/models.py` (U0 amendment) to unblock U1.
+- [x] **Sprint 1 wave-1 core COMPLETE (2026-06-08): U1 Executor + U2 Baseline + MD0 Dashboard.** All code generated and verified. **U1** committed `a72b4ba`; Gate 3 closed (added `test_env_access_passed_as_http_credentials` to cover the http_credentials criterion). **U2** Baseline: ruff/mypy/37 tests verde, Gate 2 closed. **MD0** Dashboard: `pnpm build` (tsc strict + vite) + 37 vitest tests + lint verde — ESLint flat config fixed (added `@typescript-eslint/parser`; it was parsing `.ts` with espree). Gate 6 marked partial: code-gen done, but CSP headers + "5 screens vs real backend" defer to U4 integration and Lighthouse is a pending perf pass. Full Python suite: 88 tests verde. HITL-authorized: includes `src/executor/flows/` (protected path).
+- [ ] U3 Reporter (needs U1+U2) → U4 API (integrates all; lands TASK-005 translator/api dedup + IaC CDK). **Recommended next.** Demo milestone proposed: CLI smoke demo after U3 (U1+U2+U3, no API/dashboard) → full E2E demo = wave-1 DoD after U4.
 - [ ] Wave 2 (U5-U8) — after wave 1, per their plans.
 
 ### Operations Phase

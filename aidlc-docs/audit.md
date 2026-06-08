@@ -538,3 +538,12 @@ None. Optional index files may still be added for naming compatibility with the 
 **Context**: Construction Phase, U0. Gate 1 now fully green incl. pip-audit. Next: U1+U2+MD0 parallel (Sprint 1).
 
 ---
+
+## Construction — Sprint 1 close-out (U1/U2/MD0)
+
+**Timestamp**: 2026-06-08T00:00:00Z
+**User Input**: "Podemos retomar el tema de generacion de codigo, no recuerdo en que paso quedamos" + "HAs la recomendacion que planeaste ... me gustaria en que parte de la generacion de codigo estamos y si dentro de tu plan esta el desarrollo de una demo antes del producto final y si no es asi me gustaria que eligieras que modulos y que flujo podria llevar una demo"
+**AI Response**: "Verified wave-1 Sprint 1 state against real code. U2 Baseline green (ruff/mypy/37 tests). MD0 Dashboard: build (tsc strict + vite) + 37 vitest tests green, but lint RED — ESLint flat config lacked a TS parser (espree parsing .ts → 22 'interface reserved' errors). FIXED: added @typescript-eslint/parser devDependency + languageOptions.parser in eslint.config.js → lint green (react/no-danger NFR-MD0-S7, no-console, react-hooks clean). Gate 3 had an unverified criterion (env_access via http_credentials — used in runner.py:95 but untested): added test_env_access_passed_as_http_credentials → executor runner 6 tests green. Full Python suite 88 tests green. Marked Gate 2 (closed), Gate 3 (closed), Gate 6 (partial: code-gen done; CSP headers + 5-screens-vs-real-backend defer to U4, Lighthouse pending) in build-sequence.md. Updated md0 code-summary + aidlc-state.md. Proposed demo plan (none was explicit in plan): Demo 1 CLI smoke after U3 (U1+U2+U3, no API/UI) as 'it really runs' milestone; Demo 2 full E2E = wave-1 DoD after U4; dashboard+mock-server already demoable today."
+**Context**: Construction Phase, wave-1 Sprint 1 CLOSED. Next: U3 Reporter (needs U1+U2) → U4 API. Branch rework/storefront-audit-scope, no push.
+
+---

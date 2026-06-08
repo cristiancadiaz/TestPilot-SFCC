@@ -125,18 +125,18 @@ Si hay 4+ devs disponibles:
 - [x] `docker build .` exit 0 — imagen `testpilot-sfcc:local` (985 MB)
 - [N/A] Imagen ejecuta y responde `/v1/run` con 422 — sin API en U0 (se valida tras U4)
 
-### Gate 2 — Tras U2
-- [ ] Tests PBT pasan (PBT-02, 03, 07, 09)
-- [ ] `InMemoryBaselineStore` separa runs por ambiente correctamente
-- [ ] `compute_traffic_light` con bootstrap=True nunca YELLOW
+### Gate 2 — Tras U2 ✅ (2026-06-08)
+- [x] Tests PBT pasan (PBT-02, 03, 07, 09) — 37 tests (incl. PBT-02/03/07/08/09) verde
+- [x] `InMemoryBaselineStore` separa runs por ambiente correctamente — `test_store_separates_by_environment_id`
+- [x] `compute_traffic_light` con bootstrap=True nunca YELLOW — PBT-09 (200 ejemplos)
 
-### Gate 3 — Tras U1
-- [ ] Tests pasan con mocks de Playwright
-- [ ] `orders_created=0` asserted
-- [ ] Disciplina de screenshots respeta flags
-- [ ] 3 perfiles instanciados correctamente (incluyendo desktop-ec)
-- [ ] env_access vía http_credentials funciona en test
-- [ ] shopper_login form encapsulado y testeable
+### Gate 3 — Tras U1 ✅ (2026-06-08)
+- [x] Tests pasan con mocks de Playwright — suite executor verde
+- [x] `orders_created=0` asserted — `test_checkout_full_orders_created_zero`, `test_checkout_card_declined_orders_created_zero`, assert guard en runner
+- [x] Disciplina de screenshots respeta flags — `test_checkout_full_screenshot_policy`
+- [x] 3 perfiles instanciados correctamente (incluyendo desktop-ec) — `test_all_profiles_has_exactly_3`, `test_desktop_ec_fields`
+- [x] env_access vía http_credentials funciona en test — `test_env_access_passed_as_http_credentials`
+- [x] shopper_login form encapsulado y testeable — `tests/test_executor_auth.py`
 
 ### Gate 4 — Tras U3
 - [ ] JSON output valida contra `specs/execution_report.schema.json`
@@ -153,13 +153,15 @@ Si hay 4+ devs disponibles:
 - [ ] LiveStatusTracker se actualiza durante runs paralelos
 - [ ] Historial paginado con filtros
 
-### Gate 6 — Tras MD0
-- [ ] Dashboard accesible en `/`
-- [ ] CSP headers presentes
-- [ ] 5 pantallas funcionales contra backend
-- [ ] Polling 3s funcionando en P3
-- [ ] Sin credenciales en console/network del browser
-- [ ] Lighthouse score básico ≥80
+### Gate 6 — Tras MD0 ⟳ (código completo 2026-06-08; cierre pleno tras integración U4)
+- [x] Dashboard accesible en `/` — SPA con 5 rutas; `pnpm build` (tsc strict + vite) verde
+- [ ] CSP headers presentes — **pendiente**: capa de servido (no hay meta CSP en index.html); se define al desplegar/integrar U4
+- [~] 5 pantallas funcionales contra backend — 5 pantallas funcionan contra `mock-server.ts`; "contra backend real" pendiente de U4
+- [x] Polling 3s funcionando en P3 — `usePolling.test.tsx`
+- [x] Sin credenciales en console/network del browser — `ApiClient` redacta; cubierto en tests
+- [ ] Lighthouse score básico ≥80 — **pendiente**: requiere pasada de performance (post-integración)
+
+> Nota: MD0 generación de código COMPLETA (build+tsc+lint+37 tests verde, 2026-06-08). Gate 6 cierra plenamente cuando MD0 conecta a la API real de U4 (CSP + 5 pantallas contra backend) y se corre Lighthouse.
 
 ### Gate Final — Sistema completo
 - [ ] Un ingeniero puede registrar un ambiente desde el dashboard
