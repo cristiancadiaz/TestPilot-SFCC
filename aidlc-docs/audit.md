@@ -547,3 +547,21 @@ None. Optional index files may still be added for naming compatibility with the 
 **Context**: Construction Phase, wave-1 Sprint 1 CLOSED. Next: U3 Reporter (needs U1+U2) → U4 API. Branch rework/storefront-audit-scope, no push.
 
 ---
+
+## Construction — U3 Reporter, Code Generation Part 1 (Planning)
+
+**Timestamp**: 2026-06-08T00:00:00Z
+**User Input**: "Arranquemos con el plan de código de U3"
+**AI Response**: "Rewrote u3-code-generation-plan.md (the prior stub was unreconciled: said camelCase — wrong, schema is snake_case; didn't account for U3 computing the real verdict). Reconciled to specs v2 + real U1/U2 APIs: U1 returns ProfileResult with traffic_light=GREEN placeholder → U3 computes the deterministic verdict (per-profile 3-rule ladder: failed→RED, error→YELLOW, success→compute_traffic_light from p95; global=worst-of). to_json_dict = model_dump(mode='json') snake_case (orders_created already excluded). audit/network_summary deferred to U6/U7. Flagged 3 HITL decisions: D-U3-1 report-level baseline_comparison aggregation (rec: combo that drove worst verdict), D-U3-2 report bootstrap_mode semantics (rec: all-combos), D-U3-3 U3 read-only on baseline / save_run is U4 (rec: yes). Steps: __init__, report_generator, test_reporter (verdict matrix + schema validation), test_reporter_pbt (RNF-09), code-summary. Gate 4 criteria listed. Awaiting approval before Part 2 generation."
+**Context**: Construction Phase, U3 (Sprint 2, needs U1+U2 ✅). Code Generation Part 1 complete; pending HITL.
+
+---
+
+## Construction — U3 Reporter, Code Generation Part 2 (Generation) + Gate 4
+
+**Timestamp**: 2026-06-08T00:00:00Z
+**User Input**: "Sí, seguimos con la generación tomando tus recomendaciones" (D-U3-1/2/3 at recommended defaults; preceded by a clarifying Q on 'bootstrap_mode' — confirmed it is the p95 calibration phase, not the CSS framework)
+**AI Response**: "Generated U3: src/reporter/__init__.py + report_generator.py (compute_profile_verdict pure 3-rule ladder, _global_verdict worst-of, _report_bootstrap all-combos D-U3-2, _select_report_baseline worst-verdict-combo D-U3-1, generate_report read-only on baseline D-U3-3, to_json_dict=model_dump(mode=json) snake_case, to_markdown). tests/test_reporter.py (15 deterministic: verdict matrix, schema validation parametrized, orders_created assert, no cross-env) + tests/test_reporter_pbt.py (RNF-09, 150 examples). Gate 4 verified: ruff/mypy-strict exit 0; 21 U3 tests; full suite 110 green; JSON validates vs execution_report.schema.json Draft 2020-12. Corrected stub errors (camelCase→snake_case, removed percentDiff). Rewrote u3 code-summary, marked Gate 4 + plan checkboxes, updated aidlc-state."
+**Context**: Construction Phase, U3 COMPLETE. Next: U4 API (largest unit; integrates all + save_run orchestration + IaC). CLI smoke demo (U1+U2+U3) now feasible.
+
+---

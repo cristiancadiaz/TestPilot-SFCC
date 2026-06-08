@@ -138,11 +138,12 @@ Si hay 4+ devs disponibles:
 - [x] env_access vía http_credentials funciona en test — `test_env_access_passed_as_http_credentials`
 - [x] shopper_login form encapsulado y testeable — `tests/test_executor_auth.py`
 
-### Gate 4 — Tras U3
-- [ ] JSON output valida contra `specs/execution_report.schema.json`
-- [ ] Markdown legible en CLI
-- [ ] Invariante orders_created=0 enforced
-- [ ] Baseline consultado con environment_id (no se mezclan ambientes)
+### Gate 4 — Tras U3 ✅ (2026-06-08)
+- [x] JSON output valida contra `specs/execution_report.schema.json` — Draft 2020-12, casos green/yellow/red/bootstrap/failed/error + multi-perfil
+- [x] Markdown legible en CLI — `test_markdown_contains_verdict_and_invariant_line`
+- [x] Invariante orders_created=0 enforced — assert en `generate_report` + ausente del JSON + línea en Markdown
+- [x] Baseline consultado con environment_id (no se mezclan ambientes) — `test_baseline_queried_with_run_environment`
+- [x] ruff + mypy --strict exit 0; suite completa 110 tests verde
 
 ### Gate 5 — Tras U4
 - [ ] Todos los endpoints documentados retornan códigos correctos
