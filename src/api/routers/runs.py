@@ -21,6 +21,7 @@ from src.api.deps import (
     get_orchestrator,
     get_report_store,
     get_tracker,
+    enforce_daily_cap,
 )
 from src.api.errors import NoRunsYetError, RunNotFoundError
 from src.api.schemas import (
@@ -41,7 +42,7 @@ router = APIRouter(prefix="/v1", tags=["runs"])
 _LATEST_TTL_SECONDS = 14_400  # 4 hours (deploy-gate freshness)
 
 
-@router.post("/run", dependencies=[Depends(verify_api_key)])
+@router.post("/run", dependencies=[Depends(verify_api_key), Depends(enforce_daily_cap)])
 async def create_run(
     config: SyntheticUserConfig,
     orchestrator: RunOrchestrator = Depends(get_orchestrator),

@@ -65,19 +65,19 @@ estricta (schema + catálogo) · RT1 prompt-injection 100% bloqueado (Q8=0) · N
 Add `TranslateRequest` (instruction 2..2000) + `TranslateResponse` (status ok|ambiguous,
 proposed_config, explanation, clarification_question) mirroring the schema. (mode already exists.)
 
-### Step 2 — `src/agents/__init__.py` + `src/agents/translator.py` [ ] (CREATE — D-U8-1)
+### Step 2 — `src/agents/__init__.py` + `src/agents/translator.py` [x] (CREATE — D-U8-1)
 Translator: prompt with the v2 closed catalog (6 flows + full_journey) + scope mapping
 ("revisa solo el carrito" → cart_review; "toda la tienda" → full_journey, RF-22 AC6);
 ambiguity → `status="ambiguous"` + clarification question (NEVER guess, P3); Spanish
 `explanation`; hardened system instructions + post-validation (prompt-injection defense).
 Anthropic client behind a Protocol + in-memory fake.
 
-### Step 3 — `src/api/routers/translate.py` + wire in `app.py` [ ] (CREATE/MODIFY — D-U8-2/3)
+### Step 3 — `src/api/routers/translate.py` + wire in `app.py` [x] (CREATE/MODIFY — D-U8-2/3)
 `POST /v1/translate`: X-API-Key; validate `instruction` ≤2000; call translator; validate
 proposed config vs schema v2 + `flow_catalog` BEFORE responding (P3); out-of-catalog /
 injection → 422 `instruction_rejected` + log (RT1). NEVER runs anything.
 
-### Step 4 — daily cap guard [ ] (CREATE — D-U8-5)
+### Step 4 — daily cap guard [x] (CREATE — D-U8-5)
 In the orchestrator/deps: count today's runs (gate+exploratory) → `429 rate_limited` when
 ≥10 (invariant #7). New error-taxonomy row. (Mode propagation + latest-gate already done.)
 
@@ -90,16 +90,16 @@ Root Vite/React app: NL textarea primary in NewRun → "Traducir" → preview �
 lanzar" → POST /v1/run; JSON editor as advanced toggle; gate/exploratory selector; explore
 runs flagged in history/detail. vitest + tsc strict + eslint green.
 
-### Step 7 — `tests/test_translate_endpoint.py` [ ] (CREATE)
+### Step 7 — `tests/test_translate_endpoint.py` [x] (CREATE)
 Claude mocked: valid instruction → ok + config validates vs schema v2 + explanation;
 ambiguous → ambiguous + clarification_question; >2000 → 422; no API key → 401; endpoint
 NEVER launches the browser (assert executor not invoked).
 
-### Step 8 — `tests/test_prompt_injection.py` [ ] (CREATE)
+### Step 8 — `tests/test_prompt_injection.py` [x] (CREATE)
 RT1 suite (PRD §11.4, 5 scenarios: ignore-rules, out-of-catalog flow, malicious flow,
 leak env vars, jailbreak prefix) → 100% rejected with 422 + log. **Gate Q8=0, blocking.**
 
-### Step 9 — `tests/test_modes.py` + `tests/test_executor_no_translator_import.py` [ ] (CREATE)
+### Step 9 — `tests/test_modes.py` + `tests/test_executor_no_translator_import.py` [x] (CREATE)
 Modes: exploratory run absent from p95 (PBT mixed modes); `latest` for gate ignores
 exploratory; exploratory report carries `mode="exploratory"`; daily cap sums both modes.
 **C12 static test:** `src/executor/` has no import of `src/agents` (grep).

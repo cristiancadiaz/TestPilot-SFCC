@@ -342,3 +342,31 @@ class ResolvedEnvironment(BaseModel):
         if not value.startswith("https://"):
             raise ValueError("store_url must be an https URL")
         return value
+
+
+# --------------------------------------------------------------------------------
+# Translate endpoint models (mirrors translate-request-response.schema.json)
+# --------------------------------------------------------------------------------
+
+
+class TranslateRequest(BaseModel):
+    """Request body for POST /v1/translate."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    instruction: str = Field(min_length=2, max_length=2000)
+
+
+class TranslateResponse(BaseModel):
+    """Response body for POST /v1/translate.
+
+    Mirrors the schema exactly: status (ok|ambiguous), proposed_config (SyntheticUserConfig|null),
+    explanation (str|null), clarification_question (str|null).
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    status: Literal["ok", "ambiguous"]
+    proposed_config: SyntheticUserConfig | None = None
+    explanation: str | None = None
+    clarification_question: str | None = None

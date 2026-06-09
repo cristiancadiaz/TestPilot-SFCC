@@ -19,7 +19,7 @@ from fastapi.staticfiles import StaticFiles
 
 from src.api.errors import TestPilotApiError
 from src.api.middleware import RequestLoggingMiddleware, SecurityHeadersMiddleware
-from src.api.routers import environments, health, runs, screenshots
+from src.api.routers import environments, health, runs, screenshots, translate
 from src.api.schemas import ApiErrorPayload
 from src.api.services.environment_registry import EnvironmentRegistry
 from src.api.services.environment_resolver import EnvironmentResolver
@@ -107,6 +107,7 @@ def create_app(
     registry: EnvironmentRegistry | None = None,
     report_store: RunReportStore | None = None,
     screenshot_store: ScreenshotStore | None = None,
+    translator: object | None = None,
     serve_dashboard: bool = True,
 ) -> FastAPI:
     """Create and configure the FastAPI application.
@@ -129,6 +130,8 @@ def create_app(
     app.include_router(runs.router)
     app.include_router(environments.router)
     app.include_router(screenshots.router)
+    # Translate router (U8)
+    app.include_router(translate.router)
 
     bundle = _DefaultBundle()
     app.state.orchestrator = orchestrator or bundle.orchestrator
@@ -136,6 +139,8 @@ def create_app(
     app.state.registry = registry or bundle.registry
     app.state.report_store = report_store or bundle.report_store
     app.state.screenshot_store = screenshot_store or bundle.screenshot_store
+    # Translator dependency (injected by tests or the caller). May be None in default bundles.
+    app.state.translator = translator
     app.state.health_probe = lambda: True
 
     # S8: serve the built dashboard if present; omit gracefully otherwise (BR-U4-22).

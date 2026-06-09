@@ -87,3 +87,18 @@ class InvariantViolatedError(TestPilotApiError):
 
     status_code = 500
     error_code = "invariant_violated"
+
+
+class RateLimitedError(TestPilotApiError):
+    """HTTP 429 when the daily run cap is exceeded (D-U8-5)."""
+
+    status_code = 429
+    error_code = "rate_limited"
+
+
+class InstructionRejectedError(TestPilotApiError):
+    """Returned when a translator-proposed instruction/config is rejected
+    (out-of-catalog or prompt-injection detection)."""
+
+    status_code = 422
+    error_code = "instruction_rejected"

@@ -624,6 +624,31 @@ None. Optional index files may still be added for naming compatibility with the 
 
 **Timestamp**: 2026-06-09T00:00:00Z
 **User Input**: "arranquemos con U7 y U8 en paralelo. Recuerda lo del uso del 80% de los tokens y si te excedes detenerte" (preceded by commit of U5 as `8b412d8`)
+
+---
+
+## U8 — Backend code generation actions in this session
+
+**Timestamp**: 2026-06-09T12:48:32-05:00
+
+**User Input**: "continua" / "ejecuta y luego realizamos el commit"
+
+**AI Response**: Created translator (src/agents/translator.py), translate router (src/api/routers/translate.py), wired translator into app.create_app and app.state.translator, added daily-cap guard dependency and enforced it on POST /v1/run, added tests (tests/test_translate_endpoint.py, tests/test_prompt_injection.py, tests/test_daily_cap_and_executor_import.py), fixed lint/type issues, executed ruff+mypy+targeted pytest; all targeted checks passed. Marked Steps 2,3,4,7,8,9 done in u8-code-generation-plan.md. Changes staged but not yet committed per user request.
+
+**Artifacts**:
+- src/agents/translator.py
+- src/api/routers/translate.py
+- src/api/app.py (translator wiring)
+- src/api/deps.py (daily cap)
+- src/api/errors.py (new error types)
+- tests/test_translate_endpoint.py
+- tests/test_prompt_injection.py
+- tests/test_daily_cap_and_executor_import.py
+- aidlc-docs/construction/plans/u8-code-generation-plan.md (steps marked)
+
+**Context**: Backend-only U8 scope confirmed by user. Next: commit changes (awaiting permission) and continue U8 Part 2 generation (PBT + RT1 completeness).
+
+---
 **AI Response**: "Both u7/u8 plans existed but were stale (2026-06-03). Reconnaissance + rewrote both as Part-1 reconciled plans. **U7:** schema v2 already has network $defs; models.py doesn't model them; runner now has TWO entry points (run_profile + run_composition from U5) → capture must wire into both (D-U7-1); CWV at FlowCatalog critical_points (D-U7-2); HAR via U4 evidence store (D-U7-3); added Step 10 runner-network integration test. 10 steps, Gate U7 (RNF-15 redaction blocking). **U8 (big divergences):** src/agents/ does NOT exist → translator created from scratch, TASK-005 lands here (D-U8-1); no src/api/main.py → routers/translate.py wired in app.py (D-U8-2); SyntheticUserConfig.mode already exists; baseline gate-only (C11) already implemented → only PBT added (D-U8-4); GET /v1/runs/latest gate-only already exists; dashboard is at repo ROOT (Vite/React), not src/dashboard/ (D-U8-6); daily cap (invariant #7) NOT implemented → new guard 429 rate_limited (D-U8-5, the one genuine choice: implement-now vs defer-to-infra); post-translation gate reuses flow_catalog + schema (D-U8-3, P3); RT1 in-scope (test_prompt_injection), D-NL gates operational. 9 steps, Gate U8 (Q8=0 blocking, C12 grep). NO code generated — paused at the Part-1 HITL gate to respect the 80% token budget. Awaiting approval on plans + decisions (esp. D-U8-5)."
 **Context**: Construction Phase, wave 2. U7+U8 Code Generation Part 1 complete (plans reconciled); pending HITL on plans + D-U7-1..4 / D-U8-1..6. Generation (Part 2) is the next gated step; protected paths (runner.py) require authorization.
 
