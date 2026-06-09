@@ -14,7 +14,9 @@ Logging: module-level logger; credentials are NEVER written to logs (RNF-03).
 
 from __future__ import annotations
 
+import json
 import logging
+import os
 from collections.abc import Coroutine
 from typing import Any
 
@@ -26,11 +28,15 @@ from playwright.async_api import (
 )
 from playwright.async_api import Error as PlaywrightError
 
+from src.executor.controller_timings import aggregate_controllers
 from src.executor.flow_catalog import FLOW_REGISTRY
+from src.executor.network_capture import NetworkCapture
+from src.executor.web_vitals import collect_web_vitals
 from src.models import (
     BrowserProfile,
     FlowName,
     FlowResult,
+    NetworkSummary,
     ProfileResult,
     ResolvedEnvironment,
     StepResult,
@@ -39,6 +45,44 @@ from src.models import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+async def _build_network_summary(
+    page: Page,
+    capture: NetworkCapture,
+    run_id: str,
+    profile_id: str,
+    flow_name: str,
+) -> NetworkSummary:
+    """Aggregate controllers, collect CWV, persist the redacted HAR, and summarize."""
+    controllers = aggregate_controllers(capture.records)
+    web_vitals = await collect_web_vitals(page)
+    har_url = _persist_har(capture, run_id, profile_id, flow_name)
+    return capture.build_summary(
+        controllers=controllers, web_vitals=web_vitals, har_url=har_url
+    )
+
+
+def _persist_har(
+    capture: NetworkCapture, run_id: str, profile_id: str, flow_name: str
+) -> str:
+    """Write the filtered HAR to ``SCREENSHOT_DIR`` if set; return its logical key.
+
+    The key follows the ADR-003 evidence convention. When ``SCREENSHOT_DIR`` is
+    unset (e.g. AWS path) the upload is handled by the infra adapters — we still
+    return the key so ``har_url`` is populated. A write failure never aborts a run.
+    """
+    key = f"{run_id}/{profile_id}/{flow_name}/network.har.json"
+    base = os.environ.get("SCREENSHOT_DIR")
+    if base:
+        try:
+            path = os.path.join(base, *key.split("/"))
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, "w", encoding="utf-8") as handle:
+                json.dump(capture.to_har_dict(), handle)
+        except OSError as exc:
+            logger.warning("HAR persist failed (%s): %s", key, type(exc).__name__)
+    return key
 
 
 # ---------------------------------------------------------------------------
@@ -163,6 +207,7 @@ async def run_profile(
     flow_fn = FLOW_REGISTRY[flow_name]
 
     flow_result: FlowResult
+    network_summary: NetworkSummary | None = None
 
     try:
         async with async_playwright() as playwright:
@@ -170,7 +215,12 @@ async def run_profile(
             try:
                 context = await _create_context(browser, profile, env)
                 page = await context.new_page()
+                capture = NetworkCapture(env.store_url)
+                capture.install(page)
                 flow_result = await flow_fn(page, config, env, run_id, profile.name)
+                network_summary = await _build_network_summary(
+                    page, capture, run_id, profile.name, flow_name
+                )
             except PlaywrightError as exc:
                 logger.error(
                     "InfrastructureError in flow '%s' profile='%s': %s",
@@ -196,6 +246,7 @@ async def run_profile(
         flow_result=flow_result,
         # Placeholder: the reporter (U3) computes the real verdict from p95 baseline.
         traffic_light=TrafficLight.GREEN,
+        network_summary=network_summary,
     )
 
     logger.info(
@@ -241,6 +292,8 @@ async def run_composition(
             try:
                 context = await _create_context(browser, profile, env)
                 page = await context.new_page()
+                capture = NetworkCapture(env.store_url)
+                capture.install(page)
                 broken = False
                 for flow_name in flow_names:
                     if broken:
@@ -254,6 +307,7 @@ async def run_composition(
                             )
                         )
                         continue
+                    capture.reset()  # segment the capture per flow
                     flow_result = await FLOW_REGISTRY[flow_name](
                         page, config, env, run_id, profile.name
                     )
@@ -261,11 +315,15 @@ async def run_composition(
                         "Zero-contamination violated in run_composition: "
                         f"orders_created={flow_result.orders_created}"
                     )
+                    network_summary = await _build_network_summary(
+                        page, capture, run_id, profile.name, flow_name
+                    )
                     results.append(
                         ProfileResult(
                             profile=profile,
                             flow_result=flow_result,
                             traffic_light=TrafficLight.GREEN,
+                            network_summary=network_summary,
                         )
                     )
                     if flow_result.status != "success":

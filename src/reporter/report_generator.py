@@ -33,6 +33,7 @@ from src.models import (
     ExecutionReport,
     FlowResult,
     Mode,
+    NetworkSummary,
     ProfileResult,
     TrafficLight,
 )
@@ -282,5 +283,32 @@ def to_markdown(report: ExecutionReport) -> str:
                 f"{step.duration_ms} | {state} | {error} |"
             )
         lines.append("")
+        _append_network_section(lines, profile_result.network_summary)
 
     return "\n".join(lines)
+
+
+def _append_network_section(lines: list[str], network: NetworkSummary | None) -> None:
+    """Append the per-profile network/performance block (U7), if captured."""
+    if network is None:
+        return
+    lines.append("**Network / Performance**")
+    lines.append(
+        f"- Requests: {network.total_requests} "
+        f"({network.failed_requests} failed)"
+    )
+    if network.controllers:
+        top = sorted(network.controllers, key=lambda c: c.p95_ms, reverse=True)[:5]
+        rendered = ", ".join(
+            f"`{c.pattern}` {c.p95_ms} ms (×{c.count})" for c in top
+        )
+        lines.append(f"- Top controllers by p95: {rendered}")
+    vitals = network.web_vitals
+    if vitals is not None:
+        lines.append(
+            f"- Core Web Vitals: LCP {vitals.lcp_ms} ms · "
+            f"CLS {vitals.cls} · TTFB {vitals.ttfb_ms} ms"
+        )
+    if network.har_url:
+        lines.append(f"- HAR: `{network.har_url}` (redacted, no bodies)")
+    lines.append("")

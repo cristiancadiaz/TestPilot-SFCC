@@ -193,6 +193,47 @@ class FlowResult(BaseModel):
     orders_created: int = Field(default=0, exclude=True)
 
 
+class ControllerTiming(BaseModel):
+    """Aggregated timing for one SFRA controller pattern (the controller waterfall)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    pattern: str
+    count: int = Field(ge=1)
+    p95_ms: int = Field(ge=0)
+
+
+class WebVitals(BaseModel):
+    """Core Web Vitals for a key page of the flow (per profile).
+
+    INP/TBT are intentionally excluded while they would inflate the flow time
+    (RNF-15). Every field is nullable — capture is best-effort (H8.2).
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    lcp_ms: int | None = Field(default=None, ge=0)
+    cls: float | None = Field(default=None, ge=0)
+    ttfb_ms: int | None = Field(default=None, ge=0)
+
+
+class NetworkSummary(BaseModel):
+    """Per profile×flow network capture summary (RF-23 / U7).
+
+    Metadata + timings only — never bodies. The full filtered HAR (auth headers
+    and cookies redacted) lives at ``har_url``. ``None`` on a ProfileResult means
+    capture did not run for that combination.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    total_requests: int = Field(ge=0)
+    failed_requests: int = Field(ge=0)
+    controllers: list[ControllerTiming] = Field(default_factory=list)
+    web_vitals: WebVitals | None = None
+    har_url: str | None = None
+
+
 class ProfileResult(BaseModel):
     """Result for one profile × flow combination."""
 
@@ -201,6 +242,8 @@ class ProfileResult(BaseModel):
     profile: BrowserProfile
     flow_result: FlowResult
     traffic_light: TrafficLight
+    # Per-profile network capture (U7). None when capture did not run.
+    network_summary: NetworkSummary | None = None
 
 
 class BaselineComparison(BaseModel):
