@@ -54,3 +54,5 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 *.egg-info/
+.hypothesis
+hypothesis/examples
