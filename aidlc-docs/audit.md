@@ -565,3 +565,21 @@ None. Optional index files may still be added for naming compatibility with the 
 **Context**: Construction Phase, U3 COMPLETE. Next: U4 API (largest unit; integrates all + save_run orchestration + IaC). CLI smoke demo (U1+U2+U3) now feasible.
 
 ---
+
+## Construction — U4 API, Code Generation Part 1 (Planning)
+
+**Timestamp**: 2026-06-08T00:00:00Z
+**User Input**: "Armemos el plan de código de U4"
+**AI Response**: "Rewrote u4-code-generation-plan.md (prior 3-step stub was aspirational/subdimensioned, falsely marked [x], referenced a non-existent src/api/main.py). Reconciled to S1–S8 service design + error-taxonomy + real U1/U2/U3 APIs. Confirmed boundary: /v1/translate + src/agents NL translator is OUT (wave-2 U8). New models needed (EnvironmentConfig, RunStatus/RunState, RunListItem/Response, RunListQuery, ApiErrorPayload). Identified gaps: RunReportStore needed (U2 BaselineStore only holds flattened RunRecords, not full reports); ResolvedEnvironment is flat (env.env_access/shopper/store_url), not env.config.* as the 2026-05-24 design said. 3 HITL decisions: D-U4-1 Protocols+in-memory fakes for AWS (no moto dep; boto3 adapters thin shims, real wiring=infra), D-U4-2 translate/agents → U8 (TASK-005 dedup moves to U8), D-U4-3 phased build (A core run path/E2E spine → B environments+history → C evidence+static+hardening; Gate 5 closes at C). Endpoint inventory + exception hierarchy + per-phase steps + Gate 5 criteria + security-baseline compliance documented. Awaiting approval before Part 2."
+**Context**: Construction Phase, U4 (largest unit, Sprint 2, needs U1+U2+U3 ✅). Code Generation Part 1 complete; pending HITL on D-U4-1/2/3 + phasing.
+
+---
+
+## Construction — U4 API, Code Generation Part 2 (Generation) — Phase A
+
+**Timestamp**: 2026-06-08T00:00:00Z
+**User Input**: "Ejecuta las recomendaciones y continua" (D-U4-1/2/3 at recommended defaults)
+**AI Response**: "Generated U4 Phase A (E2E spine), src/api/ from scratch: schemas.py (EnvironmentConfig/RunState/ProfileRunStatus/RunStatus/RunListItem/Response/RunListQuery/ApiErrorPayload — placed in api/ not models.py per CLAUDE.md boundary), errors.py (TestPilotApiError hierarchy, taxonomy §5), security.py (verify_api_key, fail-closed), middleware.py (SecurityHeaders+RequestLogging w/ request_id), stores.py (EnvironmentStore/SecretsClient/RunReportStore/ScreenshotStore Protocols + in-memory fakes — D-U4-1, no moto), services/environment_resolver.py (S6, TTL cache), services/run_orchestrator.py (S1: uuid4, resolve, asyncio.gather over profiles×flows under Semaphore(3) + wait_for(1800), U3 generate_report, U2 gate-only save_run, invariant#1→500 invariant_violated, wave-1 flow guard full_journey/journey→422), services/live_status_tracker.py (S7), deps.py, routers/runs.py (POST /v1/run) + routers/health.py, app.py (factory + 3 structured exception handlers incl. RequestValidationError→validation_failed and Exception→500 no-stacktrace). tests/test_api_run.py 12 tests. Verified: ruff + mypy --strict (15 files) exit 0; 12 Phase A tests; full suite 122 green. Marked Phase A checkboxes, updated aidlc-state."
+**Context**: Construction Phase, U4 Phase A COMPLETE (E2E spine). Next: Phase B (environments CRUD + runs history + status), Phase C (screenshots + static + CSP + error-taxonomy coverage; Gate 5 closes at C).
+
+---
