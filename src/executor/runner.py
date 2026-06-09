@@ -15,7 +15,7 @@ Logging: module-level logger; credentials are NEVER written to logs (RNF-03).
 from __future__ import annotations
 
 import logging
-from collections.abc import Callable, Coroutine
+from collections.abc import Coroutine
 from typing import Any
 
 from playwright.async_api import (
@@ -26,7 +26,7 @@ from playwright.async_api import (
 )
 from playwright.async_api import Error as PlaywrightError
 
-from src.executor.flows import checkout_card_declined, checkout_full
+from src.executor.flow_catalog import FLOW_REGISTRY
 from src.models import (
     BrowserProfile,
     FlowName,
@@ -54,21 +54,10 @@ class InfrastructureError(Exception):
     """
 
 
-# ---------------------------------------------------------------------------
-# Flow registry — dispatch table (invariant #2: NO if/else on flow name)
-# ---------------------------------------------------------------------------
-
-# Each entry maps a FlowName to the coroutine function exposed by the flow module.
-_FlowCoro = Callable[
-    [Page, SyntheticUserConfig, ResolvedEnvironment, str, str],
-    Coroutine[Any, Any, FlowResult],
-]
-
-FLOW_REGISTRY: dict[str, _FlowCoro] = {
-    "checkout_full": checkout_full.run,
-    "checkout_card_declined": checkout_card_declined.run,
-}
-"""Closed catalog registry for wave-1 flows. Add entries here (not if/else)."""
+# The closed-catalog registry is the single source of truth in ``flow_catalog`` and
+# imported above (invariant #2: dispatch via lookup, NEVER if/else on flow name).
+# Re-exported here so existing callers ``from src.executor.runner import FLOW_REGISTRY``
+# keep working.
 
 
 # ---------------------------------------------------------------------------
@@ -216,3 +205,87 @@ async def run_profile(
         flow_result.status,
     )
     return profile_result
+
+
+def _skipped_flow_result(flow_name: str, reason: str) -> FlowResult:
+    """A ``FlowResult`` for a composition link skipped after an upstream failure."""
+    return FlowResult(
+        flow_name=flow_name,  # type: ignore[arg-type]
+        status="failed",
+        steps=[
+            StepResult(name="skipped", status="skipped", duration_ms=0, error=reason)
+        ],
+        duration_ms=0,
+        orders_created=0,
+    )
+
+
+async def run_composition(
+    profile: BrowserProfile,
+    flow_names: list[FlowName],
+    config: SyntheticUserConfig,
+    env: ResolvedEnvironment,
+    run_id: str,
+) -> list[ProfileResult]:
+    """Run ``flow_names`` as a chained composition in ONE shared browser context.
+
+    Each flow self-prepares its page; the session (cookies/auth) persists across
+    flows. A broken link marks all subsequent flows ``skipped`` (H6.3 AC3). Returns
+    one ``ProfileResult`` per flow. ``traffic_light`` is a placeholder — the reporter
+    (U3) computes the real verdict.
+    """
+    results: list[ProfileResult] = []
+    try:
+        async with async_playwright() as playwright:
+            browser: Browser = await playwright.chromium.launch(headless=True)
+            try:
+                context = await _create_context(browser, profile, env)
+                page = await context.new_page()
+                broken = False
+                for flow_name in flow_names:
+                    if broken:
+                        results.append(
+                            ProfileResult(
+                                profile=profile,
+                                flow_result=_skipped_flow_result(
+                                    flow_name, "upstream flow in the journey failed"
+                                ),
+                                traffic_light=TrafficLight.GREEN,
+                            )
+                        )
+                        continue
+                    flow_result = await FLOW_REGISTRY[flow_name](
+                        page, config, env, run_id, profile.name
+                    )
+                    assert flow_result.orders_created == 0, (
+                        "Zero-contamination violated in run_composition: "
+                        f"orders_created={flow_result.orders_created}"
+                    )
+                    results.append(
+                        ProfileResult(
+                            profile=profile,
+                            flow_result=flow_result,
+                            traffic_light=TrafficLight.GREEN,
+                        )
+                    )
+                    if flow_result.status != "success":
+                        broken = True  # remaining links are skipped
+            except PlaywrightError as exc:
+                logger.error(
+                    "InfrastructureError in composition profile='%s': %s",
+                    profile.name,
+                    type(exc).__name__,
+                )
+                raise InfrastructureError(str(exc)) from exc
+            finally:
+                await browser.close()
+    except InfrastructureError as infra_exc:
+        for flow_name in flow_names[len(results):]:
+            results.append(
+                ProfileResult(
+                    profile=profile,
+                    flow_result=_error_flow_result(flow_name, str(infra_exc)),
+                    traffic_light=TrafficLight.YELLOW,
+                )
+            )
+    return results

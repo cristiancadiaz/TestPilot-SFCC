@@ -180,13 +180,6 @@ def test_422_validation_failed_bad_enum() -> None:
     assert resp.json()["error_code"] == "validation_failed"
 
 
-def test_422_full_journey_wave1() -> None:
-    client = TestClient(_make_app(_ok_fake()))
-    resp = client.post("/v1/run", json=_payload(flows=["full_journey"]), headers=H)
-    assert resp.status_code == 422
-    assert resp.json()["error_code"] == "validation_failed"
-
-
 def test_404_environment_not_found() -> None:
     client = TestClient(_make_app(_ok_fake(), register_env=False))
     resp = client.post("/v1/run", json=_payload(), headers=H)

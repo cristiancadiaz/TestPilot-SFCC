@@ -5,9 +5,10 @@ Resolves the environment, runs every profile×flow combination in parallel
 (U3), persists it, feeds gate-mode runs into the baseline (U2), and tracks live
 status (S7).
 
-Wave-1 limitation: only the flows present in the executor's ``FLOW_REGISTRY``
-(``checkout_full``, ``checkout_card_declined``) are runnable. ``full_journey`` and
-the journey flows are wave 2 — requested here they yield 422 ``validation_failed``.
+Flows are expanded by the closed ``flow_catalog`` (``full_journey`` → its declared
+sequence; out-of-catalog → 422 ``validation_failed``). When a composition alias is
+requested it runs as a chained ``run_composition`` per profile (shared browser
+context); otherwise each profile×flow runs independently via ``run_profile``.
 """
 
 from __future__ import annotations
@@ -18,7 +19,6 @@ import os
 import uuid
 from collections.abc import Awaitable, Callable
 from datetime import datetime, timezone
-from typing import cast
 
 from src.api.errors import (
     InvariantViolatedError,
@@ -30,8 +30,9 @@ from src.api.services.environment_resolver import EnvironmentResolver
 from src.api.services.live_status_tracker import LiveStatusTracker
 from src.api.stores import RunReportStore
 from src.baseline import BaselineManager
+from src.executor import flow_catalog
 from src.executor.profiles import ALL_PROFILES
-from src.executor.runner import FLOW_REGISTRY
+from src.executor.runner import run_composition as _default_run_composition
 from src.executor.runner import run_profile as _default_run_profile
 from src.models import (
     BrowserProfile,
@@ -57,6 +58,11 @@ RunProfileFn = Callable[
     Awaitable[ProfileResult],
 ]
 
+RunCompositionFn = Callable[
+    [BrowserProfile, list[FlowName], SyntheticUserConfig, ResolvedEnvironment, str],
+    Awaitable[list[ProfileResult]],
+]
+
 
 class RunOrchestrator:
     """Orchestrate a full run from a validated config to a persisted report."""
@@ -69,6 +75,7 @@ class RunOrchestrator:
         tracker: LiveStatusTracker,
         *,
         run_profile: RunProfileFn = _default_run_profile,
+        run_composition: RunCompositionFn = _default_run_composition,
         timeout_seconds: int = RUN_TIMEOUT_SECONDS,
     ) -> None:
         self._resolver = resolver
@@ -76,63 +83,87 @@ class RunOrchestrator:
         self._reports = report_store
         self._tracker = tracker
         self._run_profile = run_profile
+        self._run_composition = run_composition
         self._timeout = timeout_seconds
 
     @staticmethod
-    def _resolve_flows(flows: list[FlowSelection]) -> list[FlowName]:
-        """Validate requested flows against the wave-1 executor registry."""
-        supported = set(FLOW_REGISTRY)
-        resolved: list[FlowName] = []
-        for flow in flows:
-            if flow == "full_journey":
-                raise ValidationFailedError(
-                    "full_journey is not available in wave 1 "
-                    "(FlowCatalog composition is wave 2)",
-                    details={"flow": flow},
-                )
-            if flow not in supported:
-                raise ValidationFailedError(
-                    "flow is not available in wave 1",
-                    details={"flow": flow, "supported": sorted(supported)},
-                )
-            resolved.append(cast(FlowName, flow))
-        return resolved
+    def _expand_flows(flows: list[FlowSelection]) -> list[FlowName]:
+        """Expand composition aliases via the closed catalog (invariant #2).
+
+        ``full_journey`` becomes its declared modular sequence; out-of-catalog
+        values raise ``ValidationFailedError`` (422). The catalog grows ONLY via
+        curated PR — the orchestrator never dispatches an arbitrary flow.
+        """
+        try:
+            return flow_catalog.expand_flows(flows)
+        except ValueError as exc:
+            raise ValidationFailedError(
+                "flow is not in the closed catalog",
+                details={"flows": list(flows)},
+            ) from exc
 
     async def execute(self, config: SyntheticUserConfig) -> ExecutionReport:
         """Run *config* and return the persisted ``ExecutionReport``."""
         run_id = str(uuid.uuid4())
         env = self._resolver.resolve(config.environment_id)  # 404/409/502/422
-        flows = self._resolve_flows(config.flows)
+        flows = self._expand_flows(config.flows)
+        composition = flow_catalog.is_composition(config.flows)
         profiles = [_PROFILE_BY_NAME[p] for p in config.profiles]
-        combos = [(profile, flow) for profile in profiles for flow in flows]
 
         started_at = datetime.now(timezone.utc)
         self._tracker.start(
             run_id,
             config.environment_id,
             started_at,
-            [(profile.name, flow) for profile, flow in combos],
+            [(profile.name, flow) for profile in profiles for flow in flows],
         )
 
         semaphore = asyncio.Semaphore(MAX_CONCURRENT_PROFILES)
 
-        async def _run_one(profile: BrowserProfile, flow: FlowName) -> ProfileResult:
+        def _final_state(result: ProfileResult) -> RunState:
+            return (
+                RunState.COMPLETED
+                if result.flow_result.status == "success"
+                else RunState.FAILED
+            )
+
+        async def _run_flow(
+            profile: BrowserProfile, flow: FlowName
+        ) -> list[ProfileResult]:
             async with semaphore:
                 self._tracker.update_profile(
                     run_id, profile.name, flow, RunState.RUNNING
                 )
                 result = await self._run_profile(profile, flow, config, env, run_id)
-                final = (
-                    RunState.COMPLETED
-                    if result.flow_result.status == "success"
-                    else RunState.FAILED
+                self._tracker.update_profile(
+                    run_id, profile.name, flow, _final_state(result)
                 )
-                self._tracker.update_profile(run_id, profile.name, flow, final)
-                return result
+                return [result]
+
+        async def _run_chain(profile: BrowserProfile) -> list[ProfileResult]:
+            async with semaphore:
+                for flow in flows:
+                    self._tracker.update_profile(
+                        run_id, profile.name, flow, RunState.RUNNING
+                    )
+                chain = await self._run_composition(profile, flows, config, env, run_id)
+                for result in chain:
+                    self._tracker.update_profile(
+                        run_id,
+                        profile.name,
+                        result.flow_result.flow_name,
+                        _final_state(result),
+                    )
+                return chain
+
+        if composition:
+            tasks = [_run_chain(profile) for profile in profiles]
+        else:
+            tasks = [_run_flow(p, f) for p in profiles for f in flows]
 
         try:
-            results = await asyncio.wait_for(
-                asyncio.gather(*[_run_one(p, f) for p, f in combos]),
+            grouped = await asyncio.wait_for(
+                asyncio.gather(*tasks),
                 timeout=self._timeout,
             )
         except asyncio.TimeoutError as exc:
@@ -141,6 +172,8 @@ class RunOrchestrator:
                 "run exceeded the maximum duration",
                 details={"timeout_seconds": self._timeout},
             ) from exc
+
+        results: list[ProfileResult] = [r for group in grouped for r in group]
 
         finished_at = datetime.now(timezone.utc)
 

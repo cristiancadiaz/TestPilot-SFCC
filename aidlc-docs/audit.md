@@ -601,3 +601,21 @@ None. Optional index files may still be added for naming compatibility with the 
 **Context**: Construction Phase. Wave-1 E2E demo validated; E8 acceptance layer added. P8-1 (API/acceptance) + P8-2 (steering) + P8-3 (BDD) advanced. Pending in E8: dashboard Playwright E2E + Persona/Juez (needs wave-2 agents U6/U8).
 
 ---
+
+## Construction — Wave 2 start: U5 Journey Flows, Code Generation Part 1 (Planning)
+
+**Timestamp**: 2026-06-08T00:00:00Z
+**User Input**: "arranquemos con la ola 2 (U5–U8)"
+**AI Response**: "Wave-2 order (build-sequence): U5+U7+U8 parallel → U6 → integration. Starting with U5 (foundation). Rewrote u5-code-generation-plan.md reconciled to wave-1 reality: FlowName enum already complete (Step 9 done), FLOW_REGISTRY currently in runner.py (D-U5-1: move to flow_catalog.py), U4 orchestrator currently rejects full_journey→422 (U5 lifts it via expand_flows). 12 steps: flow_catalog.py (registry + COMPOSITIONS + expand_flows), extend selectors (PLP/PROMOTIONS), 4 journey flow files (PROTECTED PATH — HITL), run_composition in runner, orchestrator integration (expand + composition routing), tests (catalog/journey/composition/api full_journey). Decisions: D-U5-1 flow_catalog owns registry, D-U5-2 full_journey = chained composition in shared context → one FlowResult per flow, D-U5-3 selector fidelity best-effort vs mocked Page (R2). Flagged: src/executor/flows/ is a protected path needing explicit confirmation before generation. Awaiting approval."
+**Context**: Construction Phase, wave 2 started. U5 Code Generation Part 1 complete; pending HITL on plan + D-U5-1/2/3 + protected-path authorization.
+
+---
+
+## Construction — U5 Journey Flows, Code Generation Part 2 (Generation) + Gate U5 — recovery + completion
+
+**Timestamp**: 2026-06-09T00:00:00Z
+**User Input**: "puedes analizar en que parte de la generacion de codigo quedamos, quiero que en esta sesion si excedemos el 80% del uso de tokens nos detengamos y guardemos" → (after analysis) chose "Terminar U5 completo"
+**AI Response**: "Diagnosed: a prior session had generated the U5 source (Steps 1-8: flow_catalog.py, _common.py, 4 journey flows, selectors PLP/PROMOTIONS, runner.run_composition, flows/__init__) but left Step 9 (orchestrator integration) BROKEN and uncommitted — run_orchestrator.py still had the wave-1 `_resolve_flows` guard referencing undefined `FLOW_REGISTRY` + `cast`, and the test files (Steps 10-12) were never written. Build was red: 20 tests failing (170→150). Fixed Step 9: replaced `_resolve_flows` with `_expand_flows` delegating to `flow_catalog.expand_flows` (out-of-catalog→422 validation_failed), injected `run_composition` into RunOrchestrator, routed `full_journey`→`run_composition` per profile / else per-flow, flattened results — lifting the wave-1 422. Updated obsolete wave-1 tests: `test_post_run_full_journey_rejected_in_wave1`→`test_post_run_full_journey_expands_to_sequence` (now 200, 4 results) with an injected fake run_composition in `_build`; removed `test_422_full_journey_wave1` from test_error_taxonomy (validation_failed row still covered by bad_enum). Wrote Steps 10-12: test_flow_catalog.py (expand/dedupe/out-of-catalog + is_composition + **static zero-payment guarantee** via inspect.getsource — no journey flow references PAYMENT_* or place-order, nor a payment critical_point), test_journey_flows.py (mocked async Page; each flow's step count + success + ADR-003 final marker + orders_created==0; cart_review setup-phase tags; browse reads PLP+PDP prices; failed step → subsequent skipped), test_runner_composition.py (shared context across chain, generic 6-flow registry dispatch, broken-link skip propagation), test_api_full_journey.py (200 + one result per expanded flow, multi-profile 8 results, broken link → RED report). Gate U5 closed: ruff clean, mypy --strict 42 files clean, 27 new U5 tests green, **full suite 196 passed** (170→196: +27 U5, −1 obsolete). Marked all 12 plan checkboxes + Gate U5, updated aidlc-state. Decisions D-U5-1/2/3 applied at recommended defaults. NOT committed (awaiting user). Token-budget guard active (<80%)."
+**Context**: Construction Phase, wave 2. U5 Journey Flows COMPLETE (Gate U5 closed). Next: U6 (audit collectors + synthesis agent), U7 (network capture), U8 (NL window). U5 changes still uncommitted on `rework/storefront-audit-scope`.
+
+---

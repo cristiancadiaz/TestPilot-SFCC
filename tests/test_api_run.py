@@ -42,6 +42,10 @@ RunProfileFn = Callable[
     [BrowserProfile, FlowName, SyntheticUserConfig, ResolvedEnvironment, str],
     Awaitable[ProfileResult],
 ]
+RunCompositionFn = Callable[
+    [BrowserProfile, list[FlowName], SyntheticUserConfig, ResolvedEnvironment, str],
+    Awaitable[list[ProfileResult]],
+]
 
 
 @pytest.fixture(autouse=True)
@@ -88,8 +92,49 @@ def _fake_run_profile(
     return _fake
 
 
+def _fake_run_composition() -> RunCompositionFn:
+    """A composition stub: one ``success`` ProfileResult per flow in the chain."""
+
+    async def _fake(
+        profile: BrowserProfile,
+        flow_names: list[FlowName],
+        config: SyntheticUserConfig,
+        env: ResolvedEnvironment,
+        run_id: str,
+    ) -> list[ProfileResult]:
+        results: list[ProfileResult] = []
+        for flow_name in flow_names:
+            flow_result = FlowResult(
+                flow_name=flow_name,
+                status="success",
+                steps=[
+                    StepResult(
+                        name="final",
+                        status="success",
+                        duration_ms=120_000,
+                        screenshot_state="final",
+                    )
+                ],
+                duration_ms=120_000,
+                orders_created=0,
+            )
+            results.append(
+                ProfileResult(
+                    profile=profile,
+                    flow_result=flow_result,
+                    traffic_light=TrafficLight.GREEN,
+                )
+            )
+        return results
+
+    return _fake
+
+
 def _build(
-    run_profile: RunProfileFn, *, seed_env: bool = True
+    run_profile: RunProfileFn,
+    *,
+    seed_env: bool = True,
+    run_composition: RunCompositionFn | None = None,
 ) -> tuple[TestClient, BaselineManager, InMemoryRunReportStore, LiveStatusTracker]:
     env_store = InMemoryEnvironmentStore()
     secrets = InMemorySecretsClient()
@@ -112,9 +157,10 @@ def _build(
     baseline = BaselineManager(InMemoryBaselineStore())
     reports = InMemoryRunReportStore()
     tracker = LiveStatusTracker()
-    orchestrator = RunOrchestrator(
-        resolver, baseline, reports, tracker, run_profile=run_profile
-    )
+    kwargs: dict[str, Any] = {"run_profile": run_profile}
+    if run_composition is not None:
+        kwargs["run_composition"] = run_composition
+    orchestrator = RunOrchestrator(resolver, baseline, reports, tracker, **kwargs)
     app = create_app(orchestrator=orchestrator, tracker=tracker)
     return TestClient(app), baseline, reports, tracker
 
@@ -198,13 +244,16 @@ def test_post_run_invalid_flow_enum_is_422() -> None:
     assert resp.json()["error_code"] == "validation_failed"
 
 
-def test_post_run_full_journey_rejected_in_wave1() -> None:
-    client, _, _, _ = _build(_fake_run_profile())
+def test_post_run_full_journey_expands_to_sequence() -> None:
+    """U5 lifts the wave-1 422: full_journey now runs as a composition (one
+    ProfileResult per expanded modular flow)."""
+    client, _, _, _ = _build(
+        _fake_run_profile(), run_composition=_fake_run_composition()
+    )
     resp = client.post("/v1/run", json=_payload(flows=["full_journey"]), headers=H)
-    assert resp.status_code == 422
-    body = resp.json()
-    assert body["error_code"] == "validation_failed"
-    assert body["details"]["flow"] == "full_journey"
+    assert resp.status_code == 200
+    # full_journey expands to 4 modular flows on a single profile.
+    assert len(resp.json()["profile_results"]) == 4
 
 
 # ---------------------------------------------------------------------------

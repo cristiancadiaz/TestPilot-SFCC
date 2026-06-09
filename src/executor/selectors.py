@@ -61,6 +61,9 @@ class SFCCSelectors:
     PDP_ADD_TO_CART: str = "button.add-to-cart"
     """Add-to-cart button on the PDP."""
 
+    PDP_GALLERY: str = ".product-detail .primary-images img.d-block"
+    """Primary product image in the PDP gallery."""
+
     # ------------------------------------------------------------------
     # GROUP: CART_* — mini cart and full cart page
     # ------------------------------------------------------------------
@@ -76,6 +79,50 @@ class SFCCSelectors:
 
     CART_ITEM_PRICE: str = ".cart-page .price .sales .value"
     """Per-item price display on the cart page."""
+
+    CART_QUANTITY_INPUT: str = ".cart-page .quantity-form .quantity"
+    """Quantity selector/input for a line item on the cart page."""
+
+    CART_SUBTOTAL: str = ".cart-page .sub-total"
+    """Cart subtotal amount on the cart page."""
+
+    # ------------------------------------------------------------------
+    # GROUP: PLP_* — product listing / search results page (U5 journey)
+    # ------------------------------------------------------------------
+
+    PLP_RESULT_COUNT: str = ".search-results .result-count"
+    """Result-count label on a PLP / search results page."""
+
+    PLP_REFINEMENT_CATEGORY: str = ".refinement.category a"
+    """A category refinement link in the PLP refinements bar."""
+
+    PLP_REFINEMENT_PRICE: str = ".refinement.price a"
+    """A price-range refinement link in the PLP refinements bar."""
+
+    PLP_APPLIED_REFINEMENT: str = ".filter-bar .filter-value"
+    """An applied-refinement chip shown after a filter is selected."""
+
+    PLP_TILE_PRICE: str = ".product-grid .product .price .sales .value"
+    """Per-tile price on a PLP grid item."""
+
+    PLP_TILE_LINK: str = ".product-grid .product a.link"
+    """Link from a PLP grid tile to its PDP."""
+
+    # ------------------------------------------------------------------
+    # GROUP: PROMOTIONS_* — offers / discounted products (U5 journey)
+    # ------------------------------------------------------------------
+
+    PROMOTIONS_NAV: str = "a.nav-link[href*='sale']"
+    """Header navigation link to the offers / sale category."""
+
+    PROMOTIONS_DISCOUNT_BADGE: str = ".product .promotion .callout"
+    """Promotion / discount badge shown on a discounted product."""
+
+    PROMOTIONS_ORIGINAL_PRICE: str = ".product .price .strike-through .value"
+    """Struck-through original price on a discounted product."""
+
+    PROMOTIONS_DISCOUNTED_PRICE: str = ".product .price .sales .value"
+    """Current (discounted) sales price on a discounted product."""
 
     # ------------------------------------------------------------------
     # GROUP: CHECKOUT_* — checkout flow container
