@@ -7,7 +7,7 @@ Artefactos generados durante la fase AI-DLC Construction. Son utiles para trazab
 Estos documentos fueron generados antes de varias decisiones canonicas actuales:
 
 - `specs/` quedo reservado solo para JSON Schemas.
-- El PRD snapshot se movio a `docs/product/prd-2026-05-22.md`.
+- El PRD snapshot se movio a `docs/product/prd.md`.
 - El contrato vigente usa `flows[]` y `profiles[]`, no `flow` / `profile` singular.
 - Los valores canonicos del schema usan underscore: `checkout_full`, `checkout_card_declined`, `mobile_co`, `desktop_co`, `desktop_ec`.
 - `products[]` usa `search_term` y `validate_variant`, no `sku` / `quantity`.

@@ -1,5 +1,10 @@
 # Execution Plan — TestPilot SFCC
 
+> ⚠️ **Realineado 2026-06-03** (branch `rework/storefront-audit-scope`): este plan cubre la **ola 1**
+> (gate de checkout, U0–U4 + MD0) sin cambios, y se extiende con la **ola 2** (U5–U8: recorrido,
+> auditoría, red, ventana NL) — ver la sección "Ola 2" al final. Alcance fijo, el tiempo flexea.
+> La puerta HITL de `specs/` v2 fue aprobada y aplicada el 2026-06-03.
+
 ## Detailed Analysis Summary
 
 ### Transformation Scope (Brownfield)
@@ -201,9 +206,44 @@ OPERATIONS PHASE:
 
 ---
 
+## Ola 2 — Realineación de alcance (agregado 2026-06-03)
+
+> Prerrequisito cumplido: contratos `specs/` v2 aprobados (HITL) y aplicados. Diseño completo en
+> `application-design/unit-of-work.md` (U5–U8) y `unit-of-work-dependency.md` (fases 5–6, checkpoints 4–6).
+
+### Package Change Sequence — Ola 2
+
+| Orden | Unidad | Módulos | Puede paralelizarse con |
+|-------|--------|---------|------------------------|
+| 6 | **U5 Flows de recorrido** | 4 flows nuevos + FlowCatalog (composición `full_journey` + puntos críticos) + despacho genérico en runner + selectores PLP/PROMOTIONS | U7, U8 |
+| 6 | **U7 Captura de red** | NetworkCapture + ControllerTimingAggregator + WebVitalsCollector + resumen en reporter | U5, U8 |
+| 6 | **U8 Ventana NL + modos** | POST /v1/translate + preview/confirm en MD0 + campo `mode` + filtro de baseline | U5, U7 |
+| 7 | **U6 Auditoría** | Colectores deterministas 6 dimensiones + agente de síntesis (P7) + política de evidencia (ADR-003) + integración en reporter | — (requiere U5+U7) |
+| 8 | **Integración ola 2** | Documento de auditoría en MD0; checkpoint 6 (e2e usuario no-técnico) | — |
+
+### Estimación Ola 2 (orientativa, mismo formato que ola 1)
+
+| Unidad | Estimación |
+|--------|------------|
+| U5 Flows de recorrido | ~60-90 min (4 flows + catálogo + runner) |
+| U7 Captura de red | ~45-60 min |
+| U8 Ventana NL + modos | ~45-60 min |
+| U6 Auditoría | ~90-120 min (colectores 6 dimensiones + agente + evidencia) |
+| Integración + checkpoint 6 | ~30-45 min |
+| **Total ola 2** | **~4.5-6.5 horas** |
+
+### Quality Gates adicionales — Ola 2
+
+- Test de independencia del semáforo: el output del agente NO puede mover el `traffic_light` (C10)
+- Suite RT1 (prompt injection) al 100% bloqueado antes de exponer la ventana NL (Q8=0)
+- Gates D-NL: Q1 ≥90% configs válidos, Q2 = 100% adherencia al catálogo
+- HAR persistido sin credenciales (test de redacción) y sin bodies
+- Evidencia: run limpio en modo auditoría = solo fail+final (ADR-003 verificado por test)
+- Runs `exploratory` ausentes del baseline y de `latest` gate (C11)
+
 ## Success Criteria
 
-- **Primary Goal**: TestPilot SFCC ejecuta los 2 flows Playwright sobre los 3 perfiles, genera reporte con semáforo, y expone el resultado vía API REST
+- **Primary Goal**: TestPilot SFCC ejecuta los 2 flows Playwright sobre los 3 perfiles, genera reporte con semáforo, y expone el resultado vía API REST. **Ola 2:** + recorrido completo elegible por el usuario, documento de auditoría de 6 dimensiones, captura de red y ventana NL para no-técnicos
 - **Key Deliverables**:
   - `src/models.py` — modelos compartidos
   - `src/executor/` — profiles, selectors, flows, runner

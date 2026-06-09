@@ -2,6 +2,8 @@
 
 > Perfil de cliente ideal. Derivado de Internal Solution Brief + Deep researches de validación y crítica.
 
+> ⚠️ **Realineado 2026-06-02** (branch `rework/storefront-audit-scope`). La audiencia se **amplía a perfiles no-técnicos** (QA, PM, negocio) gracias a la ventana de lenguaje natural — ver Persona 4. Objetivo canónico en [`PRODUCT.md`](../../PRODUCT.md) §1.
+
 ---
 
 ## ICP — Segmento beachhead (primeras 4 semanas)
@@ -66,6 +68,20 @@
 
 **Mata la adopción si:** no hay versionado de API; un cambio de schema rompe el pipeline silenciosamente; la respuesta puede tardar 20 minutos sin warning de timeout.
 
+### Persona 4 — Miembro no-técnico del equipo (QA, PM, negocio) — habilitado por la ventana NL
+
+**Quién es:** Analista de QA, Product Manager o stakeholder de negocio sin habilidad (ni interés) para escribir JSON o consumir una API. Hoy depende de un ingeniero para lanzar cualquier validación.
+
+**Qué evalúa:**
+
+- ¿Puedo lanzar una prueba **describiendo en español** lo que quiero validar, sin ayuda de un dev?
+- ¿El **documento de auditoría** es legible para mí (no solo para ingenieros)?
+- ¿Puedo verificar una **promoción/descuento** o un cambio de contenido antes de que salga, por mi cuenta?
+
+**Mata la adopción si:** la ventana NL traduce mal mi intención y ejecuta algo distinto a lo que pedí; el reporte asume conocimiento técnico que no tengo.
+
+**Por qué importa:** multiplica quién puede pedir una auditoría pre-deploy — descarga al ingeniero de ser el único que puede operar el sistema. Es el efecto directo de la ventana de lenguaje natural.
+
 ---
 
 ## Pains (puntos de dolor)
@@ -97,6 +113,8 @@
 - **Historial de performance para defender al equipo ante negocio** — "el checkout era 2.1s hace 4 semanas, hoy es 3.4s; aquí está el deploy que lo rompió".
 - **Configuración explícita y versionada de los criterios de evaluación** — qué es un bug, qué es un warning, qué es un falso positivo conocido. Ground truth que el equipo controla, no la herramienta.
 - **Detección temprana de regresiones que el QA manual no atrapa** — particularmente performance, errores HTTP intermitentes, y comportamientos diferenciales por dispositivo/región.
+- **Acceso sin barrera técnica** — que un perfil no-técnico (QA/PM/negocio) lance una prueba en **lenguaje natural**, sin escribir JSON ni depender de un ingeniero.
+- **Auditoría multi-dimensión, no solo "pasa/falla"** — un documento que cubra integridad de comercio (precios/promos), rendimiento, locale (CO/EC), accesibilidad y salud del cliente, con evidencia enlazada.
 
 ---
 
@@ -120,8 +138,8 @@
 | "El LLM va a clasificar mal los errores y vamos a perder confianza en los reportes." | Riesgo real. Mitigación: el LLM **NO** decide qué es un bug — solo clasifica si un error encontrado por Playwright (HTTP 500, timeout, elemento faltante) cae en una de N categorías predefinidas. La decisión final de "rojo/amarillo/verde" sigue reglas deterministas. El LLM ayuda en el resumen, no en el veredicto. |
 | "¿No nos van a banear por bot las propias herramientas anti-bot de la tienda?" | Sí, si no se configura excepción de IP en Akamai/Cloudflare antes de empezar. Por eso es **dependencia crítica** del proyecto — sin esa excepción, no arrancamos. |
 | "Otros agentes consumiendo el JSON van a romper cuando cambiemos el schema." | Por eso versionamos el endpoint desde el día 1 (`/v1/run`). Cambios breaking suben a `/v2/`. Los consumidores deciden cuándo migrar. |
-| "¿Y si el equipo abandona la herramienta post-curso?" | Riesgo real — la cita de la crítica dice que mantener una suite SFCC requiere 4–8h/semana. Mitigación: alcance MVP recortado a 2 flujos críticos (checkout + búsqueda), no 10. Y trigger integrado en el git push para que el uso sea automático, no opcional. |
+| "¿Y si el equipo abandona la herramienta post-curso?" | Riesgo real — mantener una suite SFCC requiere 4–8h/semana. Mitigación: el **alcance completo se entrega incrementalmente** (cada incremento muestra valor temprano — **sin recortar módulos del producto**); trigger integrado en el git push para uso automático, no opcional; y auto-healing de selectores post-MVP para bajar el mantenimiento. La **ventana NL** amplía la base de usuarios más allá de los ingenieros, lo que sube el uso sostenido. |
 
 ---
 
-*Hardcore AI by 30X — Cohorte 2 — Estación 2*
+*Hardcore AI by 30X — Cohorte 2 — Estación 2. Realineado 2026-06-02 (audiencia ampliada a no-técnicos vía ventana NL; auditoría multi-dimensión) — objetivo canónico en `PRODUCT.md` §1.*

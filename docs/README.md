@@ -30,7 +30,7 @@ Este directorio contiene contexto de producto, mercado y planes de ejecucion. No
 
 1. [`../specs/synthetic-user-config.schema.json`](../specs/synthetic-user-config.schema.json) es la fuente de verdad del payload de entrada.
 2. [`../specs/execution_report.schema.json`](../specs/execution_report.schema.json) es la fuente de verdad del reporte de salida.
-3. [`product/prd-2026-05-22.md`](./product/prd-2026-05-22.md) conserva el PRD de estacion como insumo historico. Si contradice los schemas, gana `specs/*.json`.
+3. [`product/prd.md`](./product/prd.md) conserva el PRD de estacion como insumo historico. Si contradice los schemas, gana `specs/*.json`.
 
 ## Niveles de autoridad
 
@@ -42,7 +42,7 @@ Este directorio contiene contexto de producto, mercado y planes de ejecucion. No
 | Derivado | `aidlc-docs/inception/**`, `aidlc-docs/construction/**` | Artefactos generados por AI-DLC. Utiles para trazabilidad, no reemplazan lo canonico. |
 | Producto derivado | `docs/product/**` | Snapshots de producto, ICP y PVB. Usar como contexto; `PRODUCT.md` manda. |
 | Investigacion | `docs/research/**` | Contexto, benchmark y racional. No usar como contrato de implementacion si contradice fuentes canonicas. |
-| Historico | `docs/product/prd-2026-05-22.md` | Snapshot de la estacion/PRD. Mantiene decisiones y conflictos resueltos en ese momento. |
+| Historico | `docs/product/prd.md` | Snapshot de la estacion/PRD. Mantiene decisiones y conflictos resueltos en ese momento. |
 
 ## Regla de resolucion de conflictos
 

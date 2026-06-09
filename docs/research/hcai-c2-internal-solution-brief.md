@@ -1,5 +1,7 @@
 # Internal Solution Brief — Hardcore AI Cohorte 2
 
+> **Vigencia (2026-06-02):** insumo histórico de la Estación 1. Notablemente, este brief **ya anticipaba** el recorrido completo (`login → búsqueda → categoría → PDP → carrito → checkout`), el agente que *"clasifica errores + genera resumen"*, y la entrada por **lenguaje natural** — la visión amplia estuvo desde el inicio; la inception la recortó para el MVP de 4 semanas. El **objetivo y alcance vigentes** están en [`PRODUCT.md`](../../PRODUCT.md) §1 (realineado 2026-06-02). Si este brief contradice `PRODUCT.md` o `specs/*.json`, gana lo canónico.
+
 ## SOLUCION
 
 **Nombre de la solucion:** Plataforma de Testing Continuo con Usuarios Sinteticos para SFCC

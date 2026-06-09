@@ -1,0 +1,42 @@
+# Secrets — never in the image (SECURITY-13, BR-U0-10)
+.env
+.env.*
+.linear.env
+*.pem
+*.key
+secrets/
+
+# Version control
+.git/
+.gitignore
+
+# AI-DLC / tooling docs — not needed at runtime
+aidlc-docs/
+.aidlc-rules/
+.hardcore-ai/
+.ai/
+.claude/
+.obsidian/
+progress/
+
+# Tests — not shipped in the runtime image
+tests/
+
+# Local caches and virtualenv
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+.coverage
+htmlcov/
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db

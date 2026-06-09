@@ -94,7 +94,7 @@ This decision is verified when:
 
 ## Related Artifacts
 
-- `docs/product/prd-2026-05-22.md`
+- `docs/product/prd.md`
 - `specs/synthetic-user-config.schema.json`
 - `aidlc-docs/inception/requirements/requirements.md`
 - `aidlc-docs/inception/application-design/components.md`

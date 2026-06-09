@@ -1,0 +1,56 @@
+[project]
+name = "testpilot-sfcc"
+version = "0.1.0"
+description = "Synthetic-user QA automation for Salesforce Commerce Cloud (SFRA) storefronts."
+requires-python = ">=3.12"
+readme = "README.md"
+license = { file = "LICENSE" }
+
+# Direct runtime dependencies — ALL pinned (no ranges, no 'latest') per RNF-08 supply chain.
+# Versions sourced from aidlc-docs/construction/u0/nfr-requirements/tech-stack-decisions.md.
+dependencies = [
+    "fastapi==0.136.3",
+    # Pinned explicitly (transitive via fastapi) to clear GHSA-f96h-pmfr-66vw,
+    # GHSA-2c2j-9gv5-cj73, PYSEC-2026-161 — was 0.38.6 (2026-06-06 security bump).
+    "starlette==1.2.1",
+    "uvicorn[standard]==0.30.6",
+    "pydantic==2.9.2",
+    "anthropic==0.39.0",
+    "playwright==1.48.0",
+    "boto3==1.35.49",
+    "jsonschema==4.23.0",
+    "python-json-logger==2.0.7",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==9.0.3",
+    "pytest-asyncio==1.4.0",
+    "pytest-playwright==0.8.0",
+    "hypothesis==6.115.3",
+    "mypy==1.13.0",
+    "ruff==0.7.1",
+    "httpx==0.27.2",
+    "pip-audit==2.7.3",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+# Flat `src` package — imports resolve as `from src.models import ...`.
+packages = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.mypy]
+strict = true
+python_version = "3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"

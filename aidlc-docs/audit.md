@@ -265,3 +265,400 @@ None. Optional index files may still be added for naming compatibility with the 
 - `aidlc-docs/inception/application-design/logging-strategy.md` — Ejemplos y tabla de campos actualizados de hyphen a underscore.
 
 **Context**: Estos hallazgos críticos habrían causado que un agente de codificación implementara `ProductSpec` incompatible, contrato de API incorrecto (singular vs array), gate de schema de salida faltante, y paso de credenciales pre-ADR-001 en firmas de funciones.
+
+---
+
+## Scope Realignment — Resolution of Open Decisions #2 (journey flows) and #5 (screenshots)
+
+**Timestamp**: 2026-06-03T00:00:00-05:00
+
+**User Input**: "Respecto a las desiciones abiertas. Me gustaria que la persona que va arealizar el recorrido con el agente, decida si solamente quiere probar el flujo de un modulo o si quiere que el agente realice el recorrido por todos los modulos. y la politica de los screenshot creo que ayudaria a un mejor entendimiento del documento de la auditoria. Igual me gustaria saber tu opinion"
+
+**AI Response**: Proposed (a) modular flow catalog with user-selected journey scope (single module / subset / `full_journey` as declared composition of modular flows, not a hand-written flow) preserving the closed-catalog invariant; (b) dual screenshot policy by mode (gate keeps failure+final; audit adds per-module milestone captures with S3 lifecycle).
+
+**Context**: Scope realignment brief §7, open decisions #2 and #5.
+
+---
+
+## Scope Realignment — Screenshot Policy Refined (findings-driven capture)
+
+**Timestamp**: 2026-06-03T00:05:00-05:00
+
+**User Input**: "Me gustaria que definieras que las capturas, sean solamente cuando realmente valga la pena resaltar algo. De pronto procesos criticos que valga la pena resaltar o algun error. para no consumir recursos soalmente porque si"
+
+**AI Response**: Refined decision #5 to findings-driven capture: always failure + final step; in audit mode, additional captures ONLY for findings in one of the 6 audit dimensions or at defined critical process points (e.g. payment summary, order confirmation); never capture "just because". Recorded decisions #2 and #5 as RESOLVED in `scope-realignment-brief.md` §7/§8. Both must cascade into `requirements/requirements.md` in E4.
+
+**Context**: Scope realignment brief §7 — all 5 open decisions now resolved. Next step: E4 Inception (`requirements.md`).
+
+---
+
+## E4 Inception — Requirements Analysis (re-entry, scope realignment)
+
+**Timestamp**: 2026-06-03T00:30:00-05:00
+
+**User Input**: "si, arranca con E4. Recuerda analizar bien la reestructuracion ya que dependemos de que ese analisis para la construccion."
+
+**AI Response**: Re-entered Inception (Requirements Analysis) per scope-realignment-brief §6 task #6. Loaded full context (brief, PRODUCT.md §1, realigned prd.md v1.2, current requirements.md, specs/synthetic-user-config.schema.json, user-stories D6/D7/D8 + J4 status). Rewrote `aidlc-docs/inception/requirements/requirements.md`:
+- New section "Análisis de la Reestructuración": traceability table (brief R1/R2/N1/Y1 + PRD M20-M23/MD13-MD14/P7/UC6 + resolved decisions #2/#5 → RFs), D6/D7/D8 review (D7 superseded → audit agent P7; D8 kept at API contract, extended at UX), 5 design implications for construction (full_journey as declared composition, chainable preconditions/auto-setup, deterministic collectors vs agent separation, breaking specs changes behind HITL gate #6, gate mode untouched/graceful degradation).
+- New RF-14..RF-22: journey flow catalog (search_and_filter, browse_discounted_products, pdp_validation, cart_review), user-selected journey scope + full_journey composition, network capture (HAR/CWV/SFRA controllers), deterministic 6-dimension collectors, audit synthesis agent (P7), findings-driven evidence policy, NL window (translate→preview→confirm), gate/exploratory modes, generic dashboard matrix.
+- Surgical updates to RF-02/05/06/07/08/09/10/12/13 (realignment notes; gate semantics unchanged).
+- New constraints C10 (agent never decides traffic light), C11 (exploratory never enters baseline), C12 (NL never reaches executor); C1/C4/C5 updated.
+- New RNF-11 (audit agent security/cost) and RNF-12 (capture overhead); RNF-02/07/08 extended.
+- Work units extended: U5 (journey flows), U6 (audit collectors+agent), U7 (network capture), U8 (NL window) — all gated behind specs HITL (#6); wave sequencing noted.
+
+**Context**: Scope realignment cascade task #6 (E4 requirements). Awaiting explicit human approval before proceeding to user stories + coverage matrix (#7 → cascade task list #4).
+
+---
+
+## E4 Inception — Requirements Approval
+
+**Timestamp**: 2026-06-03T01:00:00-05:00
+
+**User Input**: "A) Aprueba, continúa con las historias de usuario"
+
+**AI Response**: Requirements document (realigned, RF-01..RF-22) APPROVED by user. Prior question in same exchange: "Respecto a la limitacion del desarrollo de modulos respecto al tiempo definido, eso ya lo revisaste?" — answered: fixed-scope/flexible-time decision is encoded as wave sequencing (Ola 1 checkout gate → HITL specs gate → Ola 2 U5-U8) with no dates at requirements level; schedule belongs to PRD §13 + construction plans (cascade #7); Demo Day 2026-06-09 reality flagged (Ola 1 parcial realistic, covered by R11). Proceeding to user stories + coverage-matrix.md (cascade task #7).
+
+**Context**: E4 Inception — Requirements Analysis stage approved; entering User Stories stage.
+
+---
+
+## E4 Inception — User Stories + Coverage Matrix (scope realignment) + RF renumbering fix
+
+**Timestamp**: 2026-06-03T01:45:00-05:00
+
+**User Input**: (continuation of approved "A) Aprueba, continúa con las historias de usuario")
+
+**AI Response**:
+1. **Numbering conflict detected and fixed**: `unit-of-work-story-map.md` (2026-05-24) had already defined RF-14..RF-20 (Environment Registry CRUD, EnvironmentResolver, status/history/screenshots/health endpoints, Dashboard MD0) referenced by coverage-matrix.md and services.md but never backported to requirements.md. Resolution: kept RF-14..RF-20 for the app-design additions (established traceability), renumbered the realignment RFs from RF-14..RF-22 to **RF-21..RF-29**, and backported RF-14..RF-20 as a summary table into requirements.md so the RF sequence is continuous and requirements.md is the single source.
+2. **user-stories.md** (iteración 3): added design decisions D14–D18; new persona Valentina (non-technical QA, UC6); H5.5 (generic matrix); U5 H6.1–H6.4 (journey flow catalog, single-module with setup(), full_journey composition, discounted products); U6 H7.1–H7.5 (deterministic collectors, audit document for non-technical readers, agent-does-not-judge + requires_human_review restoring J4, findings-driven evidence, graceful degradation); U7 H8.1–H8.2 (HAR/controller timings with redaction, CWV); U8 H9.1–H9.3 (NL window with preview+confirm, strict translation/prompt-injection gate, exploratory mode never enters baseline). Totals: 40 stories / 157 ACs.
+3. **coverage-matrix.md**: added M20–M23 rows (committed, wave 2 behind specs HITL); J4 de-deferred via H7.3 (D14); M5 promoted to primary UX path (D18); M9 refined to findings-driven evidence (D16); UC6 realigned to NL window; P7 coverage row added; unit coverage table extended (U5–U8); gap #2 (J4) resolved-in-design with residual risk note; changelog added. Totals: 40/157/29.
+
+**Context**: E4 cascade task #7 (user stories + coverage). Awaiting explicit human approval before proceeding to unit-of-work.md (cascade task #8 / task list #5).
+
+---
+
+## E4 Inception — Conflict severity assessment (user question)
+
+**Timestamp**: 2026-06-03T02:00:00-05:00
+
+**User Input**: "Respecto a esos conflcitso que has encontrado, algo critico que haya afectado el flujo"
+
+**AI Response**: Nothing critical affected the flow. Assessment: (1) RF-14..RF-20 numbering collision — medium, resolved before any code consumed it; would have caused ambiguous RF references for coding agents in construction. (2) D8 vs NL window tension — apparent only; reconciled as D8-at-API-contract + NL-at-UX (formalized as D18); unreconciled it could have led to NL reaching the executor (P3 violation). (3) C7/M9 screenshots — already superseded by ADR-002 + decision §7-#5; no active conflict. (4) J4/D7 — known documented debt, resolved in design via H7.3 with residual risk noted until U6 is built. No invariants or existing code touched.
+
+**Context**: E4 — user stories stage still awaiting approval (A/B).
+
+---
+
+## E4 Inception — User Stories Approval
+
+**Timestamp**: 2026-06-03T02:10:00-05:00
+
+**User Input**: "A) Aprueba, continúa con unit-of-work.md"
+
+**AI Response**: User stories iteración 3 + coverage matrix APPROVED. Proceeding to application-design/unit-of-work.md (cascade task #8 / task list #5): formalize U5-U8 units, dependencies and wave sequencing.
+
+**Context**: E4 Inception — User Stories stage approved; entering Application Design update.
+
+---
+
+## E4 Inception — Application Design: Units of Work U5-U8 + RNF renumbering fix
+
+**Timestamp**: 2026-06-03T02:45:00-05:00
+
+**User Input**: "A) Aprueba, continúa con unit-of-work.md"
+
+**AI Response**:
+1. **Second numbering collision detected and fixed** (same pattern as RF): unit-of-work-story-map.md already defined RNF-11..RNF-13 (CSP headers, cache TTL, polling perf — app design 2026-05-24) never backported to requirements.md. Resolution: kept RNF-11..13 for app design, renumbered realignment NFRs to RNF-14 (audit agent security/cost) and RNF-15 (capture overhead); backported RNF-11..13 summary into requirements.md; fixed references in user-stories.md.
+2. **unit-of-work.md**: added U5 (journey flows: 4 flow components + FlowCatalog with full_journey composition + generic runner dispatch), U6 (audit: DimensionCollectors + AuditAgent in src/classifier/ + EvidencePolicy; traffic-light independence test), U7 (NetworkCapture + ControllerTimingAggregator + WebVitalsCollector), U8 (TranslateEndpoint + NLWindow + mode filtering) — each with business purpose, stack, stories, components, files, tests, completion criteria. MD0 updated with H5.5; U3 note updated (D7 superseded); cross-references updated.
+3. **unit-of-work-dependency.md**: dependency matrix extended (U5∥U7 after U1+HITL; U6 requires U5+U7+U3; U8 parallel); construction sequence adds HITL specs gate + Fases 5-6; new interface contracts (FlowCatalog, AuditFinding[], NetworkSummary, mode, /v1/translate); checkpoints 4 (HITL specs package), 5 (U5+U7 data for U6), 6 (end-to-end non-technical user). Note: H5.5 generic matrix recommended in wave 1 to avoid dashboard rework.
+4. **unit-of-work-story-map.md**: RF map extended with RF-21..RF-29; RNF map with RNF-14..15; Must-Have coverage adds M20-M23 (diseño completo, ola 2) and M5 promoted; stories map extended (10 units / 157 ACs).
+5. **scope-realignment-brief.md §8**: resume point updated (tasks #3-#4 approved, #5 done pending approval).
+
+**Context**: E4 cascade task #8 (unit-of-work). Awaiting explicit human approval. Next after approval: specs/ contracts HITL gate (cascade #9 / task list #6).
+
+---
+
+## E4 Inception — Unit of Work Approval
+
+**Timestamp**: 2026-06-03T03:00:00-05:00
+
+**User Input**: "aprueba y continua, avisame cuando termines la fase inception"
+
+**AI Response**: Unit-of-work U5-U8 (+ dependency + story-map) APPROVED. E4 cascade tasks #3-#5 complete. Proceeding to close the Inception phase: update aidlc-state.md (Construction→Inception re-entry + E4 completion) and prepare the specs/ HITL breaking-change package as a PROPOSAL document (specs/ files NOT touched — explicit field-by-field human approval still required per hard rule).
+
+**Context**: E4 Inception closing.
+
+---
+
+## E4 Inception — PHASE COMPLETE (scope realignment re-entry)
+
+**Timestamp**: 2026-06-03T03:30:00-05:00
+
+**User Input**: (continuation of "aprueba y continua, avisame cuando termines la fase inception")
+
+**AI Response**: Inception phase closed:
+1. `aidlc-docs/aidlc-state.md` updated: scope realignment section, Inception Re-entry checklist (requirements v2 / stories iteración 3 / units v2 all APPROVED), next step = specs HITL gate. Station-4 review note marked superseded (already completed per audit).
+2. Created `aidlc-docs/inception/specs-change-proposal.md` — the HITL breaking-change package: Paquete A (synthetic-user-config v2: flows enum +5 incl. full_journey alias, maxItems 6, mode field, schema_version v2), Paquete B (execution_report v2: flow_name enum, screenshot_state +finding/critical +finding_dimension, StepResult.phase, mode, audit object, network_summary per profile), Paquete C (POST /v1/translate contract, new additive spec file). Three user choices flagged: A1-alt (full_journey as enum value — recommended), B5-alt (audit doc as S3 ref — recommended), B6-alt (network_summary per ProfileResult — recommended). specs/*.json NOT touched.
+3. Resume point and session memory updated.
+
+**Context**: Inception phase COMPLETE. Cascade remaining: #6 specs HITL (proposal ready, awaiting user), #7 construction plans U5-U8, #9 harness CLAUDE.md/AGENTS.md + tech matrix.
+
+---
+
+## Cascade #6 — specs/ HITL Gate: APPROVED AND APPLIED
+
+**Timestamp**: 2026-06-03T04:15:00-05:00
+
+**User Input**: "Tu que tienes mejor conocimiento del proyecto y las decisiones, utiliza las recomendaciones. Tengo una duda, sobre las carpetas de arquitectura, plans y reverse-engineering. Esas se piensan analziar despues de realizar el commit que estas diciendo"
+
+**AI Response**:
+1. Answered folders question: architecture/ (ADR-002 refinement needed → ADR-003/amendment, C4 + nfr-tactics missing audit agent/network) and plans/execution-plan.md get a pass during cascade #7; reverse-engineering/ is a historical snapshot — refresh only when code exists (per aidlc-state policy).
+2. Committed E4 closure in 4 commits (7676878 requirements, efd050e stories, 6be8dee design units, 1604a6e state+proposal). docs/conceptos/* and docs/tasks/linear-publish.yaml left uncommitted (unrelated).
+3. specs/ HITL gate: user approved packages A/B/C with recommendations (A1-alt full_journey as enum value, B5-alt audit document as S3 ref, B6-alt network_summary per ProfileResult). Permission note: .claude/settings.json denies Edit(specs/**) — with explicit user consent (AskUserQuestion: "Permitir en esta sesión"), the two deny lines were temporarily removed, schemas edited, and the deny RESTORED immediately after.
+4. Applied changes: `synthetic-user-config.schema.json` → v2 ($id v2, schema_version const v2, flows enum 7 values incl. full_journey alias, maxItems 6, mode field, capture_intermediate_screenshots description updated, 4 examples); `execution_report.schema.json` → v2 ($id v2, mode required, audit object with AuditReport/AuditFinding/AuditHypothesis defs, network_summary per ProfileResult with NetworkSummary/ControllerTiming/WebVitals defs, flow_name enum +4 (never full_journey — always expanded), screenshot_state +finding/critical, finding_dimension, StepResult.phase setup|flow, example updated with audit); `translate-request-response.schema.json` CREATED (additive, status ok|ambiguous, proposed_config ref to v2 config, TranslateRequest def, 2 examples).
+5. Validation: all 3 schemas valid against JSON Schema Draft 2020-12; all 5 embedded examples validate against their schemas.
+
+**Context**: Cascade #6 complete. Remaining: #7 construction plans U5-U8 (+ architecture/plans pass), #9 harness CLAUDE.md/AGENTS.md + tech matrix.
+
+---
+
+## Cascade #7 — Construction Plans U5-U8 + Architecture Pass: START
+
+**Timestamp**: 2026-06-03T04:45:00-05:00
+
+**User Input**: "si, continua con el #7"
+
+**AI Response**: Starting cascade #7: construction plans for U5-U8 under aidlc-docs/construction/plans/, plus architecture pass (ADR for findings-driven evidence, C4 diagrams + nfr-tactics with audit agent/network capture) and plans/execution-plan.md update (fases 5-6).
+
+**Context**: Cascade #7 in progress.
+
+---
+
+## Cascade #7 — Construction Plans U5-U8 + Architecture Pass: COMPLETE
+
+**Timestamp**: 2026-06-03T05:30:00-05:00
+
+**User Input**: (continuation of "si, continua con el #7")
+
+**AI Response**:
+1. **Third numbering collision detected and fixed**: nfr-tactics-verification.md had a local "RNF-14 Screenshot cost discipline" colliding with requirements.md RNF-14 (audit agent). Renumbered the local row to EV-01 (maps to C4 + RF-26, tactic updated per ADR-003); added RNF-14 (audit agent security/cost) and RNF-15 (capture overhead/HAR hygiene) rows aligned with requirements.md.
+2. **ADR-003** created (findings-driven evidence policy, amends ADR-002 — baseline fail+final intact; audit mode adds finding/critical-point captures only). ADR-002 status updated to "amended by ADR-003".
+3. **c4-diagrams.md** realigned: L1 adds non-technical persona + audit/NL roles of Claude API (bounded, P7/C12) + modes note; L2 adds Network Capture and Audit Synthesis Agent containers, NL Translator promoted, full_journey expansion note; validation table extended (LLM verdicts, exploration pollution, evidence cost).
+4. **execution-plan.md**: realignment banner + "Ola 2" section (package sequence order 6-8, estimates ~4.5-6.5h, additional quality gates: C10 independence test, RT1 100%, D-NL gates, HAR redaction, ADR-003 verification, C11).
+5. **Construction plans created**: u5-code-generation-plan.md (12 steps: FlowCatalog, 4 journey flows, generic dispatch, composition), u6 (12 steps: audit models, raw collection, 6 deterministic collectors, axe-core [pyproject change flagged as HITL], evidence policy, audit agent with sanitizer/budget/timeout, document renderer, reporter integration, C10 independence test), u7 (9 steps: NetworkCapture, controller timings, web vitals, models, runner/reporter integration), u8 (9 steps: mode field, translator promotion, /v1/translate, baseline filter, NL window UI, RT1 suite).
+6. **build-sequence.md**: wave-2 section appended (dependency diagram, promotion gates per unit, checkpoint 6, sprint estimates ~8-12 person-days).
+7. aidlc-state.md next step updated → cascade #9 (harness).
+
+**Context**: Cascade #7 COMPLETE. Remaining: #9 harness (CLAUDE.md local + AGENTS.md + tech matrix). reverse-engineering/ refresh deferred until code exists (E5).
+
+---
+
+## Cascade #9 — Harness Update: START
+
+**Timestamp**: 2026-06-03T06:00:00-05:00
+
+**User Input**: "si, procede con el #9" (prior exchange: user asked whether nfr-tactics conflict was fixed — confirmed yes, EV-01 rename + RNF-14/15 added — and what the harness work consists of — explained: sync CLAUDE.md/AGENTS.md/tech matrix/PRODUCT.md §6 with realigned invariants so future agent sessions don't enforce outdated rules)
+
+**AI Response**: Starting cascade #9: update CLAUDE.md (local), AGENTS.md, docs/arquitectura/matriz-tecnologia-fase.md, PRODUCT.md §6 invariants, and review flow-guardian agent definition.
+
+**Context**: Cascade #9 in progress — final step of the realignment cascade.
+
+---
+
+## Cascade #9 — Harness Update: COMPLETE — REALIGNMENT CASCADE CLOSED
+
+**Timestamp**: 2026-06-03T06:45:00-05:00
+
+**User Input**: (continuation of "si, procede con el #9")
+
+**AI Response**:
+1. **CLAUDE.md** (local, gitignored): project context updated (audit document + NL window + fixed scope); System Data Flow rewritten (translate→confirm→run, FlowCatalog expansion, network capture, audit collectors, gate-only baseline, synthesis agent); Module Boundaries (6 flows + flow_catalog.py, classifier = audit synthesis agent, specs v2); Hard Invariants rewritten — #2 catalog v2 with full_journey-as-composition, #3 NL-never-reaches-executor, #4 bootstrap per profile×flow, #5 gate-only baseline, #6 findings-driven evidence (ADR-003), #7 cap sums both modes, NEW #8 agent-synthesizes-never-judges (P7/C10); Patterns extended (FlowCatalog dispatch, deterministic findings only, ADR-003 naming); docs map updated.
+2. **AGENTS.md**: business context, folder structure, non-obvious design decisions (catalog v2, findings-driven evidence, P7, modes, per-pair bootstrap), agent prohibitions (C10/C11/C12 added), anti-patterns, flow-guardian row, footer date.
+3. **docs/arquitectura/matriz-tecnologia-fase.md**: U5-U8 rows in Eje B with their tech (FlowCatalog, Playwright network listeners/CDP, axe-core, synthesis agent); D7-superseded note corrected; runtime pipeline (Eje C) rewritten with translate/network/audit stages; axe-core flagged as HITL dependency.
+4. **PRODUCT.md**: realignment banner → COMPLETED; §6 invariants updated (#2 catalog v2, #3 NL preview+confirm, #4 per-pair, #5 gate-only, #6 findings-driven, #7 v2 done, NEW #8 P7).
+5. **.claude/agents/flow-guardian.md**: composition exception added (full_journey has no flow file BY DESIGN — checks COMPOSITIONS in FlowCatalog; a full_journey.py file is now an inverse BLOCKER per D15); new checks: payment-outside-checkout (C3) and composition-as-file; screenshot check updated to ADR-003 states (fail/final/finding/critical); version bump rule updated to v2→v3 + 30 days (P2). This prevents a false BLOCKER the old rules would have raised against the v2 schema.
+6. aidlc-state.md: cascade marked COMPLETE; next = wave-1 code generation (U0 first).
+
+**Context**: Scope realignment cascade (brief §6) fully closed: steps 0-12 / tasks #1-#9 all done and HITL-approved. Harness now consistent with approved scope — future agent sessions will enforce the realigned invariants.
+
+---
+
+## Station Progress Analysis (post-realignment readiness check)
+
+**Timestamp**: 2026-06-03T07:30:00-05:00
+
+**User Input**: "pregunta, parece que hay unos warning al ejecutar /doctor respecto a credenciales con posgress y vertel y git, necesitas estas herramientas para la creacion de codigo. Me gustaria que raelizaras un analisis respecto a la nueva implementacion que realizamos en el documento y si esta todo listo. puedes guiarte en las estaciones en .hardcore-ai ejecutando el prompt prompt-analisis-estaciones.md"
+
+**AI Response**: (1) /doctor warnings explained: postgres and vercel MCP servers are declared with `_active: false` by design (stack = DynamoDB + AWS); not needed for code generation. Git credentials only needed for push (not yet performed). (2) Executed station analysis per .hardcore-ai/prompt-analisis-estaciones.md using 4 parallel read-only agents (E1-E2, E3, E4-E5, E6-E8); synthesized and updated .hardcore-ai/analisis-progreso.md (rev 2026-06-03). Key findings: realignment cascade COMPLETE and incorporated (E1, E2, E4 ✅ realigned; harness E3 aligned incl. flow-guardian composition exception); code = 0/10 units (expected — next step); NEW pendings raised: P5-3 u0-code-generation-plan must be reconciled vs specs v2 (Alta), P7-5 task package U0/Linear re-validation vs specs v2 (Alta), P6-2 DESIGN.md is pre-realignment 2026-05-29 — only canonical root artifact not covered by the cascade (Media-Alta, owner design-steward). Also fixed scope-realignment-brief.md header: BORRADOR → APROBADO Y EJECUTADO (stale status detected by analysis agents).
+
+**Context**: Readiness verdict: documentation/contracts layer READY for construction; gate before code-gen = P5-3 + P7-5; DESIGN.md refresh before MD0/U5.
+
+---
+
+## DESIGN.md Realignment (P6-2 resolved)
+
+**Timestamp**: 2026-06-03T08:15:00-05:00
+
+**User Input**: "Ayudame con la realineacion del design.md, que le falta a ese documento y si me podrias dar sugerencias para definir mejor el diseño par aentregar un buen producto"
+
+**AI Response**: Gap analysis (6 gaps: NL window, generic matrix, audit document, mode visibility, single-audience principle, monolithic yellow) + DESIGN.md realigned: principles extended to 7 (dual-reader hierarchy, gate/exploratory honesty, facts-vs-hypotheses, "practice what you audit" AA); traffic light §3 with 3 yellow subtypes + mode badge (exploratory never reads as deploy verdict); new components — §4.1 dimension chips (textual/mono, no own color), §4.2 NL window (entry → mandatory preview with prose explanation + chips → ambiguity-as-conversation), §4.3 generic live matrix (rows/cols derived from payload, setup-phase label, scales 1..18 cells), §4.4 audit document (fixed order: executive summary → 6 dimensions with explicit empty/uncollected states → hypotheses → S3 link; no traffic light inside — C10); hypothesis block visually distinct (dotted border, confidence visible, never status-color background — P7); network summary drill-down component; layout updated (NL-first launch screen, audit doc in results hierarchy, mode in footer, API v2); 3 new anti-patterns (hypothesis-dressed-as-fact, hardcoded flow columns, illustrative dimension icons). P6-2 of analisis-progreso resolved.
+
+**Context**: DESIGN.md was the last canonical root artifact not covered by the realignment cascade. Now closed.
+
+---
+
+## V2 Reconciliation of U0 Task Package + Plan (P5-3 + P7-5 resolved)
+
+**Timestamp**: 2026-06-03T09:30:00-05:00
+
+**User Input**: "si, aplica la reconciliación v2. Ya tengo instalado el docker pero debo reiniciar el equipo pero aun no puedo porque ando en una reunion" (prior exchanges: tasks in Linear well defined; asked about gentle-ai vs OpenHands for autonomous code execution — analyzed gentle-ai repo (ecosystem configurator, NOT autonomous executor; would alter the harness, redundant with AI-DLC/skills/roster) and recommended Route B (own harness) with autonomy ladder L2→L3→L4; user accepted)
+
+**AI Response**:
+1. **TASK-003 reconciled to v2**: schema_version v2, flows enum 7 values (journey flows + full_journey as composition alias — expansion is U5 FlowCatalog responsibility, not the model), bounds 1-6, mode field (gate default), ExecutionReport.mode required; audit/network_summary explicitly out of U0 scope (U6/U7 extend models). New ACs: mode validation, schema examples round-trip. Linear delta flagged for CHR-7.
+2. **TASK-004 reconciled to v2**: new tests (schema_version_v2, accepts_journey_flows, mode, flows bounds >6, test_schema_examples_instantiate); Linear delta flagged for CHR-8.
+3. **u0-code-generation-plan.md REWRITTEN**: v2 contract, greenfield scope (old Steps 4-5 translator/api refactor deferred to U4 = TASK-005), workspace root fixed (was old 06_testing_sintetico path), Docker image aligned to v1.48.0 (was v1.44.0 — mismatch with TASK-002), stale [x] checkboxes reset to [ ] (no code exists in this repo), uv-first commands, docker gate marked pending-environment (Docker installed, reboot pending).
+4. Environment pre-flight (earlier this session): uv 0.11.12 + cpython 3.12.13 ready; Node v24; Docker installed pending reboot; hooks degrade gracefully; Claude API key NOT needed for U0.
+
+**Context**: P5-3 and P7-5 RESOLVED. U0 runway clear: TASK-001 (HITL pyproject) → TASK-003 → TASK-004 can start now; TASK-002/006 docker gate after reboot. Linear CHR-7/CHR-8 descriptions should be updated with the v2 deltas (manual or via tooling re-publish).
+
+## Construction — U0 Gate 1 (TASK-006)
+
+**Timestamp**: 2026-06-06T00:00:00Z
+**User Input**: "Realiza el commit de esos archivos que tenemos pendientes y continua con el task-006"
+**AI Response**: "Committed pending docs/tooling (commit 1997551: conceptos own-harness vs OpenSymphony + U0 Linear publish record). Executed TASK-006 (U0 closure gate). Gate 1 results: ruff check . exit 0; mypy src/ strict exit 0; uv run pytest 20 passed; docker build -t testpilot-sfcc:local . exit 0 (image 985 MB, daemon started manually). pip-audit: 4 transitive vulns (starlette×3 GHSA-f96h/2c2j + PYSEC-2026-161, pytest×1 GHSA-6w46) — dependency bump DEFERRED to HITL before U4 (no API served in U0). /v1/run 422 check N/A in U0 (no API). Rewrote u0/code/code-summary.md to reflect realigned greenfield scope (TASK-005 deferred to U4). Updated aidlc-state.md (U0 COMPLETE) and build-sequence.md Gate 1 checkboxes."
+**Context**: Construction Phase, U0 Setup Base closed. Next: U1+U2+MD0 in parallel (Sprint 1, build-sequence.md). Pending HITL: dependency bump for pip-audit vulns.
+
+---
+
+## Construction — U0 security dependency bump (post-Gate 1)
+
+**Timestamp**: 2026-06-06T00:30:00Z
+**User Input**: "resuelve primero el bump de dependencias del pip-audit"
+**AI Response**: "HITL-authorized dependency bump (pyproject.toml + uv.lock). Temporarily lifted Edit(pyproject.toml)/Edit(uv.lock) deny in .claude/settings.json, did the work, RESTORED the deny. Relaxed affected constraints, let uv resolve, re-pinned exact: starlette 0.38.6→1.2.1 (added as DIRECT pin; clears GHSA-f96h-pmfr-66vw + GHSA-2c2j-9gv5-cj73 + PYSEC-2026-161), fastapi 0.115.0→0.136.3 (needed for starlette≥1.0), pytest 8.3.3→9.0.3 (clears GHSA-6w46-j5rx-g56g), pytest-asyncio 0.24.0→1.4.0, pytest-playwright 0.5.2→0.8.0. pydantic/anthropic/playwright/boto3 unchanged. RNF-08 preserved (all exact ==). Verified: pip-audit 'No known vulnerabilities found'; ruff/mypy exit 0; pytest 20 passed (no more asyncio loop-scope warning); docker build exit 0. Updated code-summary.md, build-sequence.md Gate 1, aidlc-state.md, tech-stack-decisions.md."
+**Context**: Construction Phase, U0. Gate 1 now fully green incl. pip-audit. Next: U1+U2+MD0 parallel (Sprint 1).
+
+---
+
+## Construction — Sprint 1 close-out (U1/U2/MD0)
+
+**Timestamp**: 2026-06-08T00:00:00Z
+**User Input**: "Podemos retomar el tema de generacion de codigo, no recuerdo en que paso quedamos" + "HAs la recomendacion que planeaste ... me gustaria en que parte de la generacion de codigo estamos y si dentro de tu plan esta el desarrollo de una demo antes del producto final y si no es asi me gustaria que eligieras que modulos y que flujo podria llevar una demo"
+**AI Response**: "Verified wave-1 Sprint 1 state against real code. U2 Baseline green (ruff/mypy/37 tests). MD0 Dashboard: build (tsc strict + vite) + 37 vitest tests green, but lint RED — ESLint flat config lacked a TS parser (espree parsing .ts → 22 'interface reserved' errors). FIXED: added @typescript-eslint/parser devDependency + languageOptions.parser in eslint.config.js → lint green (react/no-danger NFR-MD0-S7, no-console, react-hooks clean). Gate 3 had an unverified criterion (env_access via http_credentials — used in runner.py:95 but untested): added test_env_access_passed_as_http_credentials → executor runner 6 tests green. Full Python suite 88 tests green. Marked Gate 2 (closed), Gate 3 (closed), Gate 6 (partial: code-gen done; CSP headers + 5-screens-vs-real-backend defer to U4, Lighthouse pending) in build-sequence.md. Updated md0 code-summary + aidlc-state.md. Proposed demo plan (none was explicit in plan): Demo 1 CLI smoke after U3 (U1+U2+U3, no API/UI) as 'it really runs' milestone; Demo 2 full E2E = wave-1 DoD after U4; dashboard+mock-server already demoable today."
+**Context**: Construction Phase, wave-1 Sprint 1 CLOSED. Next: U3 Reporter (needs U1+U2) → U4 API. Branch rework/storefront-audit-scope, no push.
+
+---
+
+## Construction — U3 Reporter, Code Generation Part 1 (Planning)
+
+**Timestamp**: 2026-06-08T00:00:00Z
+**User Input**: "Arranquemos con el plan de código de U3"
+**AI Response**: "Rewrote u3-code-generation-plan.md (the prior stub was unreconciled: said camelCase — wrong, schema is snake_case; didn't account for U3 computing the real verdict). Reconciled to specs v2 + real U1/U2 APIs: U1 returns ProfileResult with traffic_light=GREEN placeholder → U3 computes the deterministic verdict (per-profile 3-rule ladder: failed→RED, error→YELLOW, success→compute_traffic_light from p95; global=worst-of). to_json_dict = model_dump(mode='json') snake_case (orders_created already excluded). audit/network_summary deferred to U6/U7. Flagged 3 HITL decisions: D-U3-1 report-level baseline_comparison aggregation (rec: combo that drove worst verdict), D-U3-2 report bootstrap_mode semantics (rec: all-combos), D-U3-3 U3 read-only on baseline / save_run is U4 (rec: yes). Steps: __init__, report_generator, test_reporter (verdict matrix + schema validation), test_reporter_pbt (RNF-09), code-summary. Gate 4 criteria listed. Awaiting approval before Part 2 generation."
+**Context**: Construction Phase, U3 (Sprint 2, needs U1+U2 ✅). Code Generation Part 1 complete; pending HITL.
+
+---
+
+## Construction — U3 Reporter, Code Generation Part 2 (Generation) + Gate 4
+
+**Timestamp**: 2026-06-08T00:00:00Z
+**User Input**: "Sí, seguimos con la generación tomando tus recomendaciones" (D-U3-1/2/3 at recommended defaults; preceded by a clarifying Q on 'bootstrap_mode' — confirmed it is the p95 calibration phase, not the CSS framework)
+**AI Response**: "Generated U3: src/reporter/__init__.py + report_generator.py (compute_profile_verdict pure 3-rule ladder, _global_verdict worst-of, _report_bootstrap all-combos D-U3-2, _select_report_baseline worst-verdict-combo D-U3-1, generate_report read-only on baseline D-U3-3, to_json_dict=model_dump(mode=json) snake_case, to_markdown). tests/test_reporter.py (15 deterministic: verdict matrix, schema validation parametrized, orders_created assert, no cross-env) + tests/test_reporter_pbt.py (RNF-09, 150 examples). Gate 4 verified: ruff/mypy-strict exit 0; 21 U3 tests; full suite 110 green; JSON validates vs execution_report.schema.json Draft 2020-12. Corrected stub errors (camelCase→snake_case, removed percentDiff). Rewrote u3 code-summary, marked Gate 4 + plan checkboxes, updated aidlc-state."
+**Context**: Construction Phase, U3 COMPLETE. Next: U4 API (largest unit; integrates all + save_run orchestration + IaC). CLI smoke demo (U1+U2+U3) now feasible.
+
+---
+
+## Construction — U4 API, Code Generation Part 1 (Planning)
+
+**Timestamp**: 2026-06-08T00:00:00Z
+**User Input**: "Armemos el plan de código de U4"
+**AI Response**: "Rewrote u4-code-generation-plan.md (prior 3-step stub was aspirational/subdimensioned, falsely marked [x], referenced a non-existent src/api/main.py). Reconciled to S1–S8 service design + error-taxonomy + real U1/U2/U3 APIs. Confirmed boundary: /v1/translate + src/agents NL translator is OUT (wave-2 U8). New models needed (EnvironmentConfig, RunStatus/RunState, RunListItem/Response, RunListQuery, ApiErrorPayload). Identified gaps: RunReportStore needed (U2 BaselineStore only holds flattened RunRecords, not full reports); ResolvedEnvironment is flat (env.env_access/shopper/store_url), not env.config.* as the 2026-05-24 design said. 3 HITL decisions: D-U4-1 Protocols+in-memory fakes for AWS (no moto dep; boto3 adapters thin shims, real wiring=infra), D-U4-2 translate/agents → U8 (TASK-005 dedup moves to U8), D-U4-3 phased build (A core run path/E2E spine → B environments+history → C evidence+static+hardening; Gate 5 closes at C). Endpoint inventory + exception hierarchy + per-phase steps + Gate 5 criteria + security-baseline compliance documented. Awaiting approval before Part 2."
+**Context**: Construction Phase, U4 (largest unit, Sprint 2, needs U1+U2+U3 ✅). Code Generation Part 1 complete; pending HITL on D-U4-1/2/3 + phasing.
+
+---
+
+## Construction — U4 API, Code Generation Part 2 (Generation) — Phase A
+
+**Timestamp**: 2026-06-08T00:00:00Z
+**User Input**: "Ejecuta las recomendaciones y continua" (D-U4-1/2/3 at recommended defaults)
+**AI Response**: "Generated U4 Phase A (E2E spine), src/api/ from scratch: schemas.py (EnvironmentConfig/RunState/ProfileRunStatus/RunStatus/RunListItem/Response/RunListQuery/ApiErrorPayload — placed in api/ not models.py per CLAUDE.md boundary), errors.py (TestPilotApiError hierarchy, taxonomy §5), security.py (verify_api_key, fail-closed), middleware.py (SecurityHeaders+RequestLogging w/ request_id), stores.py (EnvironmentStore/SecretsClient/RunReportStore/ScreenshotStore Protocols + in-memory fakes — D-U4-1, no moto), services/environment_resolver.py (S6, TTL cache), services/run_orchestrator.py (S1: uuid4, resolve, asyncio.gather over profiles×flows under Semaphore(3) + wait_for(1800), U3 generate_report, U2 gate-only save_run, invariant#1→500 invariant_violated, wave-1 flow guard full_journey/journey→422), services/live_status_tracker.py (S7), deps.py, routers/runs.py (POST /v1/run) + routers/health.py, app.py (factory + 3 structured exception handlers incl. RequestValidationError→validation_failed and Exception→500 no-stacktrace). tests/test_api_run.py 12 tests. Verified: ruff + mypy --strict (15 files) exit 0; 12 Phase A tests; full suite 122 green. Marked Phase A checkboxes, updated aidlc-state."
+**Context**: Construction Phase, U4 Phase A COMPLETE (E2E spine). Next: Phase B (environments CRUD + runs history + status), Phase C (screenshots + static + CSP + error-taxonomy coverage; Gate 5 closes at C).
+
+---
+
+## Construction — U4 API, Code Generation Part 2 — Phases B & C + Gate 5 (U4 COMPLETE)
+
+**Timestamp**: 2026-06-08T00:00:00Z
+**User Input**: "Ejecuta las recomendaciones y continua" (continued through all phases)
+**AI Response**: "Phase B: EnvironmentRegistry (S5, CRUD + secret-path validation), environments router (POST/GET/PUT/DELETE), runs history (GET /v1/runs/{id}, /latest gate-only with age+ttl_ok, GET /v1/runs filters+pagination, /{id}/status), EnvironmentUpdate schema, RunReportStore.latest(mode=) gate filter. 23 tests. Phase C: screenshots router (307 redirect / 404 screenshot_not_found), static mount of dashboard/dist (S8, SPA fallback, graceful if absent), CSP confirmed (Phase-A middleware) → closes MD0 Gate 6 CSP, test_error_taxonomy.py (10 rows: 401/422/404/409/502/422/504/500-invariant/500-internal, no-stacktrace assert), test_api_assets.py (5). Fixed a test bug (search_term 'x' < min_length 2). Gate 5 closed: 50 U4 tests, full suite 160 green, ruff+mypy(18 files) clean. Wrote u4 code-summary, marked Gate 5 + plan checkboxes B/C/D, updated aidlc-state. Deferred to infra: boto3 adapters behind the U4 Protocols (D-U4-1)."
+**Context**: Construction Phase, U4 COMPLETE (Gate 5 closed). Wave-1 DoD reachable. Next: infra/CDK milestone (boto3 adapters + AWS), then wave 2 (U5–U8).
+
+---
+
+## Construction — Wave-1 E2E demo validation + E8 acceptance suite
+
+**Timestamp**: 2026-06-08T00:00:00Z
+**User Input**: "Listo con que continuamos, necesitas algo de mi parte" → chose "Demo E2E + tests E8 (recomendado)"
+**AI Response**: "Validated the wave-1 backend spine end to end via scripts/demo_e2e.py (register env → POST /v1/run gate → live status → GET report → /latest gate verdict → history → Markdown report; executor stubbed, no storefront/AWS) — flow green/bootstrap, orders_created absent from JSON. Confirmed production entrypoint src.api.app:app imports with 12 routes + dashboard mount. E8: wrote tests/test_e8_acceptance.py (10 executable acceptance tests traced to gherkin-scenarios.md: Environment Registry, Structured Run Execution, Zero Order Contamination, CI/CD Deploy Gate, Baseline Bootstrap — with contract validation vs execution_report.schema.json; no pytest-bdd dep). Added steering file .claude/skills/testing.md (gitignored). Asserts hard invariants (#1-#8). Verified: mypy src clean (36 files), ruff clean, full suite 170 green (160→170)."
+**Context**: Construction Phase. Wave-1 E2E demo validated; E8 acceptance layer added. P8-1 (API/acceptance) + P8-2 (steering) + P8-3 (BDD) advanced. Pending in E8: dashboard Playwright E2E + Persona/Juez (needs wave-2 agents U6/U8).
+
+---
+
+## Construction — Wave 2 start: U5 Journey Flows, Code Generation Part 1 (Planning)
+
+**Timestamp**: 2026-06-08T00:00:00Z
+**User Input**: "arranquemos con la ola 2 (U5–U8)"
+**AI Response**: "Wave-2 order (build-sequence): U5+U7+U8 parallel → U6 → integration. Starting with U5 (foundation). Rewrote u5-code-generation-plan.md reconciled to wave-1 reality: FlowName enum already complete (Step 9 done), FLOW_REGISTRY currently in runner.py (D-U5-1: move to flow_catalog.py), U4 orchestrator currently rejects full_journey→422 (U5 lifts it via expand_flows). 12 steps: flow_catalog.py (registry + COMPOSITIONS + expand_flows), extend selectors (PLP/PROMOTIONS), 4 journey flow files (PROTECTED PATH — HITL), run_composition in runner, orchestrator integration (expand + composition routing), tests (catalog/journey/composition/api full_journey). Decisions: D-U5-1 flow_catalog owns registry, D-U5-2 full_journey = chained composition in shared context → one FlowResult per flow, D-U5-3 selector fidelity best-effort vs mocked Page (R2). Flagged: src/executor/flows/ is a protected path needing explicit confirmation before generation. Awaiting approval."
+**Context**: Construction Phase, wave 2 started. U5 Code Generation Part 1 complete; pending HITL on plan + D-U5-1/2/3 + protected-path authorization.
+
+---
+
+## Construction — U5 Journey Flows, Code Generation Part 2 (Generation) + Gate U5 — recovery + completion
+
+**Timestamp**: 2026-06-09T00:00:00Z
+**User Input**: "puedes analizar en que parte de la generacion de codigo quedamos, quiero que en esta sesion si excedemos el 80% del uso de tokens nos detengamos y guardemos" → (after analysis) chose "Terminar U5 completo"
+**AI Response**: "Diagnosed: a prior session had generated the U5 source (Steps 1-8: flow_catalog.py, _common.py, 4 journey flows, selectors PLP/PROMOTIONS, runner.run_composition, flows/__init__) but left Step 9 (orchestrator integration) BROKEN and uncommitted — run_orchestrator.py still had the wave-1 `_resolve_flows` guard referencing undefined `FLOW_REGISTRY` + `cast`, and the test files (Steps 10-12) were never written. Build was red: 20 tests failing (170→150). Fixed Step 9: replaced `_resolve_flows` with `_expand_flows` delegating to `flow_catalog.expand_flows` (out-of-catalog→422 validation_failed), injected `run_composition` into RunOrchestrator, routed `full_journey`→`run_composition` per profile / else per-flow, flattened results — lifting the wave-1 422. Updated obsolete wave-1 tests: `test_post_run_full_journey_rejected_in_wave1`→`test_post_run_full_journey_expands_to_sequence` (now 200, 4 results) with an injected fake run_composition in `_build`; removed `test_422_full_journey_wave1` from test_error_taxonomy (validation_failed row still covered by bad_enum). Wrote Steps 10-12: test_flow_catalog.py (expand/dedupe/out-of-catalog + is_composition + **static zero-payment guarantee** via inspect.getsource — no journey flow references PAYMENT_* or place-order, nor a payment critical_point), test_journey_flows.py (mocked async Page; each flow's step count + success + ADR-003 final marker + orders_created==0; cart_review setup-phase tags; browse reads PLP+PDP prices; failed step → subsequent skipped), test_runner_composition.py (shared context across chain, generic 6-flow registry dispatch, broken-link skip propagation), test_api_full_journey.py (200 + one result per expanded flow, multi-profile 8 results, broken link → RED report). Gate U5 closed: ruff clean, mypy --strict 42 files clean, 27 new U5 tests green, **full suite 196 passed** (170→196: +27 U5, −1 obsolete). Marked all 12 plan checkboxes + Gate U5, updated aidlc-state. Decisions D-U5-1/2/3 applied at recommended defaults. NOT committed (awaiting user). Token-budget guard active (<80%)."
+**Context**: Construction Phase, wave 2. U5 Journey Flows COMPLETE (Gate U5 closed). Next: U6 (audit collectors + synthesis agent), U7 (network capture), U8 (NL window). U5 changes still uncommitted on `rework/storefront-audit-scope`.
+
+---
+
+## Construction — U7 + U8, Code Generation Part 1 (Planning) — parallel reconciliation
+
+**Timestamp**: 2026-06-09T00:00:00Z
+**User Input**: "arranquemos con U7 y U8 en paralelo. Recuerda lo del uso del 80% de los tokens y si te excedes detenerte" (preceded by commit of U5 as `8b412d8`)
+
+---
+
+## U8 — Backend code generation actions in this session
+
+**Timestamp**: 2026-06-09T12:48:32-05:00
+
+**User Input**: "continua" / "ejecuta y luego realizamos el commit"
+
+**AI Response**: Created translator (src/agents/translator.py), translate router (src/api/routers/translate.py), wired translator into app.create_app and app.state.translator, added daily-cap guard dependency and enforced it on POST /v1/run, added tests (tests/test_translate_endpoint.py, tests/test_prompt_injection.py, tests/test_daily_cap_and_executor_import.py), fixed lint/type issues, executed ruff+mypy+targeted pytest; all targeted checks passed. Marked Steps 2,3,4,7,8,9 done in u8-code-generation-plan.md. Changes staged but not yet committed per user request.
+
+**Artifacts**:
+- src/agents/translator.py
+- src/api/routers/translate.py
+- src/api/app.py (translator wiring)
+- src/api/deps.py (daily cap)
+- src/api/errors.py (new error types)
+- tests/test_translate_endpoint.py
+- tests/test_prompt_injection.py
+- tests/test_daily_cap_and_executor_import.py
+- aidlc-docs/construction/plans/u8-code-generation-plan.md (steps marked)
+
+**Context**: Backend-only U8 scope confirmed by user. Next: commit changes (awaiting permission) and continue U8 Part 2 generation (PBT + RT1 completeness).
+
+---
+**AI Response**: "Both u7/u8 plans existed but were stale (2026-06-03). Reconnaissance + rewrote both as Part-1 reconciled plans. **U7:** schema v2 already has network $defs; models.py doesn't model them; runner now has TWO entry points (run_profile + run_composition from U5) → capture must wire into both (D-U7-1); CWV at FlowCatalog critical_points (D-U7-2); HAR via U4 evidence store (D-U7-3); added Step 10 runner-network integration test. 10 steps, Gate U7 (RNF-15 redaction blocking). **U8 (big divergences):** src/agents/ does NOT exist → translator created from scratch, TASK-005 lands here (D-U8-1); no src/api/main.py → routers/translate.py wired in app.py (D-U8-2); SyntheticUserConfig.mode already exists; baseline gate-only (C11) already implemented → only PBT added (D-U8-4); GET /v1/runs/latest gate-only already exists; dashboard is at repo ROOT (Vite/React), not src/dashboard/ (D-U8-6); daily cap (invariant #7) NOT implemented → new guard 429 rate_limited (D-U8-5, the one genuine choice: implement-now vs defer-to-infra); post-translation gate reuses flow_catalog + schema (D-U8-3, P3); RT1 in-scope (test_prompt_injection), D-NL gates operational. 9 steps, Gate U8 (Q8=0 blocking, C12 grep). NO code generated — paused at the Part-1 HITL gate to respect the 80% token budget. Awaiting approval on plans + decisions (esp. D-U8-5)."
+**Context**: Construction Phase, wave 2. U7+U8 Code Generation Part 1 complete (plans reconciled); pending HITL on plans + D-U7-1..4 / D-U8-1..6. Generation (Part 2) is the next gated step; protected paths (runner.py) require authorization.
+
+---
+
+## Construction — U7 Network Capture, Code Generation Part 2 (Generation) + Gate U7
+
+**Timestamp**: 2026-06-09T00:00:00Z
+**User Input**: (AskUserQuestion) "U7 completa, luego reevaluar" + D-U8-5 "Guard in-app ahora (429)"
+**AI Response**: "Generated U7 in full (Steps 1-10). network_capture.py: NetworkCapture with domain allowlist (host from env.store_url, subdomains ok), header redaction (Authorization/Cookie/Set-Cookie/Proxy-Authorization), credential-query stripping (_strip_credentials regex pass|token|secret|api-key|auth|sig|session), to_har_dict (metadata+timings, bodySize -1, empty content, no postData), reset() for per-flow segmentation, install() best-effort Playwright response/requestfailed wiring. controller_timings.py: extract_controller (Controller-Action PascalCase regex), aggregate_controllers (count+p95 slowest-first), _p95 ceiling-index identical to U2 calculate_p95. web_vitals.py: collect_web_vitals injects PerformanceObserver JS for LCP/CLS/TTFB, returns None on any failure (never raises, RNF-15). models.py: added NetworkSummary/ControllerTiming/WebVitals mirroring schema v2 $defs + ProfileResult.network_summary. runner.py: capture installed after new_page in BOTH run_profile and run_composition (D-U7-1, per-flow reset in composition), _build_network_summary (aggregate + CWV + persist HAR), _persist_har writes to SCREENSHOT_DIR if set else returns logical key. report_generator.py: to_markdown per-profile Network/Performance section. Tests (17): test_network_capture (allowlist, RNF-15 redaction blocking — secrets+header names absent from HAR, zero bodies, credential-query strip, summary counts), test_controller_timings (grouping, asset exclusion, p95==calculate_p95, slowest-first), test_web_vitals (populated/None/raise-safe/partial), test_runner_network_integration (both run paths attach network_summary, HAR key per flow). Gate U7 closed: ruff + mypy --strict (45 files) clean, full suite **213 passed** (196→213). Marked all 10 plan checkboxes + Gate U7, updated aidlc-state. NOT committed yet (awaiting user). Budget-guard: pausing after U7 commit to reevaluate the 80% threshold before the large U8."
+**Context**: Construction Phase, wave 2. U7 COMPLETE (Gate U7 closed). Per the approved strategy, pausing to reevaluate the token budget before U8 (translator from scratch + RT1 suite + dashboard NL window — the heaviest unit). U7 changes uncommitted on `rework/storefront-audit-scope`.
+
+---

@@ -4,7 +4,7 @@ title: Verificación de Gate U0 + code-summary.md
 milestone: "M2: Shared Models Unification"
 priority: 3
 estimate: 1
-blockedBy: [TASK-002, TASK-004, TASK-005]
+blockedBy: [TASK-002, TASK-004]
 parent: null
 blocks: []
 ---
@@ -23,7 +23,7 @@ Ejecutar el Gate 1 de `build-sequence.md` para U0 y registrar el resumen de la u
 ## Acceptance Criteria
 - `ruff check .` exit 0.
 - `mypy src/` exit 0.
-- `uv run pytest` exit 0 (incluye `test_models.py`, `test_schemas.py`, `test_translator.py`).
+- `uv run pytest` exit 0 (incluye `test_models.py`).
 - `docker build -t testpilot-sfcc:local .` completa.
 - Gate 1 de `build-sequence.md` queda con todos los checkboxes marcados.
 
@@ -41,4 +41,4 @@ Los 4 deben terminar en exit 0.
 - `aidlc-docs/construction/plans/u0-code-generation-plan.md` (Step 8 + verificación final).
 
 ## Definition of Ready
-Depende de TASK-002, TASK-004 y TASK-005 (toda la unidad implementada). Es la tarea de cierre/gate de U0.
+Depende de TASK-002 y TASK-004 (toda la unidad greenfield de U0 implementada). Es la tarea de cierre/gate de U0.

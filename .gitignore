@@ -30,6 +30,7 @@ CLAUDE.md
 # --------------------------------------------------------------------------------
 .aidlc-rules
 .hardcore-ai
+docs/pitch
 
 # --------------------------------------------------------------------------------
 # transient orchestration state (only README.md is versioned)
@@ -42,3 +43,16 @@ progress/*
 # --------------------------------------------------------------------------------
 .linear.env
 *.secret.env
+
+# --------------------------------------------------------------------------------
+# Python artifacts (build / cache / venv)
+# --------------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.hypothesis
+hypothesis/examples

@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://testpilot.pash.internal/specs/v1/synthetic-user-config.schema.json",
+  "$id": "https://testpilot.pash.internal/specs/v2/synthetic-user-config.schema.json",
   "title": "SyntheticUserConfig",
-  "description": "Contrato de entrada del endpoint POST /v1/run. Producido por src/agents/ a partir de una instrucción en lenguaje natural y validado estrictamente antes de levantar cualquier browser. Cualquier cambio de campo (rename, remove, type change) es BREAKING — incrementar versión a v2. BREAKING CHANGE v1.1: flow→flows (array), profile→profiles (array), products.sku/quantity→products.search_term/validate_variant, shopper eliminado (resuelto server-side).",
+  "description": "Contrato de entrada del endpoint POST /v1/run. Producido por src/agents/ a partir de una instrucción en lenguaje natural y validado estrictamente antes de levantar cualquier browser. Cualquier cambio de campo (rename, remove, type change) es BREAKING — incrementar versión. BREAKING CHANGE v2 (2026-06-03, realineación de alcance, HITL aprobado): flows enum +5 (4 flows de recorrido + full_journey como alias de composición), maxItems 2→6, campo mode (gate|exploratory). v1 se mantiene operativo 30 días (P2). BREAKING CHANGE v1.1: flow→flows (array), profile→profiles (array), products.sku/quantity→products.search_term/validate_variant, shopper eliminado (resuelto server-side).",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -15,8 +15,8 @@
   "properties": {
     "schema_version": {
       "type": "string",
-      "const": "v1",
-      "description": "Versión del contrato. Fija en v1 hasta que haya un breaking change."
+      "const": "v2",
+      "description": "Versión del contrato. v2 desde 2026-06-03 (realineación: flows de recorrido + full_journey + mode)."
     },
     "environment_id": {
       "type": "string",
@@ -26,13 +26,27 @@
     "flows": {
       "type": "array",
       "minItems": 1,
-      "maxItems": 2,
+      "maxItems": 6,
       "uniqueItems": true,
       "items": {
         "type": "string",
-        "enum": ["checkout_full", "checkout_card_declined"]
+        "enum": [
+          "checkout_full",
+          "checkout_card_declined",
+          "search_and_filter",
+          "browse_discounted_products",
+          "pdp_validation",
+          "cart_review",
+          "full_journey"
+        ]
       },
-      "description": "Catálogo CERRADO de flows en MVP. El LLM SOLO puede elegir valores de este enum; cualquier otro debe ser rechazado por src/agents/ antes de validar. Un POST puede disparar uno o ambos flows en paralelo sobre cada perfil."
+      "description": "Catálogo CERRADO de flows (crece solo curado vía PR — invariante #2). El LLM SOLO puede elegir valores de este enum; cualquier otro debe ser rechazado por src/agents/ antes de validar. El usuario elige el alcance del recorrido: módulo único, subconjunto, o full_journey. 'full_journey' es un ALIAS DE COMPOSICIÓN: el backend lo expande a la secuencia declarada en el FlowCatalog (search_and_filter → pdp_validation → cart_review → checkout_full) y deduplica contra los demás valores — el executor nunca lo recibe como flow. Los flows modulares se auto-preparan vía setup() determinista en modo módulo-único; en composición el estado fluye entre flows."
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["gate", "exploratory"],
+      "default": "gate",
+      "description": "Modo de operación. 'gate' (default): determinista, reproducible, entra al baseline y su semáforo es veredicto de deploy. 'exploratory': descubrimiento/auditoría ad-hoc — NUNCA entra al baseline ni cuenta como estado deploy-safe (C11); su reporte se marca visiblemente. Ambos modos ejecutan SOLO flows del catálogo cerrado y suman al cap de 10 runs/día."
     },
     "profiles": {
       "type": "array",
@@ -83,14 +97,14 @@
         "capture_intermediate_screenshots": {
           "type": "boolean",
           "const": false,
-          "description": "INVARIANTE DE COSTO: siempre false. Solo capturamos en fallo + paso final. Permitir true rompería el presupuesto de S3 (~500 MB → ~17 GB/mes)."
+          "description": "INVARIANTE DE COSTO: siempre false. La política base es fallo + paso final; en modo auditoría se agregan capturas DIRIGIDAS POR EVENTO (hallazgo de una de las 6 dimensiones o punto crítico declarado en el FlowCatalog) — eso NO son 'intermedios': capturar por calendario/paso sigue prohibido. Permitir true rompería el presupuesto de S3 (~500 MB → ~17 GB/mes)."
         }
       }
     }
   },
   "examples": [
     {
-      "schema_version": "v1",
+      "schema_version": "v2",
       "environment_id": "staging",
       "flows": ["checkout_full"],
       "profiles": ["mobile_co"],
@@ -99,7 +113,7 @@
       ]
     },
     {
-      "schema_version": "v1",
+      "schema_version": "v2",
       "environment_id": "staging",
       "flows": ["checkout_full", "checkout_card_declined"],
       "profiles": ["mobile_co", "desktop_co", "desktop_ec"],
@@ -111,6 +125,26 @@
         "timeout_seconds": 240,
         "capture_intermediate_screenshots": false
       }
+    },
+    {
+      "schema_version": "v2",
+      "environment_id": "staging",
+      "flows": ["cart_review"],
+      "mode": "exploratory",
+      "profiles": ["mobile_co"],
+      "products": [
+        { "search_term": "tenis blancos", "validate_variant": true }
+      ]
+    },
+    {
+      "schema_version": "v2",
+      "environment_id": "staging",
+      "flows": ["full_journey"],
+      "mode": "gate",
+      "profiles": ["mobile_co", "desktop_co", "desktop_ec"],
+      "products": [
+        { "search_term": "chaqueta de cuero", "validate_variant": true }
+      ]
     }
   ]
 }

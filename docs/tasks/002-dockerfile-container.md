@@ -24,6 +24,8 @@ Crear el `Dockerfile` multi-stage sobre la imagen base oficial de Playwright y e
   - Usuario **no-root**; `EXPOSE 8000`; `CMD ["uvicorn","src.api.main:app","--host","0.0.0.0","--port","8000"]`.
 - `.dockerignore`: `.env*`, `.git`, `aidlc-docs/`, `__pycache__/`, `*.pyc`, `.pytest_cache/`, `.mypy_cache/`, `.ruff_cache/`, `tests/`, `.claude/`, `.ai/`.
 
+> **Nota (alcance greenfield U0):** `src/api/main.py` aún NO existe (llega en U4). El `CMD uvicorn src.api.main:app` es el entrypoint **objetivo**; en U0 el gate valida `docker build` + imports, **no** la ejecución de la app.
+
 ## Acceptance Criteria
 - `docker build -t testpilot-sfcc:local .` completa sin errores.
 - La imagen corre como usuario no-root.
