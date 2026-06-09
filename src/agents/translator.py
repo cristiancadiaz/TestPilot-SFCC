@@ -4,6 +4,7 @@ from typing import Protocol, TypedDict, cast
 import re
 import base64
 import unicodedata
+import urllib.parse
 from typing import Optional
 
 from src.api.errors import InstructionRejectedError
@@ -91,11 +92,58 @@ class InMemoryTranslatorFake:
         except Exception:
             decoded_candidate = None
 
+        # Homoglyph placeholder definitions removed; explicit map defined below
+
+        # Simpler explicit map for common homoglyphs (Cyrillic/Greek to Latin)
+        homoglyphs = {
+            '\u0430': 'a',  # Cyrillic small a
+            '\u0435': 'e',  # Cyrillic small e
+            '\u03BF': 'o',  # Greek small omicron
+            '\u0456': 'i',  # Cyrillic small byelorussian-ukrainian i
+        }
+
+        def replace_homoglyphs(s: str) -> str:
+            return ''.join(homoglyphs.get(ch, ch) for ch in s)
+
+        homoglyph_normalized = replace_homoglyphs(cleaned)
+        homoglyph_alnum = re.sub(r"[^a-z0-9]", "", homoglyph_normalized)
+
+        # URL-decoding detection
+        url_decoded: Optional[str] = None
+        try:
+            if re.search(r"%[0-9a-fA-F]{2}", inst):
+                url_decoded = urllib.parse.unquote_plus(inst).lower()
+        except Exception:
+            url_decoded = None
+
+        # Hex decoding detection (plain hex or 0x...)
+        hex_decoded: Optional[str] = None
+        try:
+            possible_hex = cleaned.replace("0x", "").strip()
+            if re.fullmatch(r"[0-9a-fA-F]{8,}", possible_hex) and len(possible_hex) % 2 == 0:
+                try:
+                    hex_bytes = bytes.fromhex(possible_hex)
+                    hex_decoded = hex_bytes.decode("utf-8", errors="ignore").lower()
+                except Exception:
+                    hex_decoded = None
+        except Exception:
+            hex_decoded = None
+
         # Simple heuristic checks for prompt-injection / malicious content against multiple normalizations
         for pat in self._INJECTION_PATTERNS:
-            if re.search(pat, lower) or re.search(pat, cleaned) or re.search(pat, alnum_only):
+            if (
+                re.search(pat, lower)
+                or re.search(pat, cleaned)
+                or re.search(pat, alnum_only)
+                or re.search(pat, homoglyph_normalized)
+                or re.search(pat, homoglyph_alnum)
+            ):
                 raise InstructionRejectedError("prompt injection detected")
             if decoded_candidate and re.search(pat, decoded_candidate):
+                raise InstructionRejectedError("prompt injection detected")
+            if url_decoded and re.search(pat, url_decoded):
+                raise InstructionRejectedError("prompt injection detected")
+            if hex_decoded and re.search(pat, hex_decoded):
                 raise InstructionRejectedError("prompt injection detected")
 
         if "ambiguous" in lower:
