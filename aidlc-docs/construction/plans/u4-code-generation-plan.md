@@ -145,36 +145,39 @@ milestone. `moto` is **not** added now.
       flow + full_journey; 404 env; gate-saved/exploratory-not; 500 invariant; health
       200/503; security headers. ruff+mypy(15 files)+pytest green; full suite 122.
 
-### Phase B — Environments registry + run history [ ]
-- [ ] `src/api/services/environment_registry.py` (S5) — CRUD + 60s cache + secret-path
-      validation on create (→ 422 `invalid_secret_path`).
-- [ ] `src/api/routers/environments.py` — POST/GET/GET{id}/PUT/DELETE.
-- [ ] `src/api/routers/runs.py` — `GET /v1/runs/{id}` (404), `/latest` (age+ttl_ok,
-      404 no_runs_yet), `GET /v1/runs` (filters, default 7 days, pagination),
-      `GET /v1/runs/{id}/status`.
-- [ ] `tests/test_api_environments.py`, `tests/test_api_runs.py` — per-endpoint codes.
+### Phase B — Environments registry + run history [x] ✅ (2026-06-08)
+- [x] `src/api/services/environment_registry.py` (S5) — CRUD + secret-path validation
+      on create (→ 422 `invalid_secret_path`; 409 already-exists). 60s read cache deferred
+      to the DynamoDB adapter (in-memory store is already O(1)).
+- [x] `src/api/routers/environments.py` — POST(201)/GET/GET{id}/PUT/DELETE(204).
+- [x] `src/api/routers/runs.py` — `GET /v1/runs/{id}` (404, 422 bad uuid), `/latest`
+      (age+ttl_ok, **gate-only**, 404 no_runs_yet), `GET /v1/runs` (filters, default 7
+      days, pagination), `GET /v1/runs/{id}/status`.
+- [x] `tests/test_api_environments.py` (10) + `tests/test_api_runs.py` (13) — per-endpoint codes.
 
-### Phase C — Evidence, static, hardening [ ]
-- [ ] `src/api/routers/screenshots.py` — `ScreenshotStore` → URL; 404 missing.
-- [ ] Static mount of `src/dashboard/dist/` (S8) — omitted gracefully if absent (BR-U4-22);
+### Phase C — Evidence, static, hardening [x] ✅ (2026-06-08)
+- [x] `src/api/routers/screenshots.py` — `ScreenshotStore` → 307 redirect; 404 missing.
+- [x] Static mount of `src/dashboard/dist/` (S8) — omitted gracefully if absent (BR-U4-22);
       `/v1/*`+`/health` registered first, StaticFiles last (SPA fallback).
-- [ ] Finalize CSP / security headers (closes MD0 Gate 6 CSP criterion).
-- [ ] `tests/test_error_taxonomy.py` — one test per error-taxonomy row; assert 5xx bodies
-      carry no stack traces / paths / secrets; `invariant_violated` → CRITICAL log + metric hook.
-- [ ] `GET /health` returns 503 when a dependency probe fails.
+- [x] CSP / security headers (set in Phase A middleware) — closes MD0 Gate 6 CSP criterion.
+- [x] `tests/test_error_taxonomy.py` (10) — one test per row; 5xx bodies carry no stack
+      traces / secret messages; `invariant_violated` → CRITICAL log.
+- [x] `GET /health` returns 503 when a dependency probe fails.
+- [x] `tests/test_api_assets.py` (5) — screenshots 307/404/auth + static serving.
 
-### Step D — `aidlc-docs/construction/u4/code/code-summary.md` [ ]
+### Step D — `aidlc-docs/construction/u4/code/code-summary.md` [x] ✅
 
-## Gate 5 — promotion criteria (build-sequence.md)
-- [ ] All documented endpoints return correct HTTP codes
-- [ ] No stack traces in responses (5xx bodies structured, redacted)
-- [ ] Auth mandatory on every `/v1/*` (health exempt)
-- [ ] `/health` returns 503 when dependencies are down
-- [ ] Environment CRUD works against the store (in-memory fake; DynamoDB adapter behind same Protocol)
-- [ ] `LiveStatusTracker` updates during parallel runs
-- [ ] Paginated history with filters
-- [ ] `ruff` + `mypy --strict` exit 0; full `pytest` suite green
-- [ ] `orders_created=0` enforced end-to-end (orchestrator assert)
+## Gate 5 — promotion criteria (build-sequence.md) ✅ (2026-06-08)
+- [x] All documented endpoints return correct HTTP codes
+- [x] No stack traces in responses (5xx bodies structured, redacted)
+- [x] Auth mandatory on every `/v1/*` (health exempt)
+- [x] `/health` returns 503 when dependencies are down
+- [x] Environment CRUD works against the store (in-memory fake; **DynamoDB adapter behind
+      same Protocol deferred to infra — D-U4-1**)
+- [x] `LiveStatusTracker` updates during parallel runs
+- [x] Paginated history with filters
+- [x] `ruff` + `mypy --strict` exit 0; full `pytest` suite 160 green
+- [x] `orders_created=0` enforced end-to-end (orchestrator → 500 `invariant_violated`)
 
 ## Security baseline compliance (extension enabled)
 - Auth on all `/v1/*`; secrets only via `SecretsClient` (never in request/response/logs).

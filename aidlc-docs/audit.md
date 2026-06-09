@@ -583,3 +583,12 @@ None. Optional index files may still be added for naming compatibility with the 
 **Context**: Construction Phase, U4 Phase A COMPLETE (E2E spine). Next: Phase B (environments CRUD + runs history + status), Phase C (screenshots + static + CSP + error-taxonomy coverage; Gate 5 closes at C).
 
 ---
+
+## Construction — U4 API, Code Generation Part 2 — Phases B & C + Gate 5 (U4 COMPLETE)
+
+**Timestamp**: 2026-06-08T00:00:00Z
+**User Input**: "Ejecuta las recomendaciones y continua" (continued through all phases)
+**AI Response**: "Phase B: EnvironmentRegistry (S5, CRUD + secret-path validation), environments router (POST/GET/PUT/DELETE), runs history (GET /v1/runs/{id}, /latest gate-only with age+ttl_ok, GET /v1/runs filters+pagination, /{id}/status), EnvironmentUpdate schema, RunReportStore.latest(mode=) gate filter. 23 tests. Phase C: screenshots router (307 redirect / 404 screenshot_not_found), static mount of dashboard/dist (S8, SPA fallback, graceful if absent), CSP confirmed (Phase-A middleware) → closes MD0 Gate 6 CSP, test_error_taxonomy.py (10 rows: 401/422/404/409/502/422/504/500-invariant/500-internal, no-stacktrace assert), test_api_assets.py (5). Fixed a test bug (search_term 'x' < min_length 2). Gate 5 closed: 50 U4 tests, full suite 160 green, ruff+mypy(18 files) clean. Wrote u4 code-summary, marked Gate 5 + plan checkboxes B/C/D, updated aidlc-state. Deferred to infra: boto3 adapters behind the U4 Protocols (D-U4-1)."
+**Context**: Construction Phase, U4 COMPLETE (Gate 5 closed). Wave-1 DoD reachable. Next: infra/CDK milestone (boto3 adapters + AWS), then wave 2 (U5–U8).
+
+---

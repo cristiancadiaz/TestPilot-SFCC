@@ -66,6 +66,12 @@ class RunNotFoundError(TestPilotApiError):
     error_code = "run_not_found"
 
 
+class ScreenshotNotFoundError(TestPilotApiError):
+    # Additive to error-taxonomy.md (§8 process) for the evidence endpoint (U4 Phase C).
+    status_code = 404
+    error_code = "screenshot_not_found"
+
+
 class NoRunsYetError(TestPilotApiError):
     status_code = 404
     error_code = "no_runs_yet"

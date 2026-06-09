@@ -46,6 +46,24 @@ class EnvironmentConfig(BaseModel):
         return value
 
 
+class EnvironmentUpdate(BaseModel):
+    """Mutable fields of an environment (PUT). ``environment_id`` cannot change."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    store_url: str | None = None
+    env_access_secret_path: str | None = None
+    shopper_secret_path: str | None = None
+    active: bool | None = None
+
+    @field_validator("store_url")
+    @classmethod
+    def _https_only(cls, value: str | None) -> str | None:
+        if value is not None and not value.startswith("https://"):
+            raise ValueError("store_url must be an https URL")
+        return value
+
+
 class RunState(str, Enum):
     """Lifecycle state of a run / profile execution (live tracker, S7)."""
 

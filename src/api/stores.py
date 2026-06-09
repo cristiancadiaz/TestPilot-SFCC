@@ -18,7 +18,7 @@ from typing import Any, Protocol, runtime_checkable
 
 from src.api.errors import SecretNotFoundError
 from src.api.schemas import EnvironmentConfig, RunListQuery
-from src.models import EnvironmentId, ExecutionReport
+from src.models import EnvironmentId, ExecutionReport, Mode
 
 
 # ---------------------------------------------------------------------------
@@ -96,7 +96,7 @@ class RunReportStore(Protocol):
 
     def get(self, run_id: str) -> ExecutionReport | None: ...
 
-    def latest(self) -> ExecutionReport | None: ...
+    def latest(self, *, mode: Mode | None = None) -> ExecutionReport | None: ...
 
     def query(self, query: RunListQuery) -> tuple[list[ExecutionReport], int]: ...
 
@@ -113,10 +113,11 @@ class InMemoryRunReportStore:
     def get(self, run_id: str) -> ExecutionReport | None:
         return self._data.get(run_id)
 
-    def latest(self) -> ExecutionReport | None:
-        if not self._data:
-            return None
-        return next(reversed(self._data.values()))
+    def latest(self, *, mode: Mode | None = None) -> ExecutionReport | None:
+        reports = list(self._data.values())
+        if mode is not None:
+            reports = [r for r in reports if r.mode == mode]
+        return reports[-1] if reports else None
 
     def query(self, query: RunListQuery) -> tuple[list[ExecutionReport], int]:
         reports = sorted(

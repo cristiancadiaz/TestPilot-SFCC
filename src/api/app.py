@@ -9,25 +9,33 @@ imports and runs without AWS credentials (decision D-U4-1).
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 from typing import cast
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from src.api.errors import TestPilotApiError
 from src.api.middleware import RequestLoggingMiddleware, SecurityHeadersMiddleware
-from src.api.routers import health, runs
+from src.api.routers import environments, health, runs, screenshots
 from src.api.schemas import ApiErrorPayload
+from src.api.services.environment_registry import EnvironmentRegistry
 from src.api.services.environment_resolver import EnvironmentResolver
 from src.api.services.live_status_tracker import LiveStatusTracker
 from src.api.services.run_orchestrator import RunOrchestrator
 from src.api.stores import (
     InMemoryEnvironmentStore,
     InMemoryRunReportStore,
+    InMemoryScreenshotStore,
     InMemorySecretsClient,
+    RunReportStore,
+    ScreenshotStore,
 )
 from src.baseline import BaselineManager, InMemoryBaselineStore
+
+_DASHBOARD_DIR = Path(__file__).resolve().parent.parent / "dashboard" / "dist"
 
 logger = logging.getLogger("testpilot.api")
 
@@ -75,24 +83,37 @@ async def _unhandled_handler(request: Request, exc: Exception) -> JSONResponse:
     return JSONResponse(status_code=500, content=payload.model_dump())
 
 
-def _default_orchestrator() -> tuple[RunOrchestrator, LiveStatusTracker]:
-    """Build an in-memory orchestrator (no AWS). Environments are seeded at runtime."""
-    env_store = InMemoryEnvironmentStore()
-    secrets = InMemorySecretsClient()
-    resolver = EnvironmentResolver(env_store, secrets)
-    baseline = BaselineManager(InMemoryBaselineStore())
-    reports = InMemoryRunReportStore()
-    tracker = LiveStatusTracker()
-    orchestrator = RunOrchestrator(resolver, baseline, reports, tracker)
-    return orchestrator, tracker
+class _DefaultBundle:
+    """In-memory collaborators sharing one set of stores (no AWS — D-U4-1)."""
+
+    def __init__(self) -> None:
+        env_store = InMemoryEnvironmentStore()
+        secrets = InMemorySecretsClient()
+        resolver = EnvironmentResolver(env_store, secrets)
+        baseline = BaselineManager(InMemoryBaselineStore())
+        self.report_store: RunReportStore = InMemoryRunReportStore()
+        self.screenshot_store: ScreenshotStore = InMemoryScreenshotStore()
+        self.tracker = LiveStatusTracker()
+        self.orchestrator = RunOrchestrator(
+            resolver, baseline, self.report_store, self.tracker
+        )
+        self.registry = EnvironmentRegistry(env_store, secrets, resolver)
 
 
 def create_app(
     *,
     orchestrator: RunOrchestrator | None = None,
     tracker: LiveStatusTracker | None = None,
+    registry: EnvironmentRegistry | None = None,
+    report_store: RunReportStore | None = None,
+    screenshot_store: ScreenshotStore | None = None,
+    serve_dashboard: bool = True,
 ) -> FastAPI:
-    """Create and configure the FastAPI application."""
+    """Create and configure the FastAPI application.
+
+    Tests inject collaborators wired to in-memory fakes; with none provided, a
+    default in-memory bundle is built so the app imports and runs without AWS.
+    """
     app = FastAPI(title="TestPilot SFCC API", version="2.0.0")
 
     app.add_middleware(SecurityHeadersMiddleware)
@@ -102,15 +123,26 @@ def create_app(
     app.add_exception_handler(RequestValidationError, _validation_handler)
     app.add_exception_handler(Exception, _unhandled_handler)
 
+    # /v1/* and /health are registered FIRST so they take priority over the
+    # static SPA mount, which is added last and captures everything else.
     app.include_router(health.router)
     app.include_router(runs.router)
+    app.include_router(environments.router)
+    app.include_router(screenshots.router)
 
-    if orchestrator is None:
-        orchestrator, default_tracker = _default_orchestrator()
-        tracker = tracker or default_tracker
-    app.state.orchestrator = orchestrator
-    app.state.tracker = tracker or LiveStatusTracker()
+    bundle = _DefaultBundle()
+    app.state.orchestrator = orchestrator or bundle.orchestrator
+    app.state.tracker = tracker or bundle.tracker
+    app.state.registry = registry or bundle.registry
+    app.state.report_store = report_store or bundle.report_store
+    app.state.screenshot_store = screenshot_store or bundle.screenshot_store
     app.state.health_probe = lambda: True
+
+    # S8: serve the built dashboard if present; omit gracefully otherwise (BR-U4-22).
+    if serve_dashboard and _DASHBOARD_DIR.exists():
+        app.mount(
+            "/", StaticFiles(directory=str(_DASHBOARD_DIR), html=True), name="dashboard"
+        )
     return app
 
 

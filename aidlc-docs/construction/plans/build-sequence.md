@@ -145,14 +145,14 @@ Si hay 4+ devs disponibles:
 - [x] Baseline consultado con environment_id (no se mezclan ambientes) — `test_baseline_queried_with_run_environment`
 - [x] ruff + mypy --strict exit 0; suite completa 110 tests verde
 
-### Gate 5 — Tras U4
-- [ ] Todos los endpoints documentados retornan códigos correctos
-- [ ] Sin stack traces en responses
-- [ ] Auth obligatoria
-- [ ] `/health` retorna 503 si dependencias caen
-- [ ] CRUD de environments funciona contra DynamoDB (puede usar moto3 en tests)
-- [ ] LiveStatusTracker se actualiza durante runs paralelos
-- [ ] Historial paginado con filtros
+### Gate 5 — Tras U4 ✅ (2026-06-08)
+- [x] Todos los endpoints documentados retornan códigos correctos — `test_api_*` + `test_error_taxonomy`
+- [x] Sin stack traces en responses — `test_500_internal_error_no_stack_trace_leak`
+- [x] Auth obligatoria — `verify_api_key` en todos los `/v1/*`; tests 401
+- [x] `/health` retorna 503 si dependencias caen — `test_health_503_when_probe_fails`
+- [x] CRUD de environments funciona contra el store (fake in-memory; **adapter DynamoDB tras el mismo Protocol diferido a infra — D-U4-1**)
+- [x] LiveStatusTracker se actualiza durante runs paralelos — `test_run_status_after_run`
+- [x] Historial paginado con filtros — `test_list_runs_*`
 
 ### Gate 6 — Tras MD0 ⟳ (código completo 2026-06-08; cierre pleno tras integración U4)
 - [x] Dashboard accesible en `/` — SPA con 5 rutas; `pnpm build` (tsc strict + vite) verde
