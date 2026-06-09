@@ -592,3 +592,12 @@ None. Optional index files may still be added for naming compatibility with the 
 **Context**: Construction Phase, U4 COMPLETE (Gate 5 closed). Wave-1 DoD reachable. Next: infra/CDK milestone (boto3 adapters + AWS), then wave 2 (U5–U8).
 
 ---
+
+## Construction — Wave-1 E2E demo validation + E8 acceptance suite
+
+**Timestamp**: 2026-06-08T00:00:00Z
+**User Input**: "Listo con que continuamos, necesitas algo de mi parte" → chose "Demo E2E + tests E8 (recomendado)"
+**AI Response**: "Validated the wave-1 backend spine end to end via scripts/demo_e2e.py (register env → POST /v1/run gate → live status → GET report → /latest gate verdict → history → Markdown report; executor stubbed, no storefront/AWS) — flow green/bootstrap, orders_created absent from JSON. Confirmed production entrypoint src.api.app:app imports with 12 routes + dashboard mount. E8: wrote tests/test_e8_acceptance.py (10 executable acceptance tests traced to gherkin-scenarios.md: Environment Registry, Structured Run Execution, Zero Order Contamination, CI/CD Deploy Gate, Baseline Bootstrap — with contract validation vs execution_report.schema.json; no pytest-bdd dep). Added steering file .claude/skills/testing.md (gitignored). Asserts hard invariants (#1-#8). Verified: mypy src clean (36 files), ruff clean, full suite 170 green (160→170)."
+**Context**: Construction Phase. Wave-1 E2E demo validated; E8 acceptance layer added. P8-1 (API/acceptance) + P8-2 (steering) + P8-3 (BDD) advanced. Pending in E8: dashboard Playwright E2E + Persona/Juez (needs wave-2 agents U6/U8).
+
+---
