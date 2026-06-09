@@ -17,7 +17,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from src.api.errors import TestPilotApiError
+from src.api.errors import TestPilotApiError, InstructionRejectedError
 from src.api.middleware import RequestLoggingMiddleware, SecurityHeadersMiddleware
 from src.api.routers import environments, health, runs, screenshots, translate
 from src.api.schemas import ApiErrorPayload
@@ -46,6 +46,14 @@ def _request_id(request: Request) -> str:
 
 async def _api_error_handler(request: Request, exc: Exception) -> JSONResponse:
     err = cast(TestPilotApiError, exc)
+    # Log instruction rejections for observability (RT1 requirement)
+    try:
+        if isinstance(err, InstructionRejectedError) or getattr(err, "error_code", "") == "instruction_rejected":
+            logger.warning("instruction_rejected: %s", err.message)
+    except Exception:
+        # Never let logging failures affect the response
+        logger.exception("failed to log instruction rejection")
+
     payload = ApiErrorPayload(
         error_code=err.error_code,
         message=err.message,
